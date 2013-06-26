@@ -4,9 +4,9 @@ nlog
 Native 统计框架
 
 
-## API
+# API
 
-### 模块
+## 模块
 
 ### NLog
 
@@ -78,3 +78,25 @@ public void stop()
  */
 public void send(String hitType, Object... params)
 ```
+
+## 配置字段
+
+### postUrl
+
+上报数据的路径
+
+### protocolParameter
+
+协议字段
+
+### gzip
+
+是否采用gzip压缩
+
+### onlywifi
+
+是否只在wifi环境下发送
+
+### sendInterval
+
+发送周期，单位秒
