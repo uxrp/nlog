@@ -31,11 +31,11 @@ public NTracker getTracker(String name)
 ```
 
 ### NTracker
-#### start
+
 #### set
 ```java
 /**
- * 设置字段值，支持批量设置
+ * 设置字段值
  * @param params 参数集合 (key1, value1, key2, value2...) 会将key后面的“=”或“：”移除
  */
 public void set(Object... params) {
@@ -50,13 +50,31 @@ public void set(Object... params) {
  */
 public Object get(String key)
 ```
+#### start
+
+```java
+/**
+ * 开始采集
+ * @param params 起始参数，参考 set
+ */
+public void start(Object... params)
+```
+
+#### stop
+
+```java
+/**
+ * 停止采集
+ */
+public void stop()
+```
 
 #### send
 ```java
 /**
  * 发送数据
  * @param hitType 发送类型，'appview'、'event'、'timing'、'exception'
- * @param params 参数集合 (key1, value1, key2, value2...) 会将key后面的“=”或“：”移除
+ * @param params 参数集合
  */
 public void send(String hitType, Object... params)
 ```
