@@ -30,6 +30,15 @@ public static NLog getInstance(Context context)
 public NTracker getTracker(String name)
 ```
 
+#### setSessionTimeout
+
+```java
+/**
+ * 设置session超时时间
+ * @param value 超时时间，单位：秒，默认30
+ */
+public void setSessionTimeout(Integer value)
+```
 ### NTracker
 
 #### set
