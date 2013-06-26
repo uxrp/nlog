@@ -96,7 +96,18 @@ public void send(String hitType, Object... params)
 
 ### protocolParameter
 
-协议字段
+协议字段，用来做简写和标记不用上报的字段
+
+```javascript
+// 默认值
+[
+    postUrl: null,
+    protocolParameter: null,
+    gzip: null,
+    onlywifi: null,
+    sendInterval: null
+]
+```
 
 ### gzip
 
