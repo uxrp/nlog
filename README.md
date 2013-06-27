@@ -39,6 +39,36 @@ public NTracker getTracker(String name)
  */
 public void setSessionTimeout(Integer value)
 ```
+### setGzip
+
+```java
+/**
+ * 设置是否采用gzip压缩
+ * @param value 是否压缩
+ */
+public void setGzip(Boolean value)
+```
+
+### setOnlywifi
+
+```java
+/**
+ * 是否只在wifi环境下发送
+ * @param value 是否压缩
+ */
+public void setOnlywifi(Boolean value)
+```
+
+### setSendInterval
+
+```java
+/**
+ * 发送周期，单位秒
+ * @param value 是否压缩
+ */
+public void setSendInterval(Integer value)
+```
+
 ### NTracker
 
 #### set
@@ -102,21 +132,6 @@ public void send(String hitType, Object... params)
 // 默认值
 [
     postUrl: null,
-    protocolParameter: null,
-    gzip: null,
-    onlywifi: null,
-    sendInterval: null
+    protocolParameter: null
 ]
 ```
-
-### gzip
-
-是否采用gzip压缩
-
-### onlywifi
-
-是否只在wifi环境下发送
-
-### sendInterval
-
-发送周期，单位秒
