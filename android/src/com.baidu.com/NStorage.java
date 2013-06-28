@@ -38,711 +38,711 @@ import android.util.Log;
 
 @SuppressLint("HandlerLeak")
 public class NStorage {
-	/**
-	 * Éè±¸id
-	 */
-	private String deviceId = "";
-	
-	/**
-	 * ½¨Á¢Á´½Ó³¬Ê±,µ¥Î»£ººÁÃë
-	 */
-	private static final int connTimeout = 40 * 1000; // 40Ãë
-	/**
-	 * 
-	 */
-	private static final int readTimeout = 60 * 1000; //60Ãë »ñÈ¡Êı¾İ³¬Ê±
-	/*
-	 * ´æ´¢ÎÄ¼ş°æ±¾ // ÓÃÀ´´¦ÀíÎÄ¼ş°æ±¾¸Ä±ä
-	 */
-	public static final String fileVersion = "0";
-	
-	/**
-	 * ±£´æ»º´æÎÄ¼şµÄÄ¿Â¼
-	 */
-	private static String rootDir = Environment.getExternalStorageDirectory() + File.separator + "_nlog_cache";
-	
-	/**
-	 * »º´æÎÄ¼şÃûÄ£°å _nlog_[version]_[itemname].dat, itemname => [name].[md5(head)]
-	 */
-	private static final String cacheFileFormat = rootDir + File.separator + "_nlog_%s_%s.dat";
-	/**
-	 * ×î¶à·¢ËÍµÄ×Ö½ÚÊı
-	 */
-	private static final int sendMaxBytes = 20000;
-	/**
-	 * ÈÕÖ¾×î³¤±£´æÊ±¼ä£¬µ¥Î»£ºÌì
-	 */
-	private static final int saveMaxDays = 7;
-
-	/**
-	 * ÊÇ·ñÖ»ÔÚwifiÍøÂçÇé¿öÏÂÉÏ±¨Êı¾İ
-	 */
-	private Boolean onlywifi = false;
-	public void setOnlywifi(Boolean value) {
-		if (onlywifi.equals(value)) return;
-		onlywifi = value;
-	}
-	
-	/**
-	 * ÖØ·¢Êı¾İµÄÊ±¼ä¼ä¸ô
-	 */
-	private Integer sendInterval = 120; // Ãë£¬·¢ËÍÖØÊÔÊ±¼ä
-	public void setSendInterval(Integer value) {
-		if (sendInterval.equals(value)) return;
-		sendInterval = value;
-		updateTimer();
-	}
-	
-	/**
-	 * »º´æÏî
-	 */
-    private class CacheItem {
-    	public StringBuffer sb;
-    	public String name;
-    	public String head;
-    	public byte[] pass;
-    	/**
-    	 * ¹¹Ôì
-    	 * @param name ÏîÃû 
-    	 * @param head Ê×ĞĞ
-    	 * @param sb ×Ö·û»º´æ
-    	 */
-    	CacheItem(String name, String head) {
-    		this.sb = new StringBuffer();
-    		this.sb.append(head + '\n');
-    		this.head = head;
-    		this.name = name;
-
-    		this.pass = buildPass(name);
-    	}
-    }
+    /**
+     * è®¾å¤‡id
+     */
+    private String deviceId = "";
     
-	/**
-	 * ·¢ËÍÏî
-	 */
-    private class PostItem {
-    	public String name;
-    	public byte[] pass;
-    	public String locked;
-    	/**
-    	 * ¹¹Ôì
-    	 * @param name ÏîÃû
-    	 * @param locked Ëø¶¨ÎÄ¼şÃû
-    	 */
-    	PostItem(String name, String locked) {
-    		this.name = name;
-    		this.locked = locked;
-    		this.pass = buildPass(name);
-    	}
+    /**
+     * å»ºç«‹é“¾æ¥è¶…æ—¶,å•ä½ï¼šæ¯«ç§’
+     */
+    private static final int connTimeout = 40 * 1000; // 40ç§’
+    /**
+     * 
+     */
+    private static final int readTimeout = 60 * 1000; //60ç§’ è·å–æ•°æ®è¶…æ—¶
+    /*
+     * å­˜å‚¨æ–‡ä»¶ç‰ˆæœ¬ // ç”¨æ¥å¤„ç†æ–‡ä»¶ç‰ˆæœ¬æ”¹å˜
+     */
+    public static final String fileVersion = "0";
+    
+    /**
+     * ä¿å­˜ç¼“å­˜æ–‡ä»¶çš„ç›®å½•
+     */
+    private static String rootDir = Environment.getExternalStorageDirectory() + File.separator + "_nlog_cache";
+    
+    /**
+     * ç¼“å­˜æ–‡ä»¶åæ¨¡æ¿ _nlog_[version]_[itemname].dat, itemname => [name].[md5(head)]
+     */
+    private static final String cacheFileFormat = rootDir + File.separator + "_nlog_%s_%s.dat";
+    /**
+     * æœ€å¤šå‘é€çš„å­—èŠ‚æ•°
+     */
+    private static final int sendMaxBytes = 20000;
+    /**
+     * æ—¥å¿—æœ€é•¿ä¿å­˜æ—¶é—´ï¼Œå•ä½ï¼šå¤©
+     */
+    private static final int saveMaxDays = 7;
+
+    /**
+     * æ˜¯å¦åªåœ¨wifiç½‘ç»œæƒ…å†µä¸‹ä¸ŠæŠ¥æ•°æ®
+     */
+    private Boolean onlywifi = false;
+    public void setOnlywifi(Boolean value) {
+        if (onlywifi.equals(value)) return;
+        onlywifi = value;
     }
     
     /**
-     * ÎÄ¼şÃÜÔ¿£¬¿ÉÔÚÊµ¼ÊÉÏÏßÊÇĞŞ¸Ä³É×Ô¼ºµÄ
+     * é‡å‘æ•°æ®çš„æ—¶é—´é—´éš”
+     */
+    private Integer sendInterval = 120; // ç§’ï¼Œå‘é€é‡è¯•æ—¶é—´
+    public void setSendInterval(Integer value) {
+        if (sendInterval.equals(value)) return;
+        sendInterval = value;
+        updateTimer();
+    }
+    
+    /**
+     * ç¼“å­˜é¡¹
+     */
+    private class CacheItem {
+        public StringBuffer sb;
+        public String name;
+        public String head;
+        public byte[] pass;
+        /**
+         * æ„é€ 
+         * @param name é¡¹å 
+         * @param head é¦–è¡Œ
+         * @param sb å­—ç¬¦ç¼“å­˜
+         */
+        CacheItem(String name, String head) {
+            this.sb = new StringBuffer();
+            this.sb.append(head + '\n');
+            this.head = head;
+            this.name = name;
+
+            this.pass = buildPass(name);
+        }
+    }
+    
+    /**
+     * å‘é€é¡¹
+     */
+    private class PostItem {
+        public String name;
+        public byte[] pass;
+        public String locked;
+        /**
+         * æ„é€ 
+         * @param name é¡¹å
+         * @param locked é”å®šæ–‡ä»¶å
+         */
+        PostItem(String name, String locked) {
+            this.name = name;
+            this.locked = locked;
+            this.pass = buildPass(name);
+        }
+    }
+    
+    /**
+     * æ–‡ä»¶å¯†é’¥ï¼Œå¯åœ¨å®é™…ä¸Šçº¿æ˜¯ä¿®æ”¹æˆè‡ªå·±çš„
      */
     private String secretKey = "5D97EEF8-3127-4859-2222-82E6C8FABD8A";
     
     /**
-     * ÃÜÔ¿´®»º´æ£¬ÎªÁËÌáÉıËÙ¶È
+     * å¯†é’¥ä¸²ç¼“å­˜ï¼Œä¸ºäº†æå‡é€Ÿåº¦
      */
     private Map<String, byte[]> passMap = new HashMap<String, byte[]>(); 
     
     /**
-     * Éú³ÉÃÜÔ¿£¬Èç¹û¹æÔòĞŞ¸ÄĞèÒªÉı¼¶fileVersion
-     * @param name ÏîÃû
-     * @return ·µ»ØÃÜÔ¿´®
+     * ç”Ÿæˆå¯†é’¥ï¼Œå¦‚æœè§„åˆ™ä¿®æ”¹éœ€è¦å‡çº§fileVersion
+     * @param name é¡¹å
+     * @return è¿”å›å¯†é’¥ä¸²
      */
     private byte[] buildPass(String name) {
-    	byte[] result = passMap.get(name);
-    	if (result != null) return result;
-		try {
-	    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			md.update(String.format("%s,%s,%s", deviceId, name, secretKey).getBytes());
-			baos.write(md.digest());
-			md.update(String.format("%s,%s,%s", name, deviceId, secretKey).getBytes());
-			baos.write(md.digest());
-			md.update(String.format("%s,%s,%s", deviceId, secretKey, name).getBytes());
-			baos.write(md.digest());
-	    	result = baos.toByteArray(); 
-	    	baos.close();
-	    	passMap.put(name, result);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return result;
+        byte[] result = passMap.get(name);
+        if (result != null) return result;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(String.format("%s,%s,%s", deviceId, name, secretKey).getBytes());
+            baos.write(md.digest());
+            md.update(String.format("%s,%s,%s", name, deviceId, secretKey).getBytes());
+            baos.write(md.digest());
+            md.update(String.format("%s,%s,%s", deviceId, secretKey, name).getBytes());
+            baos.write(md.digest());
+            result = baos.toByteArray(); 
+            baos.close();
+            passMap.put(name, result);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     /**
-	 * »º´æÈÕÖ¾
-	 */
-	private Map<String, CacheItem> cacheItems = new HashMap<String, CacheItem>();
-	
-    /**
-     * ´¦Àí×Ö¶ÎÃûËõĞ´£¬Èç¹ûËõĞ´ÎªnullÔò½«Æä¹ıÂË
-     * @param protocolParameter ×Ö¶ÎÃû×Öµä
-     * @param map ²ÎÊı¼¯ºÏ
-     * @return ·µ»Ø´¦ÀíºóµÄ×Öµä
+     * ç¼“å­˜æ—¥å¿—
      */
-	@SuppressWarnings("unchecked")
-	private Map<String, Object> runProtocolParameter(Object protocolParameter, Map<String, Object> map) {
-    	if (protocolParameter == null || (!(protocolParameter instanceof Map))) {
-    		return map;
-    	}
-    	Map<String, Object> parameter = (HashMap<String, Object>)protocolParameter;
-    	Map<String, Object> result = new HashMap<String, Object>();
-    	for (String key : map.keySet()) {
-    		if (parameter.containsKey(key)) { // ĞèÒª×ª»»
-        		Object newKey = parameter.get(key);
-        		if (newKey != null) { // ÎªnullÊ±Å×Æú
-            		result.put((String)newKey, map.get(key));
-        		}
-    		} else {
-    			result.put(key, map.get(key));
-    		}
-    	}
-    	return result;
+    private Map<String, CacheItem> cacheItems = new HashMap<String, CacheItem>();
+    
+    /**
+     * å¤„ç†å­—æ®µåç¼©å†™ï¼Œå¦‚æœç¼©å†™ä¸ºnullåˆ™å°†å…¶è¿‡æ»¤
+     * @param protocolParameter å­—æ®µåå­—å…¸
+     * @param map å‚æ•°é›†åˆ
+     * @return è¿”å›å¤„ç†åçš„å­—å…¸
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> runProtocolParameter(Object protocolParameter, Map<String, Object> map) {
+        if (protocolParameter == null || (!(protocolParameter instanceof Map))) {
+            return map;
+        }
+        Map<String, Object> parameter = (HashMap<String, Object>)protocolParameter;
+        Map<String, Object> result = new HashMap<String, Object>();
+        for (String key : map.keySet()) {
+            if (parameter.containsKey(key)) { // éœ€è¦è½¬æ¢
+                Object newKey = parameter.get(key);
+                if (newKey != null) { // ä¸ºnullæ—¶æŠ›å¼ƒ
+                    result.put((String)newKey, map.get(key));
+                }
+            } else {
+                result.put(key, map.get(key));
+            }
+        }
+        return result;
     }
 
-	/**
-	 * ÉÏ±¨Êı¾İ
-	 * @param trackerName ×·×ÙÆ÷Ãû³Æ
-	 * @param fields ¹«¹²×Ö¶Î
-	 * @param data ÉÏ±¨Êı¾İ
-	 */
+    /**
+     * ä¸ŠæŠ¥æ•°æ®
+     * @param trackerName è¿½è¸ªå™¨åç§°
+     * @param fields å…¬å…±å­—æ®µ
+     * @param data ä¸ŠæŠ¥æ•°æ®
+     */
     public void report(String trackerName, Map<String, Object> fields, Map<String, Object> data) {
-		/* debug start */
+        /* debug start */
         System.out.println(String.format("%s.report(%s, %s) postUrl=%s", this, fields, data, fields.get("postUrl")));
-		/* debug end */
+        /* debug end */
         
         String postUrl = (String)fields.get("postUrl");
-    	if (fields.get("postUrl") == null) {
-    		// ·¢ËÍ±»È¡Ïû
-    		return;
-    	}
-		Object parameter = fields.get("protocolParameter");
-		// ×ªÒåºÍ¹ıÂË
+        if (fields.get("postUrl") == null) {
+            // å‘é€è¢«å–æ¶ˆ
+            return;
+        }
+        Object parameter = fields.get("protocolParameter");
+        // è½¬ä¹‰å’Œè¿‡æ»¤
         Map<String, Object> headMap = runProtocolParameter(parameter, fields);
         Map<String, Object> lineMap = runProtocolParameter(parameter, data);
         appendCache(trackerName, postUrl + '?' + NLog.buildPost(headMap), NLog.buildPost(lineMap));
     }
     
     /**
-     * ´¦ÀíÏûÏ¢
+     * å¤„ç†æ¶ˆæ¯
      */
     private Map<String, Message> messages = new HashMap<String, Message>();
     
     /**
-     * ½«Êı¾İ·Åµ½»º´æÖĞ
-	 * @param trackerName ×·×ÙÆ÷Ãû³Æ
-     * @param head Ê×ĞĞÊı¾İ£¬¹«ÓÃÊı¾İ
-     * @param line Ã¿ĞĞÊı¾İ
+     * å°†æ•°æ®æ”¾åˆ°ç¼“å­˜ä¸­
+     * @param trackerName è¿½è¸ªå™¨åç§°
+     * @param head é¦–è¡Œæ•°æ®ï¼Œå…¬ç”¨æ•°æ®
+     * @param line æ¯è¡Œæ•°æ®
      */
     private void appendCache(String trackerName, String head, String line) {
-		/* debug start */
+        /* debug start */
         System.out.println(String.format("%s.appendCache('%s', '%s', '%s')", this, trackerName, head, line));
-		/* debug end */
+        /* debug end */
 
-		synchronized(cacheItems) {
-			String itemname = String.format("%s.%s", trackerName, getMD5(head));
-			CacheItem item = cacheItems.get(itemname);
-			if (item == null) {
-				item = new CacheItem(itemname, head);
-				cacheItems.put(itemname, item); // ¼ÓÈë»º´æ
-			}
-			synchronized(item.sb) {
-				item.sb.append(line + '\n');
-			}
-			sendMessage_saveFile(item);
-		}
+        synchronized(cacheItems) {
+            String itemname = String.format("%s.%s", trackerName, getMD5(head));
+            CacheItem item = cacheItems.get(itemname);
+            if (item == null) {
+                item = new CacheItem(itemname, head);
+                cacheItems.put(itemname, item); // åŠ å…¥ç¼“å­˜
+            }
+            synchronized(item.sb) {
+                item.sb.append(line + '\n');
+            }
+            sendMessage_saveFile(item);
+        }
     }
-	/** 
-     * ÅĞ¶ÏNetworkÊÇ·ñÁ¬½Ó³É¹¦(°üÀ¨ÒÆ¶¯ÍøÂçºÍwifi) 
-     * @return ·µ»ØÊÇ·ñÁ¬½Ó
+    /** 
+     * åˆ¤æ–­Networkæ˜¯å¦è¿æ¥æˆåŠŸ(åŒ…æ‹¬ç§»åŠ¨ç½‘ç»œå’Œwifi) 
+     * @return è¿”å›æ˜¯å¦è¿æ¥
      */
     public boolean isNetworkConnected(){ 
         return checkWifiConnected() || checkNetConnected(); 
     }
     
     /**
-     * ¼ì²éÒÆ¶¯ÍøÂçÊÇ·ñÁ¬½Ó
-     * @return ·µ»ØÊÇ·ñÁ¬½Ó
+     * æ£€æŸ¥ç§»åŠ¨ç½‘ç»œæ˜¯å¦è¿æ¥
+     * @return è¿”å›æ˜¯å¦è¿æ¥
      */
-	public boolean checkNetConnected() {
-		ConnectivityManager connectivityManager = (ConnectivityManager)context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo networkInfo = connectivityManager
-				.getActiveNetworkInfo();
-		if (networkInfo != null) {
-			return networkInfo.isConnected();
-		}
-		return false;
-	}
-	
-	/**
-	 * ¼ì²éwifiÊÇ·ñÁ¬½Ó
-	 * @return ·µ»ØÊÇ·ñÁ¬½Ó
-	 */
-	public boolean checkWifiConnected() {
-		ConnectivityManager connectivityManager = (ConnectivityManager)context
-				.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo wiFiNetworkInfo = connectivityManager
-				.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		if (wiFiNetworkInfo != null) {
-			return wiFiNetworkInfo.isConnected();
-		}
-		return false;
-	}
-	
-	/**
-	 * ½«ÎÄ¼şËø¶¨
-	 * @param itemname ÏîÃû
-	 * @return ·µ»ØËø¶¨ºóµÄÎÄ¼şÃû
-	 */
-	private String buildLocked(String itemname) {
-		String filename = String.format(cacheFileFormat, fileVersion, itemname);
-		File file = new File(filename);
-		if (!file.exists()) return null;
-		String result = filename.replaceFirst("\\.dat$", "." + Long.toString(System.currentTimeMillis(), 36) + ".locked");
-    	File locked = new File(result);
-		while (!file.renameTo(locked)) {
-			result = filename.replaceFirst("\\.dat$", "." + Long.toString(System.currentTimeMillis(), 36) + ".locked");
-	    	locked = new File(result);
-		}
-		return result;
-	}
+    public boolean checkNetConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager
+                .getActiveNetworkInfo();
+        if (networkInfo != null) {
+            return networkInfo.isConnected();
+        }
+        return false;
+    }
+    
+    /**
+     * æ£€æŸ¥wifiæ˜¯å¦è¿æ¥
+     * @return è¿”å›æ˜¯å¦è¿æ¥
+     */
+    public boolean checkWifiConnected() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wiFiNetworkInfo = connectivityManager
+                .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (wiFiNetworkInfo != null) {
+            return wiFiNetworkInfo.isConnected();
+        }
+        return false;
+    }
+    
+    /**
+     * å°†æ–‡ä»¶é”å®š
+     * @param itemname é¡¹å
+     * @return è¿”å›é”å®šåçš„æ–‡ä»¶å
+     */
+    private String buildLocked(String itemname) {
+        String filename = String.format(cacheFileFormat, fileVersion, itemname);
+        File file = new File(filename);
+        if (!file.exists()) return null;
+        String result = filename.replaceFirst("\\.dat$", "." + Long.toString(System.currentTimeMillis(), 36) + ".locked");
+        File locked = new File(result);
+        while (!file.renameTo(locked)) {
+            result = filename.replaceFirst("\\.dat$", "." + Long.toString(System.currentTimeMillis(), 36) + ".locked");
+            locked = new File(result);
+        }
+        return result;
+    }
 
-	/**
-	 * ·¢ËÍÎÄ¼ş
-	 * @param item »º´æÏî
-	 * @param lockedname Ëø¶¨ÎÄ¼şÃû
-	 * @return ÊÇ·ñ·¢ËÍ³É¹¦
-	 */
-	@SuppressLint("DefaultLocale")
-	private Boolean postFile(PostItem item) {
-		/* debug start */
+    /**
+     * å‘é€æ–‡ä»¶
+     * @param item ç¼“å­˜é¡¹
+     * @param lockedname é”å®šæ–‡ä»¶å
+     * @return æ˜¯å¦å‘é€æˆåŠŸ
+     */
+    @SuppressLint("DefaultLocale")
+    private Boolean postFile(PostItem item) {
+        /* debug start */
         System.out.println(String.format("%s.postFile('%s', '%s')", this, item.name, item.locked));
-		/* debug end */
+        /* debug end */
         
         Boolean result = false;
         if (onlywifi && !checkWifiConnected()) {
-        	Log.d("NLOG", String.format("%s.postFile() - Without a wifi connection. onlywifi = true", this));
-        	return result;
+            Log.d("NLOG", String.format("%s.postFile() - Without a wifi connection. onlywifi = true", this));
+            return result;
         } else if (!isNetworkConnected()) {
-        	Log.d("NLOG", String.format("%s.postFile() - Without a network connection.", this));
-        	return result;
+            Log.d("NLOG", String.format("%s.postFile() - Without a network connection.", this));
+            return result;
         }
         
 
         String filename = String.format(cacheFileFormat, fileVersion, item.name);
-    	File file = new File(filename);
-    	if (!file.exists() || file.length() <= 0) {
-        	Log.d("NLOG", String.format("%s.postFile() - file '%s' not found.", this, filename));
-    		return result;
-    	}
+        File file = new File(filename);
+        if (!file.exists() || file.length() <= 0) {
+            Log.d("NLOG", String.format("%s.postFile() - file '%s' not found.", this, filename));
+            return result;
+        }
         
         byte[] pass = item.pass;
         int len;
         int size = 1024;
         byte[] buf = new byte[size];
         String postUrl = null;
-		try {
-			FileInputStream fis;
-			fis = new FileInputStream(filename);
-	        len = fis.read(buf);
-	        for (int i = 0; i < len; i++) {
-				buf[i] = (byte)(buf[i] ^ i % 256 ^ pass[i % pass.length]); 
-	        	if (buf[i] == '\n') {
-	        		postUrl = new String(buf, 0, i);
-	        		break;
-	        	}
-	        }
-	        fis.close();
+        try {
+            FileInputStream fis;
+            fis = new FileInputStream(filename);
+            len = fis.read(buf);
+            for (int i = 0; i < len; i++) {
+                buf[i] = (byte)(buf[i] ^ i % 256 ^ pass[i % pass.length]); 
+                if (buf[i] == '\n') {
+                    postUrl = new String(buf, 0, i);
+                    break;
+                }
+            }
+            fis.close();
 
-	        Log.d("NLOG", String.format("%s.postFile() - postUrl = %s.", this, postUrl));
-	        if (postUrl == null) {
-	        	return result;
-	        }
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+            Log.d("NLOG", String.format("%s.postFile() - postUrl = %s.", this, postUrl));
+            if (postUrl == null) {
+                return result;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-		/* TODO ÍøÂç×´Ì¬ */
-		HttpURLConnection conn = null;
-		ConnectivityManager conManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo mobile = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-		NetworkInfo wifi = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		Proxy proxy = null;
-		if (wifi != null && wifi.isAvailable()) {
-			Log.d("NLOG", "WIFI is available");
-		} else if (mobile != null && mobile.isAvailable()) {
-			String apn = mobile.getExtraInfo().toLowerCase();
-			Log.d("NLOG", "apn = " + apn);
-			if (apn.startsWith("cmwap") || apn.startsWith("uniwap") || apn.startsWith("3gwap")) {
-				proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.172", 80));
-			} else if (apn.startsWith("ctwap")) {
-				proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.200", 80));
-			}
-		} else { //@fixed in TV
-			Log.d("NLOG", "getConnection:not wifi and mobile");
-		}
-		URL url;
-		try {
-			url = new URL(postUrl);
-			if (proxy == null) {
-				conn = (HttpURLConnection)url.openConnection();
-			} else {
-				conn = (HttpURLConnection)url.openConnection(proxy);
-			}
-			conn.setConnectTimeout(connTimeout);
-			conn.setReadTimeout(readTimeout);
-			
-			// POST·½Ê½
-			conn.setDoOutput(true);
-			conn.setInstanceFollowRedirects(false);
-			conn.setUseCaches(false);
-			conn.setRequestProperty("Content-Type", "gzip");
-			
-			conn.connect();
-			GZIPOutputStream gos = new GZIPOutputStream(conn.getOutputStream());
-			String lockedname = item.locked;
-			if (lockedname == null) { // ĞèÒªËø¶¨ÎÄ¼ş
-				lockedname = buildLocked(item.name);
-			}
-			File locked = new File(lockedname);
-			@SuppressWarnings("resource")
-			FileInputStream fis = new FileInputStream(lockedname);
-	        int offset = 0;
-	        Boolean isHead = false;
-    		while ((len = fis.read(buf, 0, size)) != -1) {
-				int t = 0;
-				for (int i = 0; i < len; i++) {
-					buf[i] = (byte)(buf[i] ^ offset % 256 ^ pass[offset % pass.length]); 
-					offset++;
-					if (!isHead) {
-						if (buf[i] == '\n') {
-							t = i;
-							isHead = true;
-						}
-					}
-				}
-				gos.write(buf, t + 1, len - t - 1);
-			}
-    		gos.close();
-    		gos = null;
-			
-			// ÔÚÊäÈëÁ÷Íâ°ü×°Ò»²ãBufferReader£¬Ìá¸ß¶ÁÈëĞ§ÂÊ getInputStream·µ»ØµÄÊÇ×Ö½ÚÁ÷£¬½«Æä×ª»»³É×Ö·ûÁ÷
-			//*
-			StringBuffer sb = new StringBuffer();
-			BufferedReader bufr = new BufferedReader(new InputStreamReader(
-					conn.getInputStream()));
-			String inputString;
-			while ((inputString = bufr.readLine()) != null) {
-				sb.append(inputString);
-			}
-			bufr.close(); // Á÷¹Ø±Õ£¬»áÊÍ·ÅÁ¬½Ó×ÊÔ´
-			bufr = null;
+        /* TODO ç½‘ç»œçŠ¶æ€ */
+        HttpURLConnection conn = null;
+        ConnectivityManager conManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobile = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo wifi = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        Proxy proxy = null;
+        if (wifi != null && wifi.isAvailable()) {
+            Log.d("NLOG", "WIFI is available");
+        } else if (mobile != null && mobile.isAvailable()) {
+            String apn = mobile.getExtraInfo().toLowerCase();
+            Log.d("NLOG", "apn = " + apn);
+            if (apn.startsWith("cmwap") || apn.startsWith("uniwap") || apn.startsWith("3gwap")) {
+                proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.172", 80));
+            } else if (apn.startsWith("ctwap")) {
+                proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.200", 80));
+            }
+        } else { //@fixed in TV
+            Log.d("NLOG", "getConnection:not wifi and mobile");
+        }
+        URL url;
+        try {
+            url = new URL(postUrl);
+            if (proxy == null) {
+                conn = (HttpURLConnection)url.openConnection();
+            } else {
+                conn = (HttpURLConnection)url.openConnection(proxy);
+            }
+            conn.setConnectTimeout(connTimeout);
+            conn.setReadTimeout(readTimeout);
+            
+            // POSTæ–¹å¼
+            conn.setDoOutput(true);
+            conn.setInstanceFollowRedirects(false);
+            conn.setUseCaches(false);
+            conn.setRequestProperty("Content-Type", "gzip");
+            
+            conn.connect();
+            GZIPOutputStream gos = new GZIPOutputStream(conn.getOutputStream());
+            String lockedname = item.locked;
+            if (lockedname == null) { // éœ€è¦é”å®šæ–‡ä»¶
+                lockedname = buildLocked(item.name);
+            }
+            File locked = new File(lockedname);
+            @SuppressWarnings("resource")
+            FileInputStream fis = new FileInputStream(lockedname);
+            int offset = 0;
+            Boolean isHead = false;
+            while ((len = fis.read(buf, 0, size)) != -1) {
+                int t = 0;
+                for (int i = 0; i < len; i++) {
+                    buf[i] = (byte)(buf[i] ^ offset % 256 ^ pass[offset % pass.length]); 
+                    offset++;
+                    if (!isHead) {
+                        if (buf[i] == '\n') {
+                            t = i;
+                            isHead = true;
+                        }
+                    }
+                }
+                gos.write(buf, t + 1, len - t - 1);
+            }
+            gos.close();
+            gos = null;
+            
+            // åœ¨è¾“å…¥æµå¤–åŒ…è£…ä¸€å±‚BufferReaderï¼Œæé«˜è¯»å…¥æ•ˆç‡ getInputStreamè¿”å›çš„æ˜¯å­—èŠ‚æµï¼Œå°†å…¶è½¬æ¢æˆå­—ç¬¦æµ
+            //*
+            StringBuffer sb = new StringBuffer();
+            BufferedReader bufr = new BufferedReader(new InputStreamReader(
+                    conn.getInputStream()));
+            String inputString;
+            while ((inputString = bufr.readLine()) != null) {
+                sb.append(inputString);
+            }
+            bufr.close(); // æµå…³é—­ï¼Œä¼šé‡Šæ”¾è¿æ¥èµ„æº
+            bufr = null;
 
-			conn.disconnect();
+            conn.disconnect();
 
-			int length = conn.getContentLength();
-			if (conn.getResponseCode() == HttpURLConnection.HTTP_OK && length != 0) {
-				result = true;
-				locked.delete();
-				Log.d("NLOG", "post success!");
-				// ´¦Àí³É¹¦
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			conn.disconnect();
-			conn = null;
-		}
-		return result;
-	}
+            int length = conn.getContentLength();
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK && length != 0) {
+                result = true;
+                locked.delete();
+                Log.d("NLOG", "post success!");
+                // å¤„ç†æˆåŠŸ
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            conn.disconnect();
+            conn = null;
+        }
+        return result;
+    }
     /**
-     * ½«»º´æÏî±£´æÎªÎÄ¼ş£¬Èç¹ûÖ®Ç°´æÔÚÎÄ¼şÔò×·¼ÓĞ´Èë
+     * å°†ç¼“å­˜é¡¹ä¿å­˜ä¸ºæ–‡ä»¶ï¼Œå¦‚æœä¹‹å‰å­˜åœ¨æ–‡ä»¶åˆ™è¿½åŠ å†™å…¥
      * @param item
      * @return
      */
     public Boolean saveFile(CacheItem item) {
-    	if (item == null) {
-    		return false;
-    	}
-    	String filename = String.format(cacheFileFormat, fileVersion, item.name);
-		/* debug start */
+        if (item == null) {
+            return false;
+        }
+        String filename = String.format(cacheFileFormat, fileVersion, item.name);
+        /* debug start */
         System.out.println(String.format("%s.saveFile() filename : %s", this, filename));
-		/* debug end */
+        /* debug end */
         
         Boolean result = false;
         synchronized(item) {
-	    	try {
-	    		File file = new File(filename);
-	    		int offset = 0;
-	    		byte[] linesBuffer;
-	    		if (file.exists()) {
-	    			offset = (int)file.length();
-	    		}
-	    		if (offset >= sendMaxBytes) { // ÎÄ¼ş³¬¹ı·¶Î§£¬½¨Á¢ĞÂÎÄ¼ş
-	    			buildLocked(item.name); // ½«Ö®Ç°µÄÎÄ¼şËø¶¨
-	    			offset = 0;
-	    		}
-	    		if (offset <= 0) { // ÎÄ¼ş²»´æÔÚ // Í·±ØĞëĞ´
-	    			linesBuffer = (item.head + '\n' + item.sb.toString()).toString().getBytes();
-	    		} else {
-	    			linesBuffer = item.sb.toString().getBytes();
-	    		}
-	    		byte[] pass = item.pass;
-				if (pass != null && pass.length > 0) { // ĞèÒª¼ÓÃÜ
-					for (int i = 0, len = linesBuffer.length; i < len; i++) {
-						int t = (int) (i + offset);
-						linesBuffer[i] = (byte)(linesBuffer[i] ^ t % 256 ^ pass[t % pass.length]); 
-					}
-				}
-				@SuppressWarnings("resource")
-				FileOutputStream fos = new FileOutputStream(filename, true);
-				fos.write(linesBuffer);
-				fos.flush();
-				item.sb.delete(0, item.sb.length()); // Çå¿ÕÊı¾İ
-				result = true;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
+            try {
+                File file = new File(filename);
+                int offset = 0;
+                byte[] linesBuffer;
+                if (file.exists()) {
+                    offset = (int)file.length();
+                }
+                if (offset >= sendMaxBytes) { // æ–‡ä»¶è¶…è¿‡èŒƒå›´ï¼Œå»ºç«‹æ–°æ–‡ä»¶
+                    buildLocked(item.name); // å°†ä¹‹å‰çš„æ–‡ä»¶é”å®š
+                    offset = 0;
+                }
+                if (offset <= 0) { // æ–‡ä»¶ä¸å­˜åœ¨ // å¤´å¿…é¡»å†™
+                    linesBuffer = (item.head + '\n' + item.sb.toString()).toString().getBytes();
+                } else {
+                    linesBuffer = item.sb.toString().getBytes();
+                }
+                byte[] pass = item.pass;
+                if (pass != null && pass.length > 0) { // éœ€è¦åŠ å¯†
+                    for (int i = 0, len = linesBuffer.length; i < len; i++) {
+                        int t = (int) (i + offset);
+                        linesBuffer[i] = (byte)(linesBuffer[i] ^ t % 256 ^ pass[t % pass.length]); 
+                    }
+                }
+                @SuppressWarnings("resource")
+                FileOutputStream fos = new FileOutputStream(filename, true);
+                fos.write(linesBuffer);
+                fos.flush();
+                item.sb.delete(0, item.sb.length()); // æ¸…ç©ºæ•°æ®
+                result = true;
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } 
         }
         return result;
     }
         
     /**
-     * »ñÈ¡md5×Ö·û´®
-     * @param text ÎÄ±¾
-     * @return ·µ»ØĞ¡Ğ´md5ĞòÁĞºÅ
+     * è·å–md5å­—ç¬¦ä¸²
+     * @param text æ–‡æœ¬
+     * @return è¿”å›å°å†™md5åºåˆ—å·
      */
-	public static String getMD5(String text) {
-		String result = null;
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			md.update(text.getBytes());
-			StringBuffer sb = new StringBuffer();
-			for (byte b : md.digest()) {
-				sb.append(Integer.toHexString(((int)b & 0xff) + 0x100).substring(1));
-			}
-			result = sb.toString();
+    public static String getMD5(String text) {
+        String result = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(text.getBytes());
+            StringBuffer sb = new StringBuffer();
+            for (byte b : md.digest()) {
+                sb.append(Integer.toHexString(((int)b & 0xff) + 0x100).substring(1));
+            }
+            result = sb.toString();
 
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-	
-	/**
-	 * ÉÏÏÂÎÄ
-	 */
-	private Context context;
-	public Context getContext() {
-		return context;
-	}
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
+    /**
+     * ä¸Šä¸‹æ–‡
+     */
+    private Context context;
+    public Context getContext() {
+        return context;
+    }
 
-	/**
-	 * ´¦Àí´æ´¢µÄ¾ä±ú
-	 */
-	private StorageHandler storageHandler;
-	
-	/**
-	 * ³õÊ¼»¯Ä¿Â¼ÏûÏ¢
-	 */
-	private final byte MESSAGE_INIT = 1;
-	
-	/**
-	 * ±£´æÎªÎÄ¼şµÄÏûÏ¢
-	 * @param obj item
-	 */
-	private final byte MESSAGE_SAVEFILE = 2;
-	
-	/**
-	 * ÉÏ±¨ÎÄ¼ş
-	 * @param obj item
-	 */
-	private final byte MESSAGE_POSTFILE = 3;
-	
-	/**
-	 * ´¦Àí´æ´¢µÄ¾ä±ú
-	 */
+    /**
+     * å¤„ç†å­˜å‚¨çš„å¥æŸ„
+     */
+    private StorageHandler storageHandler;
+    
+    /**
+     * åˆå§‹åŒ–ç›®å½•æ¶ˆæ¯
+     */
+    private final byte MESSAGE_INIT = 1;
+    
+    /**
+     * ä¿å­˜ä¸ºæ–‡ä»¶çš„æ¶ˆæ¯
+     * @param obj item
+     */
+    private final byte MESSAGE_SAVEFILE = 2;
+    
+    /**
+     * ä¸ŠæŠ¥æ–‡ä»¶
+     * @param obj item
+     */
+    private final byte MESSAGE_POSTFILE = 3;
+    
+    /**
+     * å¤„ç†å­˜å‚¨çš„å¥æŸ„
+     */
     private class StorageHandler extends Handler {
-    	StorageHandler(Looper looper) {
+        StorageHandler(Looper looper) {
             super(looper);
         }
-    	
+        
         public void handleMessage(Message msg) {
             switch (msg.what) {
-            	case MESSAGE_INIT:
-            		/* debug start */
-            		Log.i("NLOG", String.format("case MESSAGE_INIT"));
-            		/* debug end */
-                	File file = new File(rootDir + File.separatorChar);
-            		if (!file.exists()) {
-            			file.mkdirs();
-            		}
-            		break;
+                case MESSAGE_INIT:
+                    /* debug start */
+                    Log.i("NLOG", String.format("case MESSAGE_INIT"));
+                    /* debug end */
+                    File file = new File(rootDir + File.separatorChar);
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+                    break;
                 case MESSAGE_SAVEFILE: {
-            		/* debug start */
+                    /* debug start */
                     Log.i("NLOG", String.format("case MESSAGE_SAVEFILE"));
-            		/* debug end */
+                    /* debug end */
                     
-                	if (msg.obj == null) {
-                		break;
-                	}
-                	
-    				CacheItem cacheItem = (CacheItem)msg.obj;
-        			synchronized(messages) { // Çå¿ÕÏûÏ¢
-        				String msgName = String.format("%s.%s", cacheItem.name, MESSAGE_SAVEFILE);
-    			        messages.put(msgName, null);
-        			}
-        			saveFile(cacheItem); // »áÇå¿Õ item.sbÄÚÈİ
-        			sendMessage_postFile(new PostItem(cacheItem.name, null));
+                    if (msg.obj == null) {
+                        break;
+                    }
+                    
+                    CacheItem cacheItem = (CacheItem)msg.obj;
+                    synchronized(messages) { // æ¸…ç©ºæ¶ˆæ¯
+                        String msgName = String.format("%s.%s", cacheItem.name, MESSAGE_SAVEFILE);
+                        messages.put(msgName, null);
+                    }
+                    saveFile(cacheItem); // ä¼šæ¸…ç©º item.sbå†…å®¹
+                    sendMessage_postFile(new PostItem(cacheItem.name, null));
                     break;
                 }
                 case MESSAGE_POSTFILE: {
-            		/* debug start */
-            		Log.i("NLOG", String.format("case MESSAGE_POSTFILE"));
-            		/* debug end */
+                    /* debug start */
+                    Log.i("NLOG", String.format("case MESSAGE_POSTFILE"));
+                    /* debug end */
                     
                     PostItem postItem = (PostItem)msg.obj;
-        			synchronized(messages) { // Çå¿ÕÏûÏ¢
-        				String msgName = String.format("%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
-    			        messages.put(msgName, null);
-        			}
-        			postFile(postItem);
-                	break;
+                    synchronized(messages) { // æ¸…ç©ºæ¶ˆæ¯
+                        String msgName = String.format("%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
+                        messages.put(msgName, null);
+                    }
+                    postFile(postItem);
+                    break;
                 }
             }
         }
 
     }
     /**
-     * ¶¨Ê±·¢ËÍÈÕÖ¾
+     * å®šæ—¶å‘é€æ—¥å¿—
      */
     private Timer sendTimer = null;
     private void updateTimer() {
         if (sendTimer != null) {
-        	sendTimer.cancel();
-        	sendTimer = null;
-    	}
+            sendTimer.cancel();
+            sendTimer = null;
+        }
         sendTimer = new Timer();
         sendTimer.schedule(new TimerTask() {
-        	/**
-        	 * µÈ´ı·¢ËÍµÄÎÄ¼ş
-        	 */
-        	private Pattern dataFilePattern = Pattern.compile("\\b_nlog(?:_(\\d+))?_(\\w+\\.[a-f0-9]{32})(?:\\.([a-z0-9]+))?\\.(locked|dat)$");
-        	// '_nlog_1_wenku.01234567890123456789012345678901.h0123456.locked'
-        	// '_nlog_1_wenku.01234567890123456789012345678901.dat'
-        	
-			@Override
-			public void run() {
-				if (onlywifi && !checkWifiConnected()) {
-					return;
-				}
-				File file = new File(rootDir + File.separatorChar);
-    			for (File subFile : file.listFiles()) {
-            		/* debug start */
-    				Log.i("NLOG", String.format("file : %s(%sbyte).", subFile.getName(), subFile.length()));
-            		/* debug end */
-    				
-    				Matcher matcher = dataFilePattern.matcher(subFile.getName());
-    				if (!matcher.find()) { // ²»·ûºÏnlogÎÄ¼şÃû
-    					continue;
-    				}
-    				
-    				// ³¬³öÉÏ±¨´¦Àí·¶Î§
-					if (System.currentTimeMillis() - subFile.lastModified() >= saveMaxDays * 24 * 60 * 60 * 1000) {
-	            		/* debug start */
-	    				Log.i("NLOG", String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
-	            		/* debug end */
-						subFile.delete();
-						continue;
-					}
-					
-					String version = matcher.group(1);
-    				String itemname = matcher.group(2); // ÏîÃû
-    				String extname = matcher.group(4); // À©Õ¹Ãû
-    				if (fileVersion.equals(version)) { // ²»¼æÈİµÄ°æ±¾
-    					subFile.delete();
-    					continue;
-    				}
-    				// ¿ªÊ¼·¢ËÍÎÄ¼ş
-    				if (sendMessage_postFile(new PostItem(itemname, "locked".equals(extname) ? subFile.getName() : null))) { // ·¢ËÍ³É¹¦
-    					return;
-    				}
-    			}
-			}
+            /**
+             * ç­‰å¾…å‘é€çš„æ–‡ä»¶
+             */
+            private Pattern dataFilePattern = Pattern.compile("\\b_nlog(?:_(\\d+))?_(\\w+\\.[a-f0-9]{32})(?:\\.([a-z0-9]+))?\\.(locked|dat)$");
+            // '_nlog_1_wenku.01234567890123456789012345678901.h0123456.locked'
+            // '_nlog_1_wenku.01234567890123456789012345678901.dat'
+            
+            @Override
+            public void run() {
+                if (onlywifi && !checkWifiConnected()) {
+                    return;
+                }
+                File file = new File(rootDir + File.separatorChar);
+                for (File subFile : file.listFiles()) {
+                    /* debug start */
+                    Log.i("NLOG", String.format("file : %s(%sbyte).", subFile.getName(), subFile.length()));
+                    /* debug end */
+                    
+                    Matcher matcher = dataFilePattern.matcher(subFile.getName());
+                    if (!matcher.find()) { // ä¸ç¬¦åˆnlogæ–‡ä»¶å
+                        continue;
+                    }
+                    
+                    // è¶…å‡ºä¸ŠæŠ¥å¤„ç†èŒƒå›´
+                    if (System.currentTimeMillis() - subFile.lastModified() >= saveMaxDays * 24 * 60 * 60 * 1000) {
+                        /* debug start */
+                        Log.i("NLOG", String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
+                        /* debug end */
+                        subFile.delete();
+                        continue;
+                    }
+                    
+                    String version = matcher.group(1);
+                    String itemname = matcher.group(2); // é¡¹å
+                    String extname = matcher.group(4); // æ‰©å±•å
+                    if (fileVersion.equals(version)) { // ä¸å…¼å®¹çš„ç‰ˆæœ¬
+                        subFile.delete();
+                        continue;
+                    }
+                    // å¼€å§‹å‘é€æ–‡ä»¶
+                    if (sendMessage_postFile(new PostItem(itemname, "locked".equals(extname) ? subFile.getName() : null))) { // å‘é€æˆåŠŸ
+                        return;
+                    }
+                }
+            }
         }, 100, sendInterval * 1000);
     }
     
     /**
-     * ·¢ËÍÌá½»ÎÄ¼şµÄÏûÏ¢
-     * @param item Ìá½»Ïî£¬item{ name, locked }
-     * @return ·µ»ØÊÇ·ñ·¢ËÍÏûÏ¢
+     * å‘é€æäº¤æ–‡ä»¶çš„æ¶ˆæ¯
+     * @param item æäº¤é¡¹ï¼Œitem{ name, locked }
+     * @return è¿”å›æ˜¯å¦å‘é€æ¶ˆæ¯
      */
     private Boolean sendMessage_postFile(PostItem item) {
-    	Boolean result = false;
-		synchronized(messages) { // ÏûÏ¢ÕıÔÚ·¢ËÍµÄÍ¾ÖĞ
-			String msgName = String.format("%s.%s.%s", item.name, MESSAGE_POSTFILE, item.locked != null);
-			Message m = messages.get(msgName);
-			if (m == null) { // ÊÇ·ñÓĞÏàÍ¬µÄÏûÏ¢ÔÚ´¦Àí
-				m = storageHandler.obtainMessage(MESSAGE_POSTFILE, 0, 0, item);
-		        storageHandler.sendMessageDelayed(m, 5000);
-		        messages.put(msgName, m);
-		        result = true;
-		        Log.i("NLOG", String.format("MESSAGE_POSTFILE '%s' message send", msgName));
-			} else {
-				Log.i("NLOG", String.format("MESSAGE_POSTFILE message sending..."));
-			}
-		}
-		return result;
+        Boolean result = false;
+        synchronized(messages) { // æ¶ˆæ¯æ­£åœ¨å‘é€çš„é€”ä¸­
+            String msgName = String.format("%s.%s.%s", item.name, MESSAGE_POSTFILE, item.locked != null);
+            Message m = messages.get(msgName);
+            if (m == null) { // æ˜¯å¦æœ‰ç›¸åŒçš„æ¶ˆæ¯åœ¨å¤„ç†
+                m = storageHandler.obtainMessage(MESSAGE_POSTFILE, 0, 0, item);
+                storageHandler.sendMessageDelayed(m, 5000);
+                messages.put(msgName, m);
+                result = true;
+                Log.i("NLOG", String.format("MESSAGE_POSTFILE '%s' message send", msgName));
+            } else {
+                Log.i("NLOG", String.format("MESSAGE_POSTFILE message sending..."));
+            }
+        }
+        return result;
     }
     
     /**
-     * ·¢ËÍ±£´æÎÄ¼şµÄÏûÏ¢
-     * @param item Ìá½»Ïî£¬item{ name }
-     * @return ·µ»ØÊÇ·ñ·¢ËÍÏûÏ¢
+     * å‘é€ä¿å­˜æ–‡ä»¶çš„æ¶ˆæ¯
+     * @param item æäº¤é¡¹ï¼Œitem{ name }
+     * @return è¿”å›æ˜¯å¦å‘é€æ¶ˆæ¯
      */
     private Boolean sendMessage_saveFile(CacheItem item) {
-    	Boolean result = false;
-		synchronized(messages) { // ÏûÏ¢ÕıÔÚ·¢ËÍµÄÍ¾ÖĞ
-			String msgName = String.format("%s.%s", item.name, MESSAGE_SAVEFILE);
-			Message m = messages.get(msgName);
-			if (m == null) { // ÊÇ·ñÓĞÏàÍ¬µÄÏûÏ¢ÔÚ´¦Àí
-				m = storageHandler.obtainMessage(MESSAGE_SAVEFILE, 0, 0, item);
-		        storageHandler.sendMessageDelayed(m, 1000);
-		        messages.put(msgName, m);
-		        result = true;
-		        Log.i("NLOG", String.format("MESSAGE_SAVEFILE '%s' message send", msgName));
-			} else {
-				Log.i("NLOG", String.format("MESSAGE_SAVEFILE message sending..."));
-			}
-		}
-		return result;
+        Boolean result = false;
+        synchronized(messages) { // æ¶ˆæ¯æ­£åœ¨å‘é€çš„é€”ä¸­
+            String msgName = String.format("%s.%s", item.name, MESSAGE_SAVEFILE);
+            Message m = messages.get(msgName);
+            if (m == null) { // æ˜¯å¦æœ‰ç›¸åŒçš„æ¶ˆæ¯åœ¨å¤„ç†
+                m = storageHandler.obtainMessage(MESSAGE_SAVEFILE, 0, 0, item);
+                storageHandler.sendMessageDelayed(m, 1000);
+                messages.put(msgName, m);
+                result = true;
+                Log.i("NLOG", String.format("MESSAGE_SAVEFILE '%s' message send", msgName));
+            } else {
+                Log.i("NLOG", String.format("MESSAGE_SAVEFILE message sending..."));
+            }
+        }
+        return result;
     }
 
     /**
-     * ¹¹Ôìº¯Êı
-     * @param context ÉÏÏÂÎÄ
-	 * @throws  
+     * æ„é€ å‡½æ•°
+     * @param context ä¸Šä¸‹æ–‡
+     * @throws  
      */
     public NStorage(Context context) {
-    	this.context = context;
+        this.context = context;
         TelephonyManager tm = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
         deviceId = tm.getDeviceId();
         
         HandlerThread handlerThread = new HandlerThread("NSTORAGE_HANDLER",
-        		Process.THREAD_PRIORITY_BACKGROUND);
+                Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
-    	storageHandler = new StorageHandler(handlerThread.getLooper());	
+        storageHandler = new StorageHandler(handlerThread.getLooper());    
         Message msg = storageHandler.obtainMessage(MESSAGE_INIT);
         storageHandler.sendMessageDelayed(msg, 100);
         updateTimer();

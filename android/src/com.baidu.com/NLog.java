@@ -9,170 +9,170 @@ import android.content.Context;
 public final class NLog {
     /**
      * nlog
-     * @description NativeÍ³¼Æ¿ò¼Ü
-     * @author Íõ¼¯ğÀ(WangJihu,http://weibo.com/zswang),ÅíÕıÉ½(PengZhengshan)
+     * @description Nativeç»Ÿè®¡æ¡†æ¶
+     * @author ç‹é›†é¹„(WangJihu,http://weibo.com/zswang),å½­æ­£å±±(PengZhengshan)
      * @version 1.0
      * @copyright www.baidu.com
      */
-	
-	/**
-	 * Éè±¸ÉÏÏÂÎÄ
-	 */
-	private Context context;
-	/**
-	 * »ñÈ¡Éè±¸ÉÏÏÂÎÄ
-	 */
-	public Context getContext() {
-		return context;
-	}
-	
-	/**
-	 * ²É¼¯Ä£¿éÆô¶¯µÄÊ±¼ä
-	 */
-	private Long startTime = System.currentTimeMillis();
-	public Long getStartTime() {
-		return startTime;
-	}
-	
-	/**
-	 * »ñÈ¡Ê±¼ä´Á 
-	 * @param now µ±Ç°Ê±¼ä
-	 * @return ·µ»Ø²îÖµ
-	 */
-	public Long timestamp(Long now) {
-		return System.currentTimeMillis() - now;
-	}
-	
-	/**
-	 * session³¬Ê±Ê±¼ä£¬µ¥Î»£ºÃë
-	 */
-	private Integer sessionTimeout = 30;
-	
-	/**
-	 * »ñÈ¡session³¬Ê±Ê±¼ä
-	 * @param context ÉÏÏÂÎÄ
-	 * @return ·µ»Øsession³¬Ê±Ê±¼ä
-	 */
-	public static Integer getSessionTimeout(Context context) {
-		NLog instance = getInstance(context);
-		return instance.sessionTimeout;
-	}
-	/**
-	 * »ñÈ¡session³¬Ê±Ê±¼ä
-	 * @return ·µ»Øsession³¬Ê±Ê±¼ä£¬µ¥Î»£ºÃë
-	 */
-	public Integer getSessionTimeout() {
-		return sessionTimeout;
-	}
-
-	/**
-	 * ÉèÖÃsession³¬Ê±Ê±¼ä
-	 * @param context ÉÏÏÂÎÄ
-	 * @param value ³¬Ê±Ê±¼ä£¬µ¥Î»£ºÃë£¬Ä¬ÈÏ30
-	 */
-	public static void setSessionTimeout(Context context, Integer value) {
-		NLog instance = getInstance(context);
-		instance.setSessionTimeout(value);
-	}
-	/**
-	 * ÉèÖÃsession³¬Ê±Ê±¼ä
-	 */
-	public void setSessionTimeout(Integer value) {
-		if (sessionTimeout == value) {
-			return;
-		}
-		sessionTimeout = value;
-		fire("sessionTimeoutChange", "value=", value);
-	}
-	
-	/**
-	 * Æô¶¯ĞÂ»á»°
-	 */
-	private void createSession() {
-		buildSessionId();
-		startTime = System.currentTimeMillis();
-		fire("createSession", "sessionId=", sessionId);
-	}
-	
-	/**
-	 * »ñÈ¡Ê±¼ä´Á 
-	 * @return ·µ»Ø²îÖµ
-	 */
-	public Long timestamp() {
-		return System.currentTimeMillis() - startTime;
-	}
-	
-	/**
-	 * »ñÈ¡Ê±¼ä´Á 
-	 * @param context ÉÏÏÂÎÄ
-	 * @param now µ±Ç°Ê±¼ä
-	 * @return ·µ»Ø²îÖµ
-	 */
-	public static Long timestamp(Context context, Long now) {
-		NLog instance = getInstance(context);
-		return instance.timestamp(now);
-	}
-	
-	/**
-	 * »á»°id, µ±Ç°Ê±¼äºÁÃë36½øÖÆ+Ëæ»úÊı
-	 */
-	private String sessionId;
-	public String getSessionId() {
-		return sessionId;
-	}
-	
-	/**
-	 * »ñÈ¡Ê±¼ä´Á
-	 * @param context ÉÏÏÂÎÄ 
-	 * @return ·µ»Ø²îÖµ
-	 */
-	public static Long timestamp(Context context) {
-		NLog instance = getInstance(context);
-		return instance.timestamp();
-	}
-
-	/**
-	 * ÊÇ·ñ´¦ÓÚdebug×´Ì¬
-	 */
-	private Boolean debug = false;
-	public void setDebug(Boolean debug) {
-		this.debug = debug;
-	}
-	public static void setDebug(Context context, Boolean debug) {
-		NLog instance = getInstance(context);
-		instance.setDebug(debug);
-	}
-	public Boolean getDebug() {
-		return debug;
-	}
-	public static Boolean getDebug(Context context) {
-		NLog instance = getInstance(context);
-		return instance.getDebug();
-	}
-	
-	/**
-	 * ¹Ì¶¨Ëæ»úÊı£¬ÓÃÓÚ¼ÆËã²ÉÑùÂÊ
-	 */
-	private static Double randomSeed = Math.random();
-	public static Double getRandomSeed() {
-		return randomSeed;
-	}
-
-	/**
-	 * ÃüÁî×Ö·û´®½âÎö£¬Èç£º"wenku.set" -> ["wenku", "set"] "set" -> [null, "set"]
-	 */
-	private static Pattern cmdPattern = Pattern.compile("^(?:([\\w$_]+)\\.)?(\\w+)$");
-
-	/**
-	 * ÊµÀı¼¯ºÏ£¬ÒÔcontextÎªÏÂ±ê
-	 */
-	private static Map<Context, NLog> instances = new HashMap<Context, NLog>();
+    
+    /**
+     * è®¾å¤‡ä¸Šä¸‹æ–‡
+     */
+    private Context context;
+    /**
+     * è·å–è®¾å¤‡ä¸Šä¸‹æ–‡
+     */
+    public Context getContext() {
+        return context;
+    }
+    
+    /**
+     * é‡‡é›†æ¨¡å—å¯åŠ¨çš„æ—¶é—´
+     */
+    private Long startTime = System.currentTimeMillis();
+    public Long getStartTime() {
+        return startTime;
+    }
+    
+    /**
+     * è·å–æ—¶é—´æˆ³ 
+     * @param now å½“å‰æ—¶é—´
+     * @return è¿”å›å·®å€¼
+     */
+    public Long timestamp(Long now) {
+        return System.currentTimeMillis() - now;
+    }
+    
+    /**
+     * sessionè¶…æ—¶æ—¶é—´ï¼Œå•ä½ï¼šç§’
+     */
+    private Integer sessionTimeout = 30;
+    
+    /**
+     * è·å–sessionè¶…æ—¶æ—¶é—´
+     * @param context ä¸Šä¸‹æ–‡
+     * @return è¿”å›sessionè¶…æ—¶æ—¶é—´
+     */
+    public static Integer getSessionTimeout(Context context) {
+        NLog instance = getInstance(context);
+        return instance.sessionTimeout;
+    }
+    /**
+     * è·å–sessionè¶…æ—¶æ—¶é—´
+     * @return è¿”å›sessionè¶…æ—¶æ—¶é—´ï¼Œå•ä½ï¼šç§’
+     */
+    public Integer getSessionTimeout() {
+        return sessionTimeout;
+    }
 
     /**
-     * ½«²ÎÊıÊı×é×ª»»³É×Öµä£¬ÎªÁË¼ò»¯µ÷ÓÃ·½Ê½
-     * @param params ²ÎÊıÁĞ±í
-     * @param offset ÆğÊ¼Î»ÖÃ
-     * @return ·µ»Økey-value¼¯ºÏ
+     * è®¾ç½®sessionè¶…æ—¶æ—¶é—´
+     * @param context ä¸Šä¸‹æ–‡
+     * @param value è¶…æ—¶æ—¶é—´ï¼Œå•ä½ï¼šç§’ï¼Œé»˜è®¤30
+     */
+    public static void setSessionTimeout(Context context, Integer value) {
+        NLog instance = getInstance(context);
+        instance.setSessionTimeout(value);
+    }
+    /**
+     * è®¾ç½®sessionè¶…æ—¶æ—¶é—´
+     */
+    public void setSessionTimeout(Integer value) {
+        if (sessionTimeout == value) {
+            return;
+        }
+        sessionTimeout = value;
+        fire("sessionTimeoutChange", "value=", value);
+    }
+    
+    /**
+     * å¯åŠ¨æ–°ä¼šè¯
+     */
+    private void createSession() {
+        buildSessionId();
+        startTime = System.currentTimeMillis();
+        fire("createSession", "sessionId=", sessionId);
+    }
+    
+    /**
+     * è·å–æ—¶é—´æˆ³ 
+     * @return è¿”å›å·®å€¼
+     */
+    public Long timestamp() {
+        return System.currentTimeMillis() - startTime;
+    }
+    
+    /**
+     * è·å–æ—¶é—´æˆ³ 
+     * @param context ä¸Šä¸‹æ–‡
+     * @param now å½“å‰æ—¶é—´
+     * @return è¿”å›å·®å€¼
+     */
+    public static Long timestamp(Context context, Long now) {
+        NLog instance = getInstance(context);
+        return instance.timestamp(now);
+    }
+    
+    /**
+     * ä¼šè¯id, å½“å‰æ—¶é—´æ¯«ç§’36è¿›åˆ¶+éšæœºæ•°
+     */
+    private String sessionId;
+    public String getSessionId() {
+        return sessionId;
+    }
+    
+    /**
+     * è·å–æ—¶é—´æˆ³
+     * @param context ä¸Šä¸‹æ–‡ 
+     * @return è¿”å›å·®å€¼
+     */
+    public static Long timestamp(Context context) {
+        NLog instance = getInstance(context);
+        return instance.timestamp();
+    }
+
+    /**
+     * æ˜¯å¦å¤„äºdebugçŠ¶æ€
+     */
+    private Boolean debug = false;
+    public void setDebug(Boolean debug) {
+        this.debug = debug;
+    }
+    public static void setDebug(Context context, Boolean debug) {
+        NLog instance = getInstance(context);
+        instance.setDebug(debug);
+    }
+    public Boolean getDebug() {
+        return debug;
+    }
+    public static Boolean getDebug(Context context) {
+        NLog instance = getInstance(context);
+        return instance.getDebug();
+    }
+    
+    /**
+     * å›ºå®šéšæœºæ•°ï¼Œç”¨äºè®¡ç®—é‡‡æ ·ç‡
+     */
+    private static Double randomSeed = Math.random();
+    public static Double getRandomSeed() {
+        return randomSeed;
+    }
+
+    /**
+     * å‘½ä»¤å­—ç¬¦ä¸²è§£æï¼Œå¦‚ï¼š"wenku.set" -> ["wenku", "set"] "set" -> [null, "set"]
+     */
+    private static Pattern cmdPattern = Pattern.compile("^(?:([\\w$_]+)\\.)?(\\w+)$");
+
+    /**
+     * å®ä¾‹é›†åˆï¼Œä»¥contextä¸ºä¸‹æ ‡
+     */
+    private static Map<Context, NLog> instances = new HashMap<Context, NLog>();
+
+    /**
+     * å°†å‚æ•°æ•°ç»„è½¬æ¢æˆå­—å…¸ï¼Œä¸ºäº†ç®€åŒ–è°ƒç”¨æ–¹å¼
+     * @param params å‚æ•°åˆ—è¡¨
+     * @param offset èµ·å§‹ä½ç½®
+     * @return è¿”å›key-valueé›†åˆ
      */
     public static Map<String, Object> buildMap(Object[] params, Integer offset) {
         Map<String, Object> result = new HashMap<String, Object>();
@@ -186,366 +186,366 @@ public final class NLog {
     }
     
     /**
-     * ºÏ²¢Á½¸ömap
+     * åˆå¹¶ä¸¤ä¸ªmap
      * @param a map1
      * @param b map2
-     * @return ·µ»ØºÏ²¢ºóµÄmap
+     * @return è¿”å›åˆå¹¶åçš„map
      */
     public static Map<String, Object> merge(Map<String, Object> a, Map<String, Object> b) {
-    	Map<String, Object> result = new HashMap<String, Object>();
-    	result.putAll(a);
-    	result.putAll(b);
-    	return result;
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.putAll(a);
+        result.putAll(b);
+        return result;
     }
 
-	/**
-	 * ½«²ÎÊıÊı×é×ª»»³É×Öµä
-	 * @param params ²ÎÊıÁĞ±í
-	 * @return ·µ»Økey-value¼¯ºÏ
-	 */
+    /**
+     * å°†å‚æ•°æ•°ç»„è½¬æ¢æˆå­—å…¸
+     * @param params å‚æ•°åˆ—è¡¨
+     * @return è¿”å›key-valueé›†åˆ
+     */
     public static Map<String, Object> buildMap(Object... params) {
-	    return buildMap(params, 0);
-	}
+        return buildMap(params, 0);
+    }
 
     /**
-	 * »ñÈ¡NLogÊµÀı
-	 * @param context Éè±¸ÉÏÏÂÎÄ
-	 */
-	public static NLog getInstance(Context context) {
-		// Ö»ÄÜ´«µİApplication£¬¶ÔÓÚandroid³ÌĞòÖ»»áÓĞÒ»¸öapplicationÊµÀı
-		Context app = context.getApplicationContext();
-		NLog result = instances.get(app);
-		if (result == null) {
-			result = new NLog(app);
-			instances.put(app, result);
-		}
-		
-		/**
-		NLog result = instances.get(null);
-		if (result == null) {
-			result = new NLog(context);
-			instances.put(null, result);
-		} else {
-			result.context = context;
-		}
-		*/
-		
-		/* debug start */
+     * è·å–NLogå®ä¾‹
+     * @param context è®¾å¤‡ä¸Šä¸‹æ–‡
+     */
+    public static NLog getInstance(Context context) {
+        // åªèƒ½ä¼ é€’Applicationï¼Œå¯¹äºandroidç¨‹åºåªä¼šæœ‰ä¸€ä¸ªapplicationå®ä¾‹
+        Context app = context.getApplicationContext();
+        NLog result = instances.get(app);
+        if (result == null) {
+            result = new NLog(app);
+            instances.put(app, result);
+        }
+        
+        /**
+        NLog result = instances.get(null);
+        if (result == null) {
+            result = new NLog(context);
+            instances.put(null, result);
+        } else {
+            result.context = context;
+        }
+        */
+        
+        /* debug start */
         System.out.println(String.format("NLog.getInstance(%s) => %s", context, result));
-		/* debug end */
-		return result;
-	}
-	
-	/**
-	 * ×·×ÙÆ÷¼¯ºÏ£¬ÒÔnameÎªÏÂ±ê
-	 */
-	private Map<String, NTracker> trackers = new HashMap<String, NTracker>();
-	
-	/**
-	 * »ñÈ¡×·×ÙÆ÷
-	 * @param name ×·×ÙÆ÷Ãû³Æ
-	 */
-	public NTracker getTracker(String name) {
-		if (name == null) {
-			name = "default";
-		}
-		NTracker result = trackers.get(name);
-		if (result == null) {
-			result = new NTracker(name, this);
-			trackers.put(name, result);
-		}
-		return result;
-	}
-	
-	/**
-	 * »ñÈ¡×·×ÙÆ÷
-	 * @param context ÉÏÏÂÎÄ
-	 * @param name ×·×ÙÆ÷Ãû³Æ
-	 */
-	public static NTracker getTracker(Context context, String name) {
-		NLog instance = getInstance(context);
-		return instance.getTracker(name);
-	}
-	
-	/**
-	 * Éú³ÉĞÂµÄsessionId
-	 */
-	private void buildSessionId() {
-		sessionId = Long.toString(System.currentTimeMillis(), 36) + 
-				Long.toString((long)(36 * 36 * 36 * 36 * Math.random()), 36);
-	}
-	
+        /* debug end */
+        return result;
+    }
+    
     /**
-	 * ¹¹Ôìº¯Êı
-	 * @param context ×·×ÙÆ÷Ãû³Æ
-	 */
-	private NLog(Context context) {
-		this.context = context;
-		this.nstorage = new NStorage(context);
-		buildSessionId();
-	}
-	
-	/**
-	 * ÊÇ·ñÖ»ÔÚwifiÍøÂçÇé¿öÏÂÉÏ±¨Êı¾İ
-	 */
-	public void setOnlywifi(Boolean value) {
-		nstorage.setOnlywifi(value);
-	}
-	public static void setOnlywifi(Context context, Boolean value) {
-		NLog instance = getInstance(context);
-		instance.setOnlywifi(value);
-	}
-	
-	/**
-	 * ÖØ·¢Êı¾İµÄÊ±¼ä¼ä¸ô
-	 */
-	public void setSendInterval(Integer value) {
-		nstorage.setSendInterval(value);
-		fire("sendInterval", value);
-	}
-	public static void setSendInterval(Context context, Integer value) {
-		NLog instance = getInstance(context);
-		instance.setSendInterval(value);
-	}
-	
-	
-	/**
-	 * Ö´ĞĞÃüÁî
-	 * @param cmd ÃüÁî£¬"<×·×ÙÆ÷Ãû>.<·½·¨Ãû>"
-	 * @param params ²ÎÊıÁĞ±í
-	 * @return ·µ»ØgetÃüÁî½á¹û
-	 */
-	public Object cmd(String cmd, Object... params) {
-		/* debug start */
+     * è¿½è¸ªå™¨é›†åˆï¼Œä»¥nameä¸ºä¸‹æ ‡
+     */
+    private Map<String, NTracker> trackers = new HashMap<String, NTracker>();
+    
+    /**
+     * è·å–è¿½è¸ªå™¨
+     * @param name è¿½è¸ªå™¨åç§°
+     */
+    public NTracker getTracker(String name) {
+        if (name == null) {
+            name = "default";
+        }
+        NTracker result = trackers.get(name);
+        if (result == null) {
+            result = new NTracker(name, this);
+            trackers.put(name, result);
+        }
+        return result;
+    }
+    
+    /**
+     * è·å–è¿½è¸ªå™¨
+     * @param context ä¸Šä¸‹æ–‡
+     * @param name è¿½è¸ªå™¨åç§°
+     */
+    public static NTracker getTracker(Context context, String name) {
+        NLog instance = getInstance(context);
+        return instance.getTracker(name);
+    }
+    
+    /**
+     * ç”Ÿæˆæ–°çš„sessionId
+     */
+    private void buildSessionId() {
+        sessionId = Long.toString(System.currentTimeMillis(), 36) + 
+                Long.toString((long)(36 * 36 * 36 * 36 * Math.random()), 36);
+    }
+    
+    /**
+     * æ„é€ å‡½æ•°
+     * @param context è¿½è¸ªå™¨åç§°
+     */
+    private NLog(Context context) {
+        this.context = context;
+        this.nstorage = new NStorage(context);
+        buildSessionId();
+    }
+    
+    /**
+     * æ˜¯å¦åªåœ¨wifiç½‘ç»œæƒ…å†µä¸‹ä¸ŠæŠ¥æ•°æ®
+     */
+    public void setOnlywifi(Boolean value) {
+        nstorage.setOnlywifi(value);
+    }
+    public static void setOnlywifi(Context context, Boolean value) {
+        NLog instance = getInstance(context);
+        instance.setOnlywifi(value);
+    }
+    
+    /**
+     * é‡å‘æ•°æ®çš„æ—¶é—´é—´éš”
+     */
+    public void setSendInterval(Integer value) {
+        nstorage.setSendInterval(value);
+        fire("sendInterval", value);
+    }
+    public static void setSendInterval(Context context, Integer value) {
+        NLog instance = getInstance(context);
+        instance.setSendInterval(value);
+    }
+    
+    
+    /**
+     * æ‰§è¡Œå‘½ä»¤
+     * @param cmd å‘½ä»¤ï¼Œ"<è¿½è¸ªå™¨å>.<æ–¹æ³•å>"
+     * @param params å‚æ•°åˆ—è¡¨
+     * @return è¿”å›getå‘½ä»¤ç»“æœ
+     */
+    public Object cmd(String cmd, Object... params) {
+        /* debug start */
         System.out.println(String.format("%s.command('%s', [length:%s])", this, cmd, params.length));
-		/* debug end */
+        /* debug end */
 
-        // ·Ö½â "name.method" Îª ["name", "method"]
-		Matcher matcher = cmdPattern.matcher(cmd);
+        // åˆ†è§£ "name.method" ä¸º ["name", "method"]
+        Matcher matcher = cmdPattern.matcher(cmd);
 
-		if (!matcher.find()) {
-			/* TODO : ¼ÇÂ¼Òì³£ */
-			return null;
-		}
+        if (!matcher.find()) {
+            /* TODO : è®°å½•å¼‚å¸¸ */
+            return null;
+        }
 
-		String trackerName = matcher.group(1);
-		String method = matcher.group(2);
-		NTracker tracker = getTracker(trackerName);
-		return tracker.command(method, params);
-	}
-	
-	/**
-	 * Ö´ĞĞÃüÁî
-	 * @param context Éè±¸ÉÏÏÂÎÄ
-	 * @param cmd ÃüÁî£¬"<×·×ÙÆ÷Ãû>.<·½·¨Ãû>"
-	 * @param params ²ÎÊıÁĞ±í
-	 * @return ·µ»ØgetÃüÁî½á¹û
-	 */
-	public static Object cmd(Context context, String cmd, Object... params) {
-		NLog instance = getInstance(context);
-		return instance.cmd(cmd, params);
-	}
-	
-	/**
-	 * ¼àÌıÆ÷¼¯ºÏ
-	 */
-	private Map<String, ArrayList<EventListener>> listeners = new HashMap<String, ArrayList<EventListener>>();
-	
-	/**
-	 * °ó¶¨ÊÂ¼ş
-	 * @param eventName ÊÂ¼şÃû
-	 * @param callback »Øµ÷º¯ÊıÀà
-	 */
-	public void on(String eventName, EventListener callback) {
-		/* debug start */
+        String trackerName = matcher.group(1);
+        String method = matcher.group(2);
+        NTracker tracker = getTracker(trackerName);
+        return tracker.command(method, params);
+    }
+    
+    /**
+     * æ‰§è¡Œå‘½ä»¤
+     * @param context è®¾å¤‡ä¸Šä¸‹æ–‡
+     * @param cmd å‘½ä»¤ï¼Œ"<è¿½è¸ªå™¨å>.<æ–¹æ³•å>"
+     * @param params å‚æ•°åˆ—è¡¨
+     * @return è¿”å›getå‘½ä»¤ç»“æœ
+     */
+    public static Object cmd(Context context, String cmd, Object... params) {
+        NLog instance = getInstance(context);
+        return instance.cmd(cmd, params);
+    }
+    
+    /**
+     * ç›‘å¬å™¨é›†åˆ
+     */
+    private Map<String, ArrayList<EventListener>> listeners = new HashMap<String, ArrayList<EventListener>>();
+    
+    /**
+     * ç»‘å®šäº‹ä»¶
+     * @param eventName äº‹ä»¶å
+     * @param callback å›è°ƒå‡½æ•°ç±»
+     */
+    public void on(String eventName, EventListener callback) {
+        /* debug start */
         System.out.println(String.format("%s.on('%s', %s)", this, eventName, callback));
-		/* debug end */
+        /* debug end */
 
         ArrayList<EventListener> list = listeners.get(eventName);
-		if (list == null) {
-			list = new ArrayList<EventListener>();
-			listeners.put(eventName, list);
-		}
-		list.add(list.size(), callback); // ÏòºóÌí¼Ó
-	}
-	
-	/**
-	 * °ó¶¨ÊÂ¼ş
-	 * @param context ÉÏÏÂÎÄ
-	 * @param eventName ÊÂ¼şÃû
-	 * @param callback »Øµ÷º¯ÊıÀà
-	 */
-	public static void on(Context context, String eventName, EventListener callback) {
-		NLog instance = getInstance(context);
-		instance.on(eventName, callback);
-	} 
-	
-	/**
-	 * ×¢ÏúÊÂ¼ş°ó¶¨
-	 * @param eventName ÊÂ¼şÃû
-	 * @param callback »Øµ÷º¯ÊıÀà
-	 */
-	public void un(String eventName, EventListener callback) {
-		/* debug start */
+        if (list == null) {
+            list = new ArrayList<EventListener>();
+            listeners.put(eventName, list);
+        }
+        list.add(list.size(), callback); // å‘åæ·»åŠ 
+    }
+    
+    /**
+     * ç»‘å®šäº‹ä»¶
+     * @param context ä¸Šä¸‹æ–‡
+     * @param eventName äº‹ä»¶å
+     * @param callback å›è°ƒå‡½æ•°ç±»
+     */
+    public static void on(Context context, String eventName, EventListener callback) {
+        NLog instance = getInstance(context);
+        instance.on(eventName, callback);
+    } 
+    
+    /**
+     * æ³¨é”€äº‹ä»¶ç»‘å®š
+     * @param eventName äº‹ä»¶å
+     * @param callback å›è°ƒå‡½æ•°ç±»
+     */
+    public void un(String eventName, EventListener callback) {
+        /* debug start */
         System.out.println(String.format("%s.un('%s', %s)", this, eventName, callback));
-		/* debug end */
+        /* debug end */
 
         ArrayList<EventListener> list = listeners.get(eventName);
-		if (list != null) {
-			list.remove(callback);
-		}
-	}
+        if (list != null) {
+            list.remove(callback);
+        }
+    }
 
-	/**
-	 * ×¢ÏúÊÂ¼ş°ó¶¨
-	 * @param context ÉÏÏÂÎÄ
-	 * @param eventName ÊÂ¼şÃû
-	 * @param callback »Øµ÷º¯ÊıÀà
-	 */
-	public static void un(Context context, String eventName, EventListener callback) {
-		NLog instance = getInstance(context);
-		instance.un(eventName, callback);
-	} 
+    /**
+     * æ³¨é”€äº‹ä»¶ç»‘å®š
+     * @param context ä¸Šä¸‹æ–‡
+     * @param eventName äº‹ä»¶å
+     * @param callback å›è°ƒå‡½æ•°ç±»
+     */
+    public static void un(Context context, String eventName, EventListener callback) {
+        NLog instance = getInstance(context);
+        instance.un(eventName, callback);
+    } 
 
-	/**
-	 * ÅÉ·¢ÊÂ¼ş
-	 * @param eventName ÊÂ¼şÃû
-	 * @param params ²ÎÊıÁĞ±í
-	 */
-	public void fire(String eventName, Object... params) {
-		/* debug start */
+    /**
+     * æ´¾å‘äº‹ä»¶
+     * @param eventName äº‹ä»¶å
+     * @param params å‚æ•°åˆ—è¡¨
+     */
+    public void fire(String eventName, Object... params) {
+        /* debug start */
         System.out.println(String.format("%s.fire('%s', [length:%s])", this, eventName, params.length));
-		/* debug end */
+        /* debug end */
         fire(eventName, buildMap(params));
-	}
-	
-	/**
-	 * ÅÉ·¢ÊÂ¼ş
-	 * @param context ÉÏÏÂÎÄ
-	 * @param eventName ÊÂ¼şÃû
-	 * @param params ²ÎÊıÁĞ±í
-	 */
-	public static void fire(Context context, String eventName, Object... params) {
-		NLog instance = getInstance(context);
-		instance.fire(eventName, params);
-	}
+    }
+    
+    /**
+     * æ´¾å‘äº‹ä»¶
+     * @param context ä¸Šä¸‹æ–‡
+     * @param eventName äº‹ä»¶å
+     * @param params å‚æ•°åˆ—è¡¨
+     */
+    public static void fire(Context context, String eventName, Object... params) {
+        NLog instance = getInstance(context);
+        instance.fire(eventName, params);
+    }
 
-	/**
-	 * ÅÉ·¢ÊÂ¼ş
-	 * @param eventName ÊÂ¼şÃû
-	 * @param map ²ÎÊıÁĞ±í
-	 */
-	public void fire(String eventName, Map<String, Object> map) {
-		/* debug start */
+    /**
+     * æ´¾å‘äº‹ä»¶
+     * @param eventName äº‹ä»¶å
+     * @param map å‚æ•°åˆ—è¡¨
+     */
+    public void fire(String eventName, Map<String, Object> map) {
+        /* debug start */
         System.out.println(String.format("%s.fire('%s', %s)", this, eventName, map));
-		/* debug end */
+        /* debug end */
 
         ArrayList<EventListener> list = listeners.get(eventName);
-		if (list == null) {
-			return;
-		}
-		for (EventListener callback : list) {
-			callback.onHandler(map);
-		}
-	}
-	
-	/**
-	 * ÊÂ¼ş¼àÌıÀà
-	 */
-	public static abstract class EventListener {
-		/**
-		 * ´¦ÀíÊÂ¼ş
-		 * @param params ²ÎÊıÁĞ±í
-		 */
-		public abstract void onHandler(Map<String, Object> map);
-	}
-	
-	/**
-	 * ActivityÉúÃüÖÜÆÚ·¢Éú¸Ä±ä
-	 * @param context
-	 */
-	public static void follow(Context context) {
-		/* debug start */
+        if (list == null) {
+            return;
+        }
+        for (EventListener callback : list) {
+            callback.onHandler(map);
+        }
+    }
+    
+    /**
+     * äº‹ä»¶ç›‘å¬ç±»
+     */
+    public static abstract class EventListener {
+        /**
+         * å¤„ç†äº‹ä»¶
+         * @param params å‚æ•°åˆ—è¡¨
+         */
+        public abstract void onHandler(Map<String, Object> map);
+    }
+    
+    /**
+     * Activityç”Ÿå‘½å‘¨æœŸå‘ç”Ÿæ”¹å˜
+     * @param context
+     */
+    public static void follow(Context context) {
+        /* debug start */
         System.out.println(String.format("NLog.follow(%s)", context));
-		/* debug end */
+        /* debug end */
 
         NLog instance = getInstance(context);
-		instance.follow();
-	}
-	
-	/**
-	 * ActivityÉúÃüÖÜÆÚ·¢Éú¸Ä±ä ĞèÒªÔÚÃ¿¸öActivityµÄonResume()ºÍonPause()·½·¨ÖĞµ÷ÓÃ£¬¼àÌısession±ä»¯
-	 */
-	public void follow() {
-		String methodName = null;
-		for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-			String name = element.getMethodName();
-			if ("".equals(name.replaceFirst("^(onCreate|onStart|onResume|onPause|onStop|onDestroy|onRestart)$", ""))) {
-				methodName = element.getMethodName();
-				break;
-			}
-		}
+        instance.follow();
+    }
+    
+    /**
+     * Activityç”Ÿå‘½å‘¨æœŸå‘ç”Ÿæ”¹å˜ éœ€è¦åœ¨æ¯ä¸ªActivityçš„onResume()å’ŒonPause()æ–¹æ³•ä¸­è°ƒç”¨ï¼Œç›‘å¬sessionå˜åŒ–
+     */
+    public void follow() {
+        String methodName = null;
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            String name = element.getMethodName();
+            if ("".equals(name.replaceFirst("^(onCreate|onStart|onResume|onPause|onStop|onDestroy|onRestart)$", ""))) {
+                methodName = element.getMethodName();
+                break;
+            }
+        }
         
-		/* debug start */
+        /* debug start */
         System.out.println(String.format("%s.follow() methodName => %s", this, methodName));
-		/* debug end */
-		if (methodName == null) {
-			return;
-		}
+        /* debug end */
+        if (methodName == null) {
+            return;
+        }
 
-		if ("onResume".equals(methodName)) {
-			if (System.currentTimeMillis() - pauseTime > sessionTimeout * 1000) { // session³¬Ê±
-				createSession();
-			}
-		} else if ("onPause".equals(methodName)) {
-			pauseTime = System.currentTimeMillis();
-		}
-		
-		fire(context, methodName);
-	}
-	
-	/**
-	 * ×îºóÒ»´ÎÔİÍ£µÄÊ±¼ä
-	 */
-	private Long pauseTime = 0L;
-	
-	/**
-	 * »ñµÃpostµÄÊı¾İ£¬½¨Öµ½øĞĞurl±àÂë
-	 * @param map ²ÎÊı¼¯ºÏ
-	 * @return ·µ»Øurl²ÎÊı×Ö·û´®
-	 */
-	public static String buildPost(Map<String, Object> map) {
-		StringBuilder sb = new StringBuilder();
-		for (String key : map.keySet()) {
-			try {
-				Object value = map.get(key);
-				if (value == null) {
-					continue;
-				}
-				sb.append(String.format("&%s=%s", key, URLEncoder.encode(value.toString(), "utf-8")));
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			}
-		}
-		if (sb.length() > 0) sb.deleteCharAt(0);
-		return sb.toString();
-	}
-	
-	/**
-	 * ´æ´¢ºÍ·¢ËÍÊı¾İ
-	 */
-	private NStorage nstorage;
-	
-	/**
-	 * ÉÏ±¨Êı¾İ
-	 * @param trackerName ×·×ÙÆ÷Ãû³Æ
-	 * @param fields ¹«¹²×Ö¶Î
-	 * @param data ÉÏ±¨Êı¾İ
-	 */
+        if ("onResume".equals(methodName)) {
+            if (System.currentTimeMillis() - pauseTime > sessionTimeout * 1000) { // sessionè¶…æ—¶
+                createSession();
+            }
+        } else if ("onPause".equals(methodName)) {
+            pauseTime = System.currentTimeMillis();
+        }
+        
+        fire(context, methodName);
+    }
+    
+    /**
+     * æœ€åä¸€æ¬¡æš‚åœçš„æ—¶é—´
+     */
+    private Long pauseTime = 0L;
+    
+    /**
+     * è·å¾—postçš„æ•°æ®ï¼Œå»ºå€¼è¿›è¡Œurlç¼–ç 
+     * @param map å‚æ•°é›†åˆ
+     * @return è¿”å›urlå‚æ•°å­—ç¬¦ä¸²
+     */
+    public static String buildPost(Map<String, Object> map) {
+        StringBuilder sb = new StringBuilder();
+        for (String key : map.keySet()) {
+            try {
+                Object value = map.get(key);
+                if (value == null) {
+                    continue;
+                }
+                sb.append(String.format("&%s=%s", key, URLEncoder.encode(value.toString(), "utf-8")));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        if (sb.length() > 0) sb.deleteCharAt(0);
+        return sb.toString();
+    }
+    
+    /**
+     * å­˜å‚¨å’Œå‘é€æ•°æ®
+     */
+    private NStorage nstorage;
+    
+    /**
+     * ä¸ŠæŠ¥æ•°æ®
+     * @param trackerName è¿½è¸ªå™¨åç§°
+     * @param fields å…¬å…±å­—æ®µ
+     * @param data ä¸ŠæŠ¥æ•°æ®
+     */
     public void report(String trackerName, Map<String, Object> fields, Map<String, Object> data) {
-		/* debug start */
+        /* debug start */
         System.out.println(String.format("%s.report(%s, %s)", this, fields, data));
-		/* debug end */
+        /* debug end */
         
         fire("report", buildMap("name=", trackerName, "fields=", fields, "data=", data));
         nstorage.report(trackerName, fields, data);

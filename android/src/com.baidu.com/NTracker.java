@@ -7,97 +7,97 @@ import android.content.Context;
 public final class NTracker {
     /**
      * nlog
-     * @description NativeÍ³¼Æ¿ò¼Ü£¬×·×ÙÆ÷ÊµÏÖ
-     * @author Íõ¼¯ğÀ(WangJihu,http://weibo.com/zswang),ÅíÕıÉ½(PengZhengshan)
+     * @description Nativeç»Ÿè®¡æ¡†æ¶ï¼Œè¿½è¸ªå™¨å®ç°
+     * @author ç‹é›†é¹„(WangJihu,http://weibo.com/zswang),å½­æ­£å±±(PengZhengshan)
      * @version 1.0
      * @copyright www.baidu.com
      */
 
     /**
-     * ×·×ÙÆ÷¼¯ºÏ£¬ÒÔnameÎªÏÂ±ê
+     * è¿½è¸ªå™¨é›†åˆï¼Œä»¥nameä¸ºä¸‹æ ‡
      */
     private Map<String, Object> fields = new HashMap<String, Object>();
     
     /**
-     * ÃüÁî²ÎÊıÀà
+     * å‘½ä»¤å‚æ•°ç±»
      */
     private class Args {
-    	/**
-    	 * ·½·¨Ãû
-    	 */
-    	public String method;
-    	/**
-    	 * ²ÎÊı
-    	 */
-    	public Object[] params;
-    	public Args(String method, Object[] params) {
-    		this.method = method;
-    		this.params = params;
-    	}
-	}
+        /**
+         * æ–¹æ³•å
+         */
+        public String method;
+        /**
+         * å‚æ•°
+         */
+        public Object[] params;
+        public Args(String method, Object[] params) {
+            this.method = method;
+            this.params = params;
+        }
+    }
     
     /**
-     * ÃüÁî²ÎÊı»º´æ£¬µ±×·×ÙÆ÷Ã»ÓĞÆô¶¯µÄÊ±ºò
+     * å‘½ä»¤å‚æ•°ç¼“å­˜ï¼Œå½“è¿½è¸ªå™¨æ²¡æœ‰å¯åŠ¨çš„æ—¶å€™
      */
     private ArrayList<Args> argsList = new ArrayList<Args>();
     
     /**
-     * ÊÇ·ñÔÚÔËĞĞÖĞ 
+     * æ˜¯å¦åœ¨è¿è¡Œä¸­ 
      */
     private Boolean running = false;
     public Boolean getRunning() {
-    	return running;
+        return running;
     }
     public void setRunning(Boolean value) {
-    	if (value) {
-    		start();
-    	} else {
-    		stop();
-    	}
+        if (value) {
+            start();
+        } else {
+            stop();
+        }
     }
     
     /**
-     * ¿ªÊ¼²É¼¯
-     * @param params ÆğÊ¼²ÎÊı
+     * å¼€å§‹é‡‡é›†
+     * @param params èµ·å§‹å‚æ•°
      */
     public void start(Object... params) {
         /* debug start */
         System.out.println(String.format("%s.start([length:%s])", this, params.length));
         /* debug end */
-    	
-    	start(NLog.buildMap(params));
+        
+        start(NLog.buildMap(params));
     }
     
     /**
-     * ¿ªÊ¼²É¼¯
-     * @param map ÆğÊ¼²ÎÊı£¬key-valueĞÎÊ½
+     * å¼€å§‹é‡‡é›†
+     * @param map èµ·å§‹å‚æ•°ï¼Œkey-valueå½¢å¼
      */
     public void start(Map<String, Object> map) {
         if (running) {
-        	return;
+            return;
         }
-    	running = true;
-    	
+        running = true;
+        
         /* debug start */
         System.out.println(String.format("%s.start(%s)", this, map));
         /* debug end */
 
         set(map);
-    	// ÇåÀíÖ®Ç°µÄ²ÎÊı
-    	for (Args args : argsList) {
-    		command(args.method, args.params);
-    	}
-    	argsList.clear();
-    	fire("start");
+        // æ¸…ç†ä¹‹å‰çš„å‚æ•°
+        for (Args args : argsList) {
+            command(args.method, args.params);
+        }
+        argsList.clear();
+        fire("start");
     }
 
     /**
-     * Í£Ö¹²É¼¯
+     * åœæ­¢é‡‡é›†
      */
     public void stop() {
-    	if (!running) return;
-    	running = true;
-    	
+        if (!running) return;
+        running = true;
+        
         /* debug start */
         System.out.println(String.format("%s.stop()", this));
         /* debug end */
@@ -106,7 +106,7 @@ public final class NTracker {
     }
     
     /**
-     * ×·×ÙÆ÷Ãû³Æ
+     * è¿½è¸ªå™¨åç§°
      */
     private String name;
     public String getName() {
@@ -114,7 +114,7 @@ public final class NTracker {
     }
     
     /**
-     * NLog¶ÔÏó
+     * NLogå¯¹è±¡
      */
     private NLog nlog;
     public NLog getNLog() {
@@ -122,26 +122,26 @@ public final class NTracker {
     }
     
     /**
-     * NLog¶ÔÏó
+     * NLogå¯¹è±¡
      */
     private Context context;
     public Context getContext() {
         return context;
     }
     /**
-     * ¹Ì¶¨µÄÅäÖÃ×Ö¶Î
+     * å›ºå®šçš„é…ç½®å­—æ®µ
      */
     private static Map<String, Object> configFields = NLog.buildMap(
-    	"postUrl=", null, // ÉÏ±¨Â·¾¶
-    	"protocolParameter=", null // ×Ö¶ÎËõĞ´×Öµä
-	);
+        "postUrl=", null, // ä¸ŠæŠ¥è·¯å¾„
+        "protocolParameter=", null // å­—æ®µç¼©å†™å­—å…¸
+    );
 
     /**
-     * ÉèÖÃ×Ö¶ÎÖµ
-     * @param map ²ÎÊı¼¯ºÏ£¬key-valueĞÎÊ½
+     * è®¾ç½®å­—æ®µå€¼
+     * @param map å‚æ•°é›†åˆï¼Œkey-valueå½¢å¼
      */
     @SuppressWarnings("unchecked")
-	public void set(Map<String, Object> map) {
+    public void set(Map<String, Object> map) {
         /* debug start */
         System.out.println(String.format("%s.set(%s)", this, map));
         /* debug end */
@@ -152,19 +152,19 @@ public final class NTracker {
             
             Object value = map.get(key);
             if ("protocolParameter".equals(key)) {
-            	if (!(value instanceof Map)) continue;
+                if (!(value instanceof Map)) continue;
                 value = NLog.merge(
-                	configFields, 
-                	(Map<String, Object>)value
-            	);
+                    configFields, 
+                    (Map<String, Object>)value
+                );
             }
             fields.put(key, value);
         }
     }
 
     /**
-     * ÉèÖÃ×Ö¶ÎÖµ
-     * @param params ²ÎÊı¼¯ºÏ
+     * è®¾ç½®å­—æ®µå€¼
+     * @param params å‚æ•°é›†åˆ
      */
     public void set(Object... params) {
         /* debug start */
@@ -174,9 +174,9 @@ public final class NTracker {
     }
     
     /**
-     * »ñÈ¡×Ö¶ÎÖµ
-     * @param key ¼üÖµÃû
-     * @return ·µ»Ø¼üÖµ¶ÔÓ¦µÄÊı¾İ
+     * è·å–å­—æ®µå€¼
+     * @param key é”®å€¼å
+     * @return è¿”å›é”®å€¼å¯¹åº”çš„æ•°æ®
      */
     public Object get(String key) {
         /* debug start */
@@ -187,9 +187,9 @@ public final class NTracker {
     }
     
     /**
-     * ¹¹Ôìº¯Êı
-     * @param name ×·×ÙÆ÷Ãû³Æ
-     * @param nlog NLog¶ÔÏó
+     * æ„é€ å‡½æ•°
+     * @param name è¿½è¸ªå™¨åç§°
+     * @param nlog NLogå¯¹è±¡
      */
     public NTracker(String name, NLog nlog) {
         /* debug start */
@@ -203,9 +203,9 @@ public final class NTracker {
     }
     
     /**
-     * ·¢ËÍÊı¾İ
-     * @param hitType ·¢ËÍÀàĞÍ£¬appview¡¢event¡¢timing¡¢exception
-     * @param map ²ÎÊı¼¯ºÏ
+     * å‘é€æ•°æ®
+     * @param hitType å‘é€ç±»å‹ï¼Œappviewã€eventã€timingã€exception
+     * @param map å‚æ•°é›†åˆ
      */
     public void send(String hitType, Map<String, Object> map) {
         /* debug start */
@@ -213,20 +213,20 @@ public final class NTracker {
         /* debug end */
         
         Map<String, Object> data = NLog.merge(
-    		NLog.buildMap(
-    		    "sid=", nlog.getSessionId(), // »á»°id
-        		"time=", System.currentTimeMillis(), // ÊÂ¼ş·¢ÉúµÄÊ±¼ä
-        		"ts=", Long.toString(nlog.timestamp(), 36), // 36½øÖÆµÄÊ±¼ä´Á
-        		"ht=", hitType
-    		), map);
+            NLog.buildMap(
+                "sid=", nlog.getSessionId(), // ä¼šè¯id
+                "time=", System.currentTimeMillis(), // äº‹ä»¶å‘ç”Ÿçš„æ—¶é—´
+                "ts=", Long.toString(nlog.timestamp(), 36), // 36è¿›åˆ¶çš„æ—¶é—´æˆ³
+                "ht=", hitType
+            ), map);
         fire("send", data);
         nlog.report(name, fields, data);
     }
 
     /**
-     * ·¢ËÍÊı¾İ
-     * @param hitType ·¢ËÍÀàĞÍ£¬appview¡¢event¡¢timing¡¢exception
-     * @param map ²ÎÊı¼¯ºÏ
+     * å‘é€æ•°æ®
+     * @param hitType å‘é€ç±»å‹ï¼Œappviewã€eventã€timingã€exception
+     * @param map å‚æ•°é›†åˆ
      */
     public void send(String hitType, Object... params) {
         /* debug start */
@@ -237,8 +237,8 @@ public final class NTracker {
     }
     
     /**
-     * ·¢ËÍappview
-     * @param map ²ÎÊı¼¯ºÏ
+     * å‘é€appview
+     * @param map å‚æ•°é›†åˆ
      */
     public void sendView(Map<String, Object> map) {
         /* debug start */
@@ -249,8 +249,8 @@ public final class NTracker {
     }
     
     /**
-     * ·¢ËÍappview
-     * @param appScreen ÆÁÄ»³¡¾°Ãû³Æ
+     * å‘é€appview
+     * @param appScreen å±å¹•åœºæ™¯åç§°
      */
     public void sendView(String appScreen) {
         /* debug start */
@@ -263,8 +263,8 @@ public final class NTracker {
     }
         
     /**
-     * ·¢ËÍÊÂ¼ş
-     * @param map ²ÎÊı¼¯ºÏ
+     * å‘é€äº‹ä»¶
+     * @param map å‚æ•°é›†åˆ
      */
     public void sendEvent(Map<String, Object> map) {
         /* debug start */
@@ -275,11 +275,11 @@ public final class NTracker {
     }
     
     /**
-     * ·¢ËÍÊÂ¼ş
-     * @param category ÊÂ¼ş·ÖÀà£¬Èç£ºbutton
-     * @param action ¶¯×÷£¬Èç£ºclick
-     * @param label ±êÇ©£¬e.g£ºsave
-     * @param value Ö´ĞĞ´ÎÊı
+     * å‘é€äº‹ä»¶
+     * @param category äº‹ä»¶åˆ†ç±»ï¼Œå¦‚ï¼šbutton
+     * @param action åŠ¨ä½œï¼Œå¦‚ï¼šclick
+     * @param label æ ‡ç­¾ï¼Œe.gï¼šsave
+     * @param value æ‰§è¡Œæ¬¡æ•°
      */
     public void sendEvent(String category, String action, String label, Long value) {
         /* debug start */
@@ -295,8 +295,8 @@ public final class NTracker {
     }
 
     /**
-     * ·¢ËÍÒì³£
-     * @param map ²ÎÊı¼¯ºÏ
+     * å‘é€å¼‚å¸¸
+     * @param map å‚æ•°é›†åˆ
      */
     public void sendException(Map<String, Object> map) {
         /* debug start */
@@ -307,9 +307,9 @@ public final class NTracker {
     }
     
     /**
-     * ·¢ËÍÒì³£
-     * @param description Òì³£ÃèÊö
-     * @param fatal ÊÇ·ñµ¼ÖÂ±ÀÀ£
+     * å‘é€å¼‚å¸¸
+     * @param description å¼‚å¸¸æè¿°
+     * @param fatal æ˜¯å¦å¯¼è‡´å´©æºƒ
      */
     public void sendException(String description, Boolean fatal) {
         /* debug start */
@@ -325,10 +325,10 @@ public final class NTracker {
     
     
     /**
-     * ·¢ËÍÒì³£
-     * @param threadName Ïß³ÌÃû
-     * @param description Òì³£ÃèÊö
-     * @param fatal ÊÇ·ñµ¼ÖÂ±ÀÀ£
+     * å‘é€å¼‚å¸¸
+     * @param threadName çº¿ç¨‹å
+     * @param description å¼‚å¸¸æè¿°
+     * @param fatal æ˜¯å¦å¯¼è‡´å´©æºƒ
      */
     public void sendException(String threadName, String description, Boolean fatal) {
         /* debug start */
@@ -344,8 +344,8 @@ public final class NTracker {
     }
 
     /**
-     * ·¢ËÍÊ±¼äÍ³¼Æ
-     * @param map ²ÎÊı¼¯ºÏ
+     * å‘é€æ—¶é—´ç»Ÿè®¡
+     * @param map å‚æ•°é›†åˆ
      */
     public void sendTiming(Map<String, Object> map) {
         /* debug start */
@@ -355,47 +355,47 @@ public final class NTracker {
         send("timing", map);
     }
     
-	/**
-	 * °ó¶¨ÊÂ¼ş
-	 * @param eventName ÊÂ¼şÃû
-	 * @param callback »Øµ÷º¯ÊıÀà
-	 */
+    /**
+     * ç»‘å®šäº‹ä»¶
+     * @param eventName äº‹ä»¶å
+     * @param callback å›è°ƒå‡½æ•°ç±»
+     */
     public void on(String eventName, NLog.EventListener callback) {
-    	nlog.on(name + "." + eventName, callback);
-    }
-    
-	/**
-	 * ×¢ÏúÊÂ¼ş°ó¶¨
-	 * @param eventName ÊÂ¼şÃû
-	 * @param callback »Øµ÷º¯ÊıÀà
-	 */
-    public void un(String eventName, NLog.EventListener callback) {
-    	nlog.un(name + "." + eventName, callback);
-    }
-    
-	/**
-	 * ÅÉ·¢ÊÂ¼ş
-	 * @param eventName ÊÂ¼şÃû
-	 * @param params ²ÎÊıÁĞ±í
-	 */
-    public void fire(String eventName, Object... params) {
-    	nlog.fire(name + "." + eventName, params);
-    }
-    
-	/**
-	 * ÅÉ·¢ÊÂ¼ş
-	 * @param eventName ÊÂ¼şÃû
-	 * @param map ²ÎÊıÁĞ±í
-	 */
-	public void fire(String eventName, Map<String, Object> map) {
-    	nlog.fire(name + "." + eventName, map);
+        nlog.on(name + "." + eventName, callback);
     }
     
     /**
-     * Ö´ĞĞÃüÁî
-     * @param method ·½·¨Ãû set¡¢get¡¢send¡¢start¡¢stop
+     * æ³¨é”€äº‹ä»¶ç»‘å®š
+     * @param eventName äº‹ä»¶å
+     * @param callback å›è°ƒå‡½æ•°ç±»
+     */
+    public void un(String eventName, NLog.EventListener callback) {
+        nlog.un(name + "." + eventName, callback);
+    }
+    
+    /**
+     * æ´¾å‘äº‹ä»¶
+     * @param eventName äº‹ä»¶å
+     * @param params å‚æ•°åˆ—è¡¨
+     */
+    public void fire(String eventName, Object... params) {
+        nlog.fire(name + "." + eventName, params);
+    }
+    
+    /**
+     * æ´¾å‘äº‹ä»¶
+     * @param eventName äº‹ä»¶å
+     * @param map å‚æ•°åˆ—è¡¨
+     */
+    public void fire(String eventName, Map<String, Object> map) {
+        nlog.fire(name + "." + eventName, map);
+    }
+    
+    /**
+     * æ‰§è¡Œå‘½ä»¤
+     * @param method æ–¹æ³•å setã€getã€sendã€startã€stop
      * @param params
-     * @return ·µ»ØÃüÁîÖ´ĞĞµÄ½á¹û£¬Ö÷ÒªÓÃÓÚget·½·¨
+     * @return è¿”å›å‘½ä»¤æ‰§è¡Œçš„ç»“æœï¼Œä¸»è¦ç”¨äºgetæ–¹æ³•
      */
     public Object command(String method, Object... params) {
         /* debug start */
@@ -403,8 +403,8 @@ public final class NTracker {
         /* debug end */
         
         if (!running && "".equals(method.replaceAll("^(fire|send)$", ""))) {
-        	argsList.add(new Args(method, params));
-        	return null;
+            argsList.add(new Args(method, params));
+            return null;
         }
         
         if (method.equals("set")) {
@@ -412,7 +412,7 @@ public final class NTracker {
         } else if (method.equals("get")) {
             return get((String)params[0]);
         } else if (method.equals("send")) {
-            if (params.length >= 1) { // send·½·¨±ØĞë´æÔÚhitType
+            if (params.length >= 1) { // sendæ–¹æ³•å¿…é¡»å­˜åœ¨hitType
                 String hitType = (String)params[0];
                 send(hitType, NLog.buildMap(params, 1));
             }
@@ -421,21 +421,21 @@ public final class NTracker {
         } else if (method.equals("stop")) {
             stop();
         } else if (method.equals("on") || method.equals("un")) {
-        	if (params.length >= 2 && params[1] instanceof NLog.EventListener) {
-        		String eventName = (String)params[0]; 
-        		NLog.EventListener callback = (NLog.EventListener)params[1]; 
-            	if (method.equals("on")) {
-            		on(eventName, callback);
-            	} else {
-            		un(eventName, callback);
-            	}
-        	}
+            if (params.length >= 2 && params[1] instanceof NLog.EventListener) {
+                String eventName = (String)params[0]; 
+                NLog.EventListener callback = (NLog.EventListener)params[1]; 
+                if (method.equals("on")) {
+                    on(eventName, callback);
+                } else {
+                    un(eventName, callback);
+                }
+            }
         } else if (method.equals("fire")) {
-        	if (params.length >= 1) {
-        		String eventName = (String)params[0];
-        		fire(eventName, NLog.buildMap(params, 1));
-        	}
-    	}
+            if (params.length >= 1) {
+                String eventName = (String)params[0];
+                fire(eventName, NLog.buildMap(params, 1));
+            }
+        }
         
         return null;
     }
