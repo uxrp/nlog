@@ -3,6 +3,9 @@ nlog
 
 Native 统计框架
 
+# 概要
+
+nlog是一套管理多套统计模块的框架，借鉴了alog的设计思路，将每个统计模块的字段统一管理起来
 
 # API
 
@@ -10,7 +13,7 @@ Native 统计框架
 
 ### NLog
 
-### getInstance
+#### getInstance
 
 ```java
 /**
@@ -18,6 +21,34 @@ Native 统计框架
  * @param context 设备上下文
  */
 public static NLog getInstance(Context context)
+```
+
+#### getStartTime
+```java
+/**
+ * 采集模块启动的时间
+ */
+public Long getStartTime()
+```
+
+#### buildPost
+```java
+/**
+ * 获得post的数据，建值进行url编码
+ * @param map 参数集合
+ * @return 返回url参数字符串
+ */
+public static String buildPost(Map<String, Object> map
+```
+
+#### follow
+
+```java
+/**
+ * Activity生命周期发生改变 需要在每个Activity的onResume()和onPause()方法中调用，用于监听session变化
+ */
+public void follow()
+public static void follow(Context context)
 ```
 
 #### getTracker
@@ -38,15 +69,6 @@ public NTracker getTracker(String name)
  * @param value 超时时间，单位：秒，默认30
  */
 public void setSessionTimeout(Integer value)
-```
-### setGzip
-
-```java
-/**
- * 设置是否采用gzip压缩
- * @param value 是否压缩
- */
-public void setGzip(Boolean value)
 ```
 
 ### setOnlywifi
