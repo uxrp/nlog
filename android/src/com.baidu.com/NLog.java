@@ -122,6 +122,18 @@ public final class NLog {
     }
     
     /**
+     * 当前第几次会话
+     */
+    private Integer sessionSeq = -1;
+    public Integer getSessionSeq() {
+        return sessionSeq;
+    }
+    public static Integer getSessionSeq(Context context) {
+        NLog instance = getInstance(context);
+        return instance.getSessionSeq();
+    }
+
+    /**
      * 获取时间戳
      * @param context 上下文 
      * @return 返回差值
@@ -495,6 +507,7 @@ public final class NLog {
 
         if ("onResume".equals(methodName)) {
             if (System.currentTimeMillis() - pauseTime > sessionTimeout * 1000) { // session超时
+                pauseTime = System.currentTimeMillis();
                 createSession();
             }
         } else if ("onPause".equals(methodName)) {

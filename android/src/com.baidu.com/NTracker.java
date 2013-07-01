@@ -215,6 +215,7 @@ public final class NTracker {
         Map<String, Object> data = NLog.merge(
             NLog.buildMap(
                 "sid=", nlog.getSessionId(), // 会话id
+                "seq=", nlog.getSessionSeq(), // 会话顺序
                 "time=", System.currentTimeMillis(), // 事件发生的时间
                 "ts=", Long.toString(nlog.timestamp(), 36), // 36进制的时间戳
                 "ht=", hitType

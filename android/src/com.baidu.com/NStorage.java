@@ -109,7 +109,6 @@ public class NStorage {
          */
         CacheItem(String name, String head) {
             this.sb = new StringBuffer();
-            this.sb.append(head + '\n');
             this.head = head;
             this.name = name;
 
@@ -600,7 +599,7 @@ public class NStorage {
                     
                     CacheItem cacheItem = (CacheItem)msg.obj;
                     synchronized(messages) { // 清空消息
-                        String msgName = String.format("%s.%s", cacheItem.name, MESSAGE_SAVEFILE);
+                        String msgName = String.format("%s.%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
                         messages.put(msgName, null);
                     }
                     saveFile(cacheItem); // 会清空 item.sb内容
