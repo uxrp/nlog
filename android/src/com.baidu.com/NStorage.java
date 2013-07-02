@@ -599,7 +599,7 @@ public class NStorage {
                     
                     CacheItem cacheItem = (CacheItem)msg.obj;
                     synchronized(messages) { // 清空消息
-                        String msgName = String.format("%s.%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
+                        String msgName = String.format("%s.%s", cacheItem.name, MESSAGE_SAVEFILE);
                         messages.put(msgName, null);
                     }
                     saveFile(cacheItem); // 会清空 item.sb内容
@@ -613,7 +613,7 @@ public class NStorage {
                     
                     PostItem postItem = (PostItem)msg.obj;
                     synchronized(messages) { // 清空消息
-                        String msgName = String.format("%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
+                    	String msgName = String.format("%s.%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
                         messages.put(msgName, null);
                     }
                     postFile(postItem);
