@@ -224,7 +224,12 @@ public class NStorage {
         // 转义和过滤
         Map<String, Object> headMap = runProtocolParameter(parameter, fields);
         Map<String, Object> lineMap = runProtocolParameter(parameter, data);
-        appendCache(trackerName, postUrl + '?' + NLog.buildPost(headMap), NLog.buildPost(lineMap));
+
+        String separator = "&";
+        if (postUrl.indexOf("?") < 0) { // 处理url中存在“？”的情况
+            separator = "?";
+        }
+        appendCache(trackerName, postUrl + separator + NLog.buildPost(headMap), NLog.buildPost(lineMap));
     }
     
     /**
@@ -669,7 +674,10 @@ public class NStorage {
                     String version = matcher.group(1);
                     String itemname = matcher.group(2); // 项名
                     String extname = matcher.group(4); // 扩展名
-                    if (fileVersion.equals(version)) { // 不兼容的版本
+                    if (!fileVersion.equals(version)) { // 不兼容的版本
+                        /* debug start */
+                        Log.i("NLOG", String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
+                        /* debug end */
                         subFile.delete();
                         continue;
                     }
