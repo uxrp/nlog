@@ -1,0 +1,296 @@
+<!doctype html>
+<html>
+    <head>
+        <title>NLOG枝丫</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" href="resources/themes/default/styles/chat.css" />
+        <script src="http://img.baidu.com/js/tangram-1.3.9.js"></script>
+        <script src="lib/engine/ace-core.js"></script>
+        <script src="lib/engine/ace-template.js"></script>
+        <script src="lib/engine/ace-event.js"></script>
+        <script src="lib/engine/ace-tree.js"></script>
+        <script src="lib/engine/ace-ubb.js"></script>
+        <script src="lib/engine/ace-highlight.js"></script>
+        <script src="lib/markdown.js"></script>
+        <script src="../common/channel.common.js"></script>
+        <script src="extensions/nlog.api.config.js"></script>
+        <script src="extensions/nlog.api.js"></script>
+        <script src="modules/events.config.js"></script>
+        <script src="modules/manager.js"></script>
+        <script src="modules/message-box.js"></script>
+        <script src="modules/player-box.js"></script>
+        <script src="modules/editor-box.js"></script>
+        <script src="modules/dialog-box.js"></script>
+        <script src="modules/letter-box.js"></script>
+        <script src="modules/vote-box.js"></script>
+    </head>
+    <body>
+        <div id="main">
+            <div id="messageBox">
+                <h4>消息</h4>
+                <div id="messageList">
+                    <ul>
+                        <script id="messageListTemplate" type="text/template">
+                        <li class="!#{helper.node.getClasses()}">
+                        if (this.weibo){
+                            <a href="#{weibo}" target="_blank"><span class="weibo"></span></a>
+                        }
+                            <span class="nick" title="#{from}">#{nick}</span><span class="time">#{helper.formatTime(time)}</span><span class="letter" cmd="letter">私信</span>
+                        switch (this.format){
+                            case 'markdown':
+                                <div>!#{helper.markdown(message)}</div>
+                                break;
+                            case 'ubb':
+                                <div>!#{helper.ubb(message)}</div>
+                                break;
+                            default:
+                                <pre class="message"><p>!#{helper.mutiline(message)}</p></pre>
+                                break;
+                        }
+                            
+                        </li>
+                        </script>
+
+                        <!-- Debug Start -->
+                        <li class="self">
+                            <span class="nick">昵称3</span>&lt;<span class="id">kkdd1</span>&gt;<span class="time">19:51:23</span><span class="letter" cmd="letter">私信</span>
+                            <pre class="message"><p>聊天内容1！</p></pre>
+                        </li>
+                        <li>
+                            <span class="nick">昵称2</span>&lt;<span class="id">kkdd2</span>&gt;<span class="time">19:51:32</span><span class="letter" cmd="letter">私信</span>
+                            <pre class="message"><p>聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2！</p></pre>
+                        </li>
+                        <li>
+                            <span class="nick">昵称3</span>&lt;<span class="id">kkdd3</span>&gt;<span class="time">19:51:23</span><span class="letter" cmd="letter">私信</span>
+                            <pre class="message"><p>聊天内容3！</p></pre>
+                        </li>
+                        <!-- Debug End -->
+                    </ul>
+                </div>
+                <div id="editorTools" class="tools">
+                    <div>
+                        <label><input type="radio" name="format" value="text" checked />Text</label>
+                        <label><input type="radio" name="format" value="ubb" />UBB</label>
+                        <label><input type="radio" name="format" value="markdown" />Markdown</label>
+                    </div>
+                    <div id="editorBox">
+                        <textarea id="editor"></textarea>
+                    </div>
+                    <label id="ctrlEnterLabel"><input type="checkbox" id="ctrlEnter" cmd="focus">Ctrl+Enter</label>
+                    <button cmd="send">发送</button>
+                </div>
+            </div>
+            <div id="playerBox">
+                <h4>用户</h4>
+                <div id="playerList">
+                    <ul>
+                        <script id="playerListTemplate" type="text/template">
+                        <li class="#{state} !#{helper.node.getClasses()}" down="focus">
+                        if (this.weibo){
+                            <span class="letter" cmd="letter">私信</span><span class="state"></span><a href="#{weibo}" target="_blank"><span class="weibo"></span></a><span class="nick" title="#{id}">#{nick}</span>
+                        } else {
+                            <span class="letter" cmd="letter">私信</span><span class="state"></span><span class="nick" title="#{id}">#{nick}</span>
+                        }
+                        </li>
+                        </script>
+                        <!-- Debug Start -->
+                        <li class="online"><span class="letter">私信</span><span class="state"></span><a href="http://weibo.com/zswang" target="_blank"><span class="weibo"></span></a><span class="nick" title="ttt1">昵称 微博</span><button>关注</button><button>移除</button></li>
+                        <li class="online"><span class="letter">私信</span><span class="state"></span><span class="nick" title="ttt2">昵称 他人</span></li>
+                        <li class="offline self"><span class="letter">私信</span><span class="state"></span><span class="nick" title="ttt3">昵称 自己</span></li>
+                        <!-- Debug End -->
+                    </ul>
+                </div>
+                <div id="playerTools" class="tools">
+                    <button cmd="nick">昵称</button>
+                    <button cmd="viewLetter">私信<span id="newLetterNumber" class="number"></span></button>
+                    <button cmd="weibo" title="微博"><span class="weibo"></span></button>
+                </div>
+            </div>
+        </div>
+        <div id="voteBox">
+            <ul>
+                <script id="voteListTemplate" type="text/template">
+                <li class="!#{helper.node.getClasses()} #{this['voted']?'voted':''}">
+                    <button cmd="vote" title="投票">#{title}<span class="number">!#{count ? '(<b>' + count + '</b>)' : ''}</span></button>
+                </li>
+                </script>
+                <!-- Debug Start -->
+                <li>
+                    <button title="投票">路过<span class="number"><b>(1)</b></span></button>
+                </li>
+                <li class="voted">
+                    <button title="投票">不错<span class="number"><b>(2)</b></span></button>
+                </li>
+                <!-- Debug End -->
+            </ul>
+        </div>
+        <div id="letterBox" class="hidden">
+            <div class="masks">
+                <div class="dialog">
+                    <div class="head"><span class="title">私信</span><span class="close" cmd="cancel"></span></div>
+                    <div class="content">
+                        <ul>
+                            <script id="letterListTemplate" type="text/template">
+                            <li class="!#{helper.node.getClasses()}">
+                            if (helper.node.getStatus("self")) {
+                                <b>To: </b><span class="nick">#{toNick}</span>&lt;<span class="id">#{to}</span>&gt;<span class="time">#{helper.formatTime(time)}</span>
+                            } else {
+                                <span class="nick">#{nick}</span>&lt;<span class="id">#{from}</span>&gt;<span class="time">#{helper.formatTime(time)}</span><span class="reply" cmd="reply">回复</span>
+                            }
+                                <pre class="message"><p>!#{helper.mutiline(message)}</p></pre>
+                            </li>
+                            </script>
+                            <!-- Debug Start -->
+                            <li class="self">
+                                <span class="nick">昵称1</span>&lt;<span class="id">kkdd1</span>&gt;<span class="time">19:51:23</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容1！</p></pre>
+                            </li>
+                            <li>
+                                <span class="nick">昵称2</span>&lt;<span class="id">kkdd2</span>&gt;<span class="time">19:51:32</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2！</p></pre>
+                            </li>
+                            <li>
+                                <span class="nick">昵称3</span>&lt;<span class="id">kkdd3</span>&gt;<span class="time">19:51:23</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容3！</p></pre>
+                            </li>
+                            <li class="self">
+                                <span class="nick">昵称1</span>&lt;<span class="id">kkdd1</span>&gt;<span class="time">19:51:23</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容1！</p></pre>
+                            </li>
+                            <li class="self">
+                                <span class="nick">昵称2</span>&lt;<span class="id">kkdd2</span>&gt;<span class="time">19:51:32</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2！</p></pre>
+                            </li>
+                            <li>
+                                <span class="nick">昵称3</span>&lt;<span class="id">kkdd3</span>&gt;<span class="time">19:51:23</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容3！</p></pre>
+                            </li>
+                            <li class="self">
+                                <span class="nick">昵称1</span>&lt;<span class="id">kkdd1</span>&gt;<span class="time">19:51:23</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容1！</p></pre>
+                            </li>
+                            <li class="self">
+                                <span class="nick">昵称2</span>&lt;<span class="id">kkdd2</span>&gt;<span class="time">19:51:32</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2聊天内容2！</p></pre>
+                            </li>
+                            <li>
+                                <span class="nick">昵称3</span>&lt;<span class="id">kkdd3</span>&gt;<span class="time">19:51:23</span><span class="reply" cmd="reply">回复</span>
+                                <pre class="message"><p>聊天内容3！</p></pre>
+                            </li>
+                            <!-- Debug End -->
+                        </ul>
+                    </div>
+                    <div class="foot">
+                        <button cmd="ok">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <script id="dialogTemplate" type="text/template">
+            <div class="masks">
+                <div class="dialog">
+                    switch(type) {
+                        case "nick":
+                        
+                    <div class="head"><span class="title">修改昵称</span><span class="close" cmd="cancel"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><span>昵称：</span><input type="text" id="inputNick" value="#{nick}" maxlength="#{maxNick}"/></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="cancel">取消</button><button cmd="ok">确定</button>
+                    </div>
+                            break;
+
+                        case "weibo":
+                        
+                    <div class="head"><span class="title">修改微博</span><span class="close" cmd="cancel"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><span>微博：</span><input type="text" id="inputWeibo" value="#{weibo}" maxlength="#{maxWeibo}"/></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="cancel">取消</button><button cmd="ok">确定</button>
+                    </div>
+                            break;
+
+                        case "error":
+                        
+                    <div class="head"><span class="title">错误</span><span class="close" cmd="cancel"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><p>#{message}</p></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="ok">确定</button>
+                    </div>
+    
+                            break;
+                            
+                        case "letter":
+                    <div class="head"><span class="title">给 #{nick} 发私信</span><span class="close" cmd="cancel"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><textarea id="inputLetter"></textarea></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="cancel">取消</button><button cmd="ok">确定</button>
+                    </div>
+                            break;
+                        
+                    }
+                </div>
+            </div>
+            </script>
+            <!-- Debug Start -->
+            <div class="masks" style="display: none;">
+                <div class="dialog">
+                    <div class="head"><span class="title">修改昵称</span><span class="close"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><span>昵称：</span><input type="text" id="inputNick" maxlength="20"/></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="cancel">取消</button><button cmd="ok">确定</button>
+                    </div>
+                </div>
+                <div class="dialog">
+                    <div class="head"><span class="title">错误</span><span class="close"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><p>无效的昵称！</p></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="ok">确定</button>
+                    </div>
+                </div>
+                <div class="dialog">
+                    <div class="head"><span class="title">给 刀刀  发私信</span><span class="close"></span></div>
+                    <div class="content">
+                        <div class="panel">
+                            <div><textarea id="inputLetter"></textarea></div>
+                        </div>
+                    </div>
+                    <div class="foot">
+                        <button cmd="cancel">取消</button><button cmd="ok">确定</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Debug End -->
+        </div>
+        <script>
+            baidu.on(window, "load", function() {
+                AceCore.start({
+                    lib: baidu
+                });
+            });
+        </script>
+    </body>
+</html>

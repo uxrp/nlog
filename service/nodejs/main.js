@@ -1,38 +1,21 @@
 /**
  * @author 王集鹄(wangjihu,http://weibo.com/zswang)
+ * 本机调试
  */
 var http = require('http');
 var event = require('./event');
-var url = require('url');
-var zlib = require('zlib');
-var crypto = require('crypto');
 
+require('./channel.manager.js');
+require('./player.manager.js');
+require('./chat.plugin.js');
+require('./nlog.plugin.js');
+require('./player.plugin.js');
 require('./file-storage');
 
-http.createServer(function(request, response) {
-    if (request.method != 'POST') {
-    	response.write("method error.");
-    	response.end();
-        return;
-    }
-    console.log(request);
-    //response.pipe(zlib.createGunzip()).pipe(output);
-    var gunzip = zlib.createGunzip();
-    var text = "";
-    gunzip.on('data', function(data){
-        text += data.toString();
-    });
+require('./file-storage');
+//require('./mysql-storage');
 
-    gunzip.on('end', function(){
-    	var data = {
-    		url: request.url,
-    		id: crypto.createHash('md5').update(text).digest('hex'),
-    		text: text
-    	};
-		event.emit('storage-save', 'nlog', data.id, data);
-    	response.write(text);
-    	response.end();
-    });
-	request.pipe(gunzip);
+http.createServer(function(request, response){
+    event.emit('request', request, response);
 
 }).listen(process.argv[2] || "80");

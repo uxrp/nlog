@@ -17,7 +17,7 @@ var client = mysql.createConnection({
     port: process.env.BAE_ENV_ADDR_SQL_PORT,
     user: process.env.BAE_ENV_AK,
     password: process.env.BAE_ENV_SK,
-    database: 'LXQSWLhwYQbGTFZwuCNr' // 替换为自己的数据库名
+    database: 'LXQSWLhwYQbGTFZwuCNr'
 });    
 
 client.connect();
