@@ -24,9 +24,6 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 import java.net.Proxy;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -77,7 +74,7 @@ public class NStorage {
     /**
      * 规则文件名
      */
-    private static String ruleFilename = rootDir + File.separator + "urle.dat";
+    private static String ruleFilename = rootDir + File.separator + "rule.dat";
     
     /**
      * 缓存文件名模板 _nlog_[version]_[itemname].dat, itemname => [name].[md5(head)]
@@ -380,16 +377,13 @@ public class NStorage {
             
             int length = conn.getContentLength();
             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK && length != 0) {
-                JSONObject json = new JSONObject(sb.toString());
                 FileOutputStream fos = new FileOutputStream(ruleFilename);
                 fos.write(sb.toString().getBytes());
                 fos.close();
-                NLog.updateRule(json);
+                NLog.updateRule(sb.toString());
                 result = true;
                 Log.d(LOGTAG, String.format("rule load success!\n===body===\n%s", sb));
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -681,6 +675,7 @@ public class NStorage {
                             fis.read(buffer);
                             String ruleText = new String(buffer);
                             fis.close();
+                            NLog.updateRule(ruleText);
                             /* debug start */
                             Log.d(LOGTAG, String.format("read '%s'\n===body====\n%s", ruleFilename, ruleText));
                             /* debug end */

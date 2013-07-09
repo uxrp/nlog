@@ -597,10 +597,15 @@ public final class NLog {
     public static Map<String, Double> sampleRate = new HashMap<String, Double>();
     /**
      * 更新规则
-     * @param json
+     * @param jsonText
      */
-    public static void updateRule(JSONObject json) {
+    public static void updateRule(String jsonText) {
+        /* debug start */
+        Log.d(LOGTAG, String.format("updateRule(%s)", jsonText));
+        /* debug end */
         try {
+            JSONObject json = new JSONObject(jsonText);
+
             // 将数值调整到合理范围
             for (ConfigField item : configFields) {
                 if (json.has(item.name)) {
