@@ -4,7 +4,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.*;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 
 public final class NLog {
     /**
@@ -14,23 +20,209 @@ public final class NLog {
      * @version 1.0
      * @copyright www.baidu.com
      */
+    // 日志TAG
+    private static String LOGTAG = (new Object() {
+        public String getClassName() {
+            String clazzName = this.getClass().getName();
+            return clazzName.substring(0, clazzName.lastIndexOf('$'));
+        }
+    }).getClassName();
+    /**
+     * 追踪器集合，以name为下标
+     */
+    private static Map<String, Object> fields;
     
     /**
-     * 设备上下文
+     * 获取字段值
+     * @param key 键值名
+     * @return 返回键值对应的数据
      */
-    private Context context;
+    public static Object get(String key) {
+        /* debug start */
+        Log.d(LOGTAG, String.format("get('%s') => %s", key, fields.get(key)));
+        /* debug end */
+        
+        return fields.get(key);
+    }
+    /**
+     * 是否已经初始化
+     */
+    private static Boolean initCompleted = false;
+    public static Boolean getInitCompleted() {
+        return initCompleted;
+    }
+    
+    /**
+     * 安全获取整数数值
+     * @param value 可以是字符串、浮点
+     * @param defaultValue 默认值
+     * @return
+     */
+    @SuppressLint("UseValueOf")
+    public static Integer safeInteger(Object value, Integer defaultValue) {
+        Integer result = defaultValue;
+        if (value != null) {
+            if (value instanceof Integer) {
+                result = (Integer)value;
+            } else {
+                try {
+                    result = new Integer(value.toString());
+                } catch(NumberFormatException e) {
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * 安全获取整数数值
+     * @param value 可以是字符串、浮点
+     * @param defaultValue 默认值
+     * @return
+     */
+    @SuppressLint("UseValueOf")
+    public static Double safeDouble(Object value, Double defaultValue) {
+        Double result = defaultValue;
+        if (value != null) {
+            if (value instanceof Double) {
+                result = (Double)value;
+            } else {
+                try {
+                    result = new Double(value.toString());
+                } catch(NumberFormatException e) {
+                }
+            }
+        }
+        return result;
+    }
+    /**
+     * 安全获取逻辑值
+     * @param value 可以是字符串
+     * @param defaultValue 默认值
+     * @return
+     */
+    @SuppressLint("UseValueOf")
+    public static Boolean safeBoolean(Object value, Boolean defaultValue) {
+        Boolean result = defaultValue;
+        if (value != null) {
+            if (value instanceof Boolean) {
+                result = (Boolean)value;
+            } else {
+                result = new Boolean(value.toString());
+            }
+        }
+        return result;
+    }
+    /**
+     * 配置字段
+     */
+    private static class ConfigField {
+        String name;
+        Integer defaultValue;
+        Integer minValue;
+        Integer maxValue;
+        ConfigField(String name, Integer defaultValue, Integer minValue, Integer maxValue) {
+            this.name = name;
+            this.minValue = minValue;
+            this.maxValue = maxValue;
+            this.defaultValue = defaultValue;
+        }
+    }
+   /*
+    | 参数             | 说明                | 单位  | 默认值 |取值范围|
+    | --------------- | -------------------| ------|------:|-------|
+    | ruleUrl         | 云端策略存放的路径     |       |null   |       |
+    | ruleExpires     | 策略文件过期时间       |天     | 2     |       |
+    | onlywifi        | 只在wifi环境下发送    |bool   | false |       |
+    | sendMaxLength   | 单次发送最大的包长度   |KB     | 200   |2-500 |
+    | sendInterval    | 重发数据周期          |秒     | 120   |30-600 |
+    | sendIntervalWifi| 在wifi环境下的重发周期 |秒     | 60    |30-600 |
+    | sessionTimeout  | 会话超时时间          |秒     | 30    |30-120 |
+    | storageExpires  | 离线数据过期时间       |天     | 10    |2-30  |
+    | sampleRate      | 各个Tracker的抽样率   |浮点数  |[1...] |0-1    |
+    */
+    private static ArrayList<ConfigField> configFields = new ArrayList<ConfigField>();
+    /**
+     * 内部初始化
+     */
+    static {
+        configFields.add(new ConfigField("sendMaxLength", 2, 500, 200));
+        configFields.add(new ConfigField("sendInterval", 60, 30, 600));
+        configFields.add(new ConfigField("sendIntervalWifi", 30, 30, 600));
+        configFields.add(new ConfigField("sendIntervalWifi", 30, 30, 600));
+        configFields.add(new ConfigField("sessionTimeout", 30, 30, 120));
+        configFields.add(new ConfigField("storageExpires", 10, 2, 30));
+    }
+
+    /**
+     * 初始化
+     * @param context 上下文
+     * @param params 初始化参数
+     */
+    @SuppressLint("UseValueOf")
+    @SuppressWarnings("unchecked")
+    public static void init(Context context, Object... params) {
+        if (initCompleted) {
+            Log.w(LOGTAG, "init() Can't repeat initialization.");
+            return;
+        }
+
+        if (context == null) {
+            Log.w(LOGTAG, "init() Context can't for empty.");
+            return;
+        }
+        initCompleted = true;
+        Context app = context.getApplicationContext();
+
+        fields = mergeMap(buildMap(
+                "ruleUrl=", null,
+                "ruleExpires=", 2
+        ), buildMap(params));
+        fields.put("applicationContext", app);
+        
+        // 将数值调整到合理范围
+        for (ConfigField item : configFields) {
+            fields.put(item.name, Math.min(
+                    Math.max(safeInteger(fields.get(item.name), item.defaultValue), item.minValue),
+                    item.maxValue
+            ));
+        }
+        
+        // 设置抽样率
+        Object items = fields.get("sampleRate");
+        if (items != null && items instanceof Map) {
+            Map<String, ?> map = (Map<String, ?>)items;
+            for (Object key : map.keySet()) {
+                Object value = map.get(key);
+                sampleRate.put(key.toString(),
+                        Math.max(Math.min(safeDouble(value, 1.0), 1), 0));
+            }
+        }
+                
+        NStorage.init();
+        
+        // 处理未初始化前的命令
+        for (CmdParamItem item : cmdParamList) {
+            item.tracker.command(item.method, item.params);
+        }
+        cmdParamList.clear();
+        
+        /* debug start */
+        Log.i(LOGTAG, String.format("NLog.init(%s, %s) fields => %s", context, buildMap(params), fields));
+        /* debug end */
+    }
+    
     /**
      * 获取设备上下文
      */
-    public Context getContext() {
-        return context;
+    public static Context getContext() {
+        return (Context)fields.get("applicationContext");
     }
     
     /**
      * 采集模块启动的时间
      */
-    private Long startTime = System.currentTimeMillis();
-    public Long getStartTime() {
+    private static Long startTime = System.currentTimeMillis();
+    public static Long getStartTime() {
         return startTime;
     }
     
@@ -39,56 +231,15 @@ public final class NLog {
      * @param now 当前时间
      * @return 返回差值
      */
-    public Long timestamp(Long now) {
+    public static Long timestamp(Long now) {
         return System.currentTimeMillis() - now;
-    }
-    
-    /**
-     * session超时时间，单位：秒
-     */
-    private Integer sessionTimeout = 30;
-    
-    /**
-     * 获取session超时时间
-     * @param context 上下文
-     * @return 返回session超时时间
-     */
-    public static Integer getSessionTimeout(Context context) {
-        NLog instance = getInstance(context);
-        return instance.sessionTimeout;
-    }
-    /**
-     * 获取session超时时间
-     * @return 返回session超时时间，单位：秒
-     */
-    public Integer getSessionTimeout() {
-        return sessionTimeout;
-    }
-
-    /**
-     * 设置session超时时间
-     * @param context 上下文
-     * @param value 超时时间，单位：秒，默认30
-     */
-    public static void setSessionTimeout(Context context, Integer value) {
-        NLog instance = getInstance(context);
-        instance.setSessionTimeout(value);
-    }
-    /**
-     * 设置session超时时间
-     */
-    public void setSessionTimeout(Integer value) {
-        if (sessionTimeout == value) {
-            return;
-        }
-        sessionTimeout = value;
-        fire("sessionTimeoutChange", "value=", value);
     }
     
     /**
      * 启动新会话
      */
-    private void createSession() {
+    private static void createSession() {
+        sessionSeq++;
         buildSessionId();
         startTime = System.currentTimeMillis();
         fire("createSession", "sessionId=", sessionId);
@@ -98,77 +249,30 @@ public final class NLog {
      * 获取时间戳 
      * @return 返回差值
      */
-    public Long timestamp() {
+    public static Long timestamp() {
         return System.currentTimeMillis() - startTime;
-    }
-    
-    /**
-     * 获取时间戳 
-     * @param context 上下文
-     * @param now 当前时间
-     * @return 返回差值
-     */
-    public static Long timestamp(Context context, Long now) {
-        NLog instance = getInstance(context);
-        return instance.timestamp(now);
     }
     
     /**
      * 会话id, 当前时间毫秒36进制+随机数
      */
-    private String sessionId;
-    public String getSessionId() {
+    private static String sessionId;
+    public static String getSessionId() {
         return sessionId;
     }
     
     /**
      * 当前第几次会话
      */
-    private Integer sessionSeq = -1;
-    public Integer getSessionSeq() {
+    private static Integer sessionSeq = -1;
+    public static Integer getSessionSeq() {
         return sessionSeq;
-    }
-    public static Integer getSessionSeq(Context context) {
-        NLog instance = getInstance(context);
-        return instance.getSessionSeq();
-    }
-
-    /**
-     * 获取时间戳
-     * @param context 上下文 
-     * @return 返回差值
-     */
-    public static Long timestamp(Context context) {
-        NLog instance = getInstance(context);
-        return instance.timestamp();
-    }
-
-    /**
-     * 是否处于debug状态
-     */
-    private Boolean debug = false;
-    public void setDebug(Boolean debug) {
-        this.debug = debug;
-    }
-    public static void setDebug(Context context, Boolean debug) {
-        NLog instance = getInstance(context);
-        instance.setDebug(debug);
-    }
-    public Boolean getDebug() {
-        return debug;
-    }
-    public static Boolean getDebug(Context context) {
-        NLog instance = getInstance(context);
-        return instance.getDebug();
     }
     
     /**
      * 固定随机数，用于计算采样率
      */
     private static Double randomSeed = Math.random();
-    public static Double getRandomSeed() {
-        return randomSeed;
-    }
 
     /**
      * 命令字符串解析，如："wenku.set" -> ["wenku", "set"] "set" -> [null, "set"]
@@ -176,17 +280,12 @@ public final class NLog {
     private static Pattern cmdPattern = Pattern.compile("^(?:([\\w$_]+)\\.)?(\\w+)$");
 
     /**
-     * 实例集合，以context为下标
-     */
-    private static Map<Context, NLog> instances = new HashMap<Context, NLog>();
-
-    /**
      * 将参数数组转换成字典，为了简化调用方式
      * @param params 参数列表
      * @param offset 起始位置
      * @return 返回key-value集合
      */
-    public static Map<String, Object> buildMap(Object[] params, Integer offset) {
+    public static Map<String, Object> buildMapOffset(Object[] params, Integer offset) {
         Map<String, Object> result = new HashMap<String, Object>();
         for (Integer i = offset; i + 1 < params.length; i += 2) {
             String key = (String)params[i];
@@ -198,179 +297,107 @@ public final class NLog {
     }
     
     /**
-     * 合并两个map
-     * @param a map1
-     * @param b map2
-     * @return 返回合并后的map
-     */
-    public static Map<String, Object> merge(Map<String, Object> a, Map<String, Object> b) {
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.putAll(a);
-        result.putAll(b);
-        return result;
-    }
-
-    /**
-     * 将参数数组转换成字典
+     * 将参数数组转换成字典，为了简化调用方式
      * @param params 参数列表
      * @return 返回key-value集合
      */
     public static Map<String, Object> buildMap(Object... params) {
-        return buildMap(params, 0);
+        return buildMapOffset(params, 0);
     }
-
+    
     /**
-     * 获取NLog实例
-     * @param context 设备上下文
+     * 合并多个map
+     * @param maps 多个Map
+     * @return 返回合并后的map
      */
-    public static NLog getInstance(Context context) {
-        // 只能传递Application，对于android程序只会有一个application实例
-        Context app = context.getApplicationContext();
-        NLog result = instances.get(app);
-        if (result == null) {
-            result = new NLog(app);
-            instances.put(app, result);
+    public static Map<String, Object> mergeMap(Map<String, Object>... maps) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        for (Map<String, Object> map : maps) {
+            result.putAll(map);
         }
-        
-        /**
-        NLog result = instances.get(null);
-        if (result == null) {
-            result = new NLog(context);
-            instances.put(null, result);
-        } else {
-            result.context = context;
-        }
-        */
-        
-        /* debug start */
-        System.out.println(String.format("NLog.getInstance(%s) => %s", context, result));
-        /* debug end */
         return result;
     }
-    
-    /**
-     * 追踪器集合，以name为下标
-     */
-    private Map<String, NTracker> trackers = new HashMap<String, NTracker>();
-    
+    private static Map<String, NTracker> trackers = new HashMap<String, NTracker>();
     /**
      * 获取追踪器
      * @param name 追踪器名称
      */
-    public NTracker getTracker(String name) {
+    private static NTracker getTracker(String name) {
         if (name == null) {
             name = "default";
         }
         NTracker result = trackers.get(name);
         if (result == null) {
-            result = new NTracker(name, this);
+            result = new NTracker(name);
             trackers.put(name, result);
         }
         return result;
     }
     
     /**
-     * 获取追踪器
-     * @param context 上下文
-     * @param name 追踪器名称
-     */
-    public static NTracker getTracker(Context context, String name) {
-        NLog instance = getInstance(context);
-        return instance.getTracker(name);
-    }
-    
-    /**
      * 生成新的sessionId
      */
-    private void buildSessionId() {
+    private static void buildSessionId() {
         sessionId = Long.toString(System.currentTimeMillis(), 36) + 
                 Long.toString((long)(36 * 36 * 36 * 36 * Math.random()), 36);
     }
-    
-    /**
-     * 构造函数
-     * @param context 追踪器名称
-     */
-    private NLog(Context context) {
-        this.context = context;
-        this.nstorage = new NStorage(context);
-        buildSessionId();
+        
+    private static class CmdParamItem {
+        public NTracker tracker;
+        public String method;
+        public Object[] params;
+        CmdParamItem(NTracker tracker, String method, Object[] params) {
+            this.tracker = tracker;
+            this.method = method;
+            this.params = params;
+        }
     }
-    
-    /**
-     * 是否只在wifi网络情况下上报数据
-     */
-    public void setOnlywifi(Boolean value) {
-        nstorage.setOnlywifi(value);
-    }
-    public static void setOnlywifi(Context context, Boolean value) {
-        NLog instance = getInstance(context);
-        instance.setOnlywifi(value);
-    }
-    
-    /**
-     * 重发数据的时间间隔
-     */
-    public void setSendInterval(Integer value) {
-        nstorage.setSendInterval(value);
-        fire("sendInterval", value);
-    }
-    public static void setSendInterval(Context context, Integer value) {
-        NLog instance = getInstance(context);
-        instance.setSendInterval(value);
-    }
-    
-    
+    private static ArrayList<CmdParamItem> cmdParamList = new ArrayList<CmdParamItem>();
     /**
      * 执行命令
      * @param cmd 命令，"<追踪器名>.<方法名>"
      * @param params 参数列表
      * @return 返回get命令结果
      */
-    public Object cmd(String cmd, Object... params) {
+    public static Object cmd(String cmd, Object... params) {
         /* debug start */
-        System.out.println(String.format("%s.command('%s', [length:%s])", this, cmd, params.length));
+        Log.d(LOGTAG, String.format("command('%s', [length:%s])", cmd, params.length));
         /* debug end */
 
         // 分解 "name.method" 为 ["name", "method"]
         Matcher matcher = cmdPattern.matcher(cmd);
 
         if (!matcher.find()) {
-            /* TODO : 记录异常 */
+            /* debug start */
+            Log.w(LOGTAG, String.format("'%s' Command format error.", cmd));
+            /* debug end */
             return null;
         }
 
         String trackerName = matcher.group(1);
         String method = matcher.group(2);
         NTracker tracker = getTracker(trackerName);
-        return tracker.command(method, params);
+        if (initCompleted) {
+            return tracker.command(method, params); 
+        } else {
+            cmdParamList.add(new CmdParamItem(tracker, method, params));
+            return null;
+        }
     }
-    
-    /**
-     * 执行命令
-     * @param context 设备上下文
-     * @param cmd 命令，"<追踪器名>.<方法名>"
-     * @param params 参数列表
-     * @return 返回get命令结果
-     */
-    public static Object cmd(Context context, String cmd, Object... params) {
-        NLog instance = getInstance(context);
-        return instance.cmd(cmd, params);
-    }
-    
+
     /**
      * 监听器集合
      */
-    private Map<String, ArrayList<EventListener>> listeners = new HashMap<String, ArrayList<EventListener>>();
+    private static Map<String, ArrayList<EventListener>> listeners = new HashMap<String, ArrayList<EventListener>>();
     
     /**
      * 绑定事件
      * @param eventName 事件名
      * @param callback 回调函数类
      */
-    public void on(String eventName, EventListener callback) {
+    public static void on(String eventName, EventListener callback) {
         /* debug start */
-        System.out.println(String.format("%s.on('%s', %s)", this, eventName, callback));
+        Log.d(LOGTAG, String.format("on('%s', %s)", eventName, callback));
         /* debug end */
 
         ArrayList<EventListener> list = listeners.get(eventName);
@@ -382,24 +409,13 @@ public final class NLog {
     }
     
     /**
-     * 绑定事件
-     * @param context 上下文
-     * @param eventName 事件名
-     * @param callback 回调函数类
-     */
-    public static void on(Context context, String eventName, EventListener callback) {
-        NLog instance = getInstance(context);
-        instance.on(eventName, callback);
-    } 
-    
-    /**
      * 注销事件绑定
      * @param eventName 事件名
      * @param callback 回调函数类
      */
-    public void un(String eventName, EventListener callback) {
+    public static void un(String eventName, EventListener callback) {
         /* debug start */
-        System.out.println(String.format("%s.un('%s', %s)", this, eventName, callback));
+        Log.d(LOGTAG, String.format("un('%s', %s)", eventName, callback));
         /* debug end */
 
         ArrayList<EventListener> list = listeners.get(eventName);
@@ -409,37 +425,15 @@ public final class NLog {
     }
 
     /**
-     * 注销事件绑定
-     * @param context 上下文
-     * @param eventName 事件名
-     * @param callback 回调函数类
-     */
-    public static void un(Context context, String eventName, EventListener callback) {
-        NLog instance = getInstance(context);
-        instance.un(eventName, callback);
-    } 
-
-    /**
      * 派发事件
      * @param eventName 事件名
      * @param params 参数列表
      */
-    public void fire(String eventName, Object... params) {
+    public static void fire(String eventName, Object... params) {
         /* debug start */
-        System.out.println(String.format("%s.fire('%s', [length:%s])", this, eventName, params.length));
+        Log.d(LOGTAG, String.format("fire('%s', [length:%s])", eventName, params.length));
         /* debug end */
         fire(eventName, buildMap(params));
-    }
-    
-    /**
-     * 派发事件
-     * @param context 上下文
-     * @param eventName 事件名
-     * @param params 参数列表
-     */
-    public static void fire(Context context, String eventName, Object... params) {
-        NLog instance = getInstance(context);
-        instance.fire(eventName, params);
     }
 
     /**
@@ -447,9 +441,9 @@ public final class NLog {
      * @param eventName 事件名
      * @param map 参数列表
      */
-    public void fire(String eventName, Map<String, Object> map) {
+    public static void fire(String eventName, Map<String, Object> map) {
         /* debug start */
-        System.out.println(String.format("%s.fire('%s', %s)", this, eventName, map));
+        Log.d(LOGTAG, String.format("fire('%s', %s)", eventName, map));
         /* debug end */
 
         ArrayList<EventListener> list = listeners.get(eventName);
@@ -471,24 +465,15 @@ public final class NLog {
          */
         public abstract void onHandler(Map<String, Object> map);
     }
-    
     /**
-     * Activity生命周期发生改变
-     * @param context
+     * 用户浏览的顺序
      */
-    public static void follow(Context context) {
-        /* debug start */
-        System.out.println(String.format("NLog.follow(%s)", context));
-        /* debug end */
-
-        NLog instance = getInstance(context);
-        instance.follow();
-    }
+    private static ArrayList<Context> followPath = new ArrayList<Context>();
     
     /**
      * Activity生命周期发生改变 需要在每个Activity的onResume()和onPause()方法中调用，监听session变化
      */
-    public void follow() {
+    public static void follow(Context context) {
         String methodName = null;
         for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
             String name = element.getMethodName();
@@ -499,28 +484,54 @@ public final class NLog {
         }
         
         /* debug start */
-        System.out.println(String.format("%s.follow() methodName => %s", this, methodName));
+        Log.d(LOGTAG, String.format("follow(%s) methodName => %s", context, methodName));
         /* debug end */
         if (methodName == null) {
             return;
         }
-
+       
         if ("onResume".equals(methodName)) {
-            if (System.currentTimeMillis() - pauseTime > sessionTimeout * 1000) { // session超时
+            if (System.currentTimeMillis() - pauseTime > (Integer)fields.get("sessionTimeout") * 1000) { // session超时
                 pauseTime = System.currentTimeMillis();
                 createSession();
             }
+            if (followPath.size() > 0 && followPath.size() < 50) { // 避免打点错误导致列表无限增长
+                Context last = followPath.get(followPath.size() - 1);
+                if (last == context) { // 同一个对象激活了两次
+                    Log.w(LOGTAG, "follow() Does not match the context onPause and onResume.");
+
+                    /* debug start */
+                    Log.i(LOGTAG, String.format("follow() context=%s last=%s", context, last));
+                    /* debug end */
+                }
+            }
+            followPath.add(context);
         } else if ("onPause".equals(methodName)) {
             pauseTime = System.currentTimeMillis();
+            if (followPath.size() > 0) {
+                Context last = followPath.get(followPath.size() - 1);
+                if (last != context) {
+                    Log.w(LOGTAG, "follow() Does not match the context onPause and onResume.");
+                    /* debug start */
+                    Log.i(LOGTAG, String.format("follow() context=%s last=%s", context, last));
+                    /* debug end */
+                }
+                followPath.remove(followPath.size() - 1);
+            } else {
+                Log.w(LOGTAG, "follow() Does not match the context onPause and onResume.");
+                /* debug start */
+                Log.i(LOGTAG, String.format("follow() context=%s last=null", context));
+                /* debug end */
+            }
         }
         
-        fire(context, methodName);
+        fire( methodName);
     }
     
     /**
      * 最后一次暂停的时间
      */
-    private Long pauseTime = 0L;
+    private static Long pauseTime = 0L;
     
     /**
      * 获得post的数据，建值进行url编码
@@ -543,24 +554,74 @@ public final class NLog {
         if (sb.length() > 0) sb.deleteCharAt(0);
         return sb.toString();
     }
-    
-    /**
-     * 存储和发送数据
-     */
-    private NStorage nstorage;
-    
     /**
      * 上报数据
      * @param trackerName 追踪器名称
      * @param fields 公共字段
      * @param data 上报数据
      */
-    public void report(String trackerName, Map<String, Object> fields, Map<String, Object> data) {
+    public static void report(String trackerName, Map<String, Object> fields, Map<String, Object> data) {
         /* debug start */
-        System.out.println(String.format("%s.report(%s, %s)", this, fields, data));
+        Log.d(LOGTAG, String.format("report(%s, %s)", fields, data));
         /* debug end */
-        
+        if (!initCompleted) {
+            return;
+        }
+        if (!isSampled(trackerName)) {
+            /* debug start */
+            Log.i(LOGTAG, String.format("Tracker '%s' Not sample.", trackerName));
+            /* debug end */
+            return;
+        }
         fire("report", buildMap("name=", trackerName, "fields=", fields, "data=", data));
-        nstorage.report(trackerName, fields, data);
+        NStorage.report(trackerName, fields, data);
+    }
+    
+    /**
+     * 判断是否追踪器是否被抽样
+     * @param trackerName 
+     * @return 是否被抽中
+     */
+    public static Boolean isSampled(String trackerName) {
+        Boolean result = true;
+        Double trackerSampleRate = sampleRate.get(trackerName);
+        if (trackerSampleRate != null && trackerSampleRate < randomSeed) {
+            result = false;
+        }
+        return result;
+    }
+    
+    /**
+     * 抽样率
+     */
+    public static Map<String, Double> sampleRate = new HashMap<String, Double>();
+    /**
+     * 更新规则
+     * @param json
+     */
+    public static void updateRule(JSONObject json) {
+        try {
+            // 将数值调整到合理范围
+            for (ConfigField item : configFields) {
+                if (json.has(item.name)) {
+                    // 将数值调整到合理范围
+                    fields.put(item.name, Math.min(
+                            Math.max(safeInteger(json.get(item.name), item.defaultValue), item.minValue),
+                            item.maxValue
+                    ));
+                }
+            }
+            if (json.has("sampleRate")) {
+                JSONObject items = json.getJSONObject("sampleRate");
+                @SuppressWarnings("unchecked")
+                Iterator<String> keys = items.keys();
+                while(keys.hasNext()) {
+                    String key = keys.next();
+                    sampleRate.put(key, Math.max(Math.min(1, safeDouble(items.get(key), 1.0)), 0));
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
