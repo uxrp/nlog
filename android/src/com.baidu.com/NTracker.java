@@ -9,18 +9,14 @@ public final class NTracker {
      * nlog
      * @description Native统计框架，追踪器实现
      * @author 王集鹄(WangJihu,http://weibo.com/zswang),彭正山(PengZhengshan)
+     * @see https://github.com/uxrp/nlog/wiki/design
      * @version 1.0
      * @copyright www.baidu.com
      */
     /**
      *  日志TAG
      */
-    private static String LOGTAG = (new Object() {
-        public String getClassName() {
-            String clazzName = this.getClass().getName();
-            return clazzName.substring(0, clazzName.lastIndexOf('$'));
-        }
-    }).getClassName();
+    private static String LOGTAG = "NTracker";
 
     /**
      * 追踪器集合，以name为下标

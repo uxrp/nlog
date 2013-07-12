@@ -23,6 +23,8 @@ void function(){
         switch (query.command) {
             case 'nlog-post':
                 if (!/^post$/i.test(request.method)) return;
+                if (request.headers['content-type'] != 'gzip') return;
+
                 var me = this;
                 var text = "";
                 request.pipe(zlib.createGunzip()).on('data', function(data){
@@ -79,18 +81,24 @@ void function(){
         }
     };
 
-    
+    function jsonFormat(json) {
+        var result = '';
+        for (var key in json) {
+            result += "[red]" + key + "[/red][blue]: [/blue] " + json[key] + '\n';
+        }
+        return result;
+    }
     function buildMessage(item){
         return {
             id: 'nlog_' + (+new Date).toString(36),
             from: 100000001,
             nick: "-----nlog-----",
             weibo: "",
-            time: new Date(+item.params.t || +new Date),
+            time: new Date(+item.params.time || +item.params.t || +new Date),
             format: 'ubb',
             message: 
-                "[b]head:[/b]\n" + querystring.stringify(item.head, '\n', ': ') + '\n' +
-                "[b]params:[/b]\n" + querystring.stringify(item.params, '\n', ': ') + '\n'
+                "[b]head:[/b]\n" + jsonFormat(item.head) +
+                "[b]params:[/b]\n" + jsonFormat(item.params)
 
         };
     }

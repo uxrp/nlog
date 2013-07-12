@@ -45,6 +45,21 @@ public final class NLog {
         return fields.get(key);
     }
     /**
+     * 获取整数字段值
+     * @param key 键值名
+     * @return 返回键值对应的数据
+     */
+    public static Integer getInteger(String key) {
+        /* debug start */
+        Log.d(LOGTAG, String.format("get('%s') => %s", key, fields.get(key)));
+        /* debug end */
+        Object configField = configFields.get(key);
+        if (configField == null) {
+            return null;
+        } 
+        return safeInteger(fields.get(key), ((ConfigField)configField).defaultValue);
+    }
+    /**
      * 是否已经初始化
      */
     private static Boolean initCompleted = false;
@@ -116,12 +131,10 @@ public final class NLog {
      * 配置字段
      */
     private static class ConfigField {
-        String name;
         Integer defaultValue;
         Integer minValue;
         Integer maxValue;
-        ConfigField(String name, Integer defaultValue, Integer minValue, Integer maxValue) {
-            this.name = name;
+        ConfigField(Integer defaultValue, Integer minValue, Integer maxValue) {
             this.minValue = minValue;
             this.maxValue = maxValue;
             this.defaultValue = defaultValue;
@@ -131,26 +144,28 @@ public final class NLog {
     | 参数             | 说明                | 单位  | 默认值 |取值范围|
     | --------------- | -------------------| ------|------:|-------|
     | ruleUrl         | 云端策略存放的路径     |       |null   |       |
-    | ruleExpires     | 策略文件过期时间       |天     | 2     |       |
+    | ruleExpires     | 策略文件过期时间       |天     | 2     |2-30   |
     | onlywifi        | 只在wifi环境下发送    |bool   | false |       |
     | sendMaxLength   | 单次发送最大的包长度   |KB     | 200   |2-500 |
-    | sendInterval    | 重发数据周期          |秒     | 120   |30-600 |
-    | sendIntervalWifi| 在wifi环境下的重发周期 |秒     | 60    |30-600 |
+    | sendInterval    | 重发数据周期          |秒     | 300   |30-600 |
+    | sendIntervalWifi| 在wifi环境下的重发周期 |秒     | 150   |30-600 |
     | sessionTimeout  | 会话超时时间          |秒     | 30    |30-120 |
     | storageExpires  | 离线数据过期时间       |天     | 10    |2-30  |
     | sampleRate      | 各个Tracker的抽样率   |浮点数  |[1...] |0-1    |
     */
-    private static ArrayList<ConfigField> configFields = new ArrayList<ConfigField>();
+    private static Map<String, Object> configFields;
     /**
      * 内部初始化
      */
     static {
-        configFields.add(new ConfigField("sendMaxLength", 2, 500, 200));
-        configFields.add(new ConfigField("sendInterval", 60, 30, 600));
-        configFields.add(new ConfigField("sendIntervalWifi", 30, 30, 600));
-        configFields.add(new ConfigField("sendIntervalWifi", 30, 30, 600));
-        configFields.add(new ConfigField("sessionTimeout", 30, 30, 120));
-        configFields.add(new ConfigField("storageExpires", 10, 2, 30));
+        configFields = buildMap(
+            "ruleExpires=", new ConfigField(5, 2, 30),
+            "sendMaxLength", new ConfigField(2, 500, 200),
+            "sendInterval", new ConfigField(300, 30, 600),
+            "sendIntervalWifi", new ConfigField(150, 30, 600),
+            "sessionTimeout", new ConfigField(30, 30, 120),
+            "storageExpires", new ConfigField(10, 2, 30)
+        );
     }
 
     /**
@@ -158,7 +173,7 @@ public final class NLog {
      * @param context 上下文
      * @param params 初始化参数
      */
-    @SuppressLint("UseValueOf")
+    @SuppressLint({ "UseValueOf", "DefaultLocale" })
     @SuppressWarnings("unchecked")
     public static void init(Context context, Object... params) {
         if (initCompleted) {
@@ -170,6 +185,7 @@ public final class NLog {
             Log.w(LOGTAG, "init() Context can't for empty.");
             return;
         }
+        pauseTime = System.currentTimeMillis();
         initCompleted = true;
         Context app = context.getApplicationContext();
 
@@ -179,11 +195,24 @@ public final class NLog {
         ), buildMap(params));
         fields.put("applicationContext", app);
         
+        // 配置事件 onXdddd -> xdddd
+        for (String key : fields.keySet()) {
+            Object listener = fields.get(key);
+            if (!(listener instanceof EventListener)) {
+                continue;
+            }
+            Matcher matcher = eventPattern.matcher(key);
+            if (matcher.find()) {
+                on(key.substring(2, 3).toLowerCase() + key.substring(3), (EventListener)listener);  
+            }   
+        }
+        
         // 将数值调整到合理范围
-        for (ConfigField item : configFields) {
-            fields.put(item.name, Math.min(
-                    Math.max(safeInteger(fields.get(item.name), item.defaultValue), item.minValue),
-                    item.maxValue
+        for (String key : configFields.keySet()) {
+            ConfigField configField = (ConfigField)configFields.get(key); 
+            fields.put(key, Math.min(
+                    Math.max(safeInteger(fields.get(key), configField.defaultValue), configField.minValue),
+                    configField.maxValue
             ));
         }
         
@@ -199,6 +228,7 @@ public final class NLog {
         }
                 
         NStorage.init();
+        createSession();
         
         // 处理未初始化前的命令
         for (CmdParamItem item : cmdParamList) {
@@ -264,7 +294,7 @@ public final class NLog {
     /**
      * 当前第几次会话
      */
-    private static Integer sessionSeq = -1;
+    private static Integer sessionSeq = 0;
     public static Integer getSessionSeq() {
         return sessionSeq;
     }
@@ -280,13 +310,24 @@ public final class NLog {
     private static Pattern cmdPattern = Pattern.compile("^(?:([\\w$_]+)\\.)?(\\w+)$");
 
     /**
+     * 事件字符串解析，如："onCreate" -> ["Create"]
+     */
+    private static Pattern eventPattern = Pattern.compile("^on([A-Z]\\w*)$");
+    /**
      * 将参数数组转换成字典，为了简化调用方式
      * @param params 参数列表
      * @param offset 起始位置
      * @return 返回key-value集合
      */
+    @SuppressWarnings("unchecked")
     public static Map<String, Object> buildMapOffset(Object[] params, Integer offset) {
         Map<String, Object> result = new HashMap<String, Object>();
+        if (params.length - 1 == offset && offset >= 0) {
+            if (params[offset] instanceof Map) {
+                result.putAll((Map<String, Object>)params[offset]);
+            }
+            return result;
+        }
         for (Integer i = offset; i + 1 < params.length; i += 2) {
             String key = (String)params[i];
             key = key.replaceFirst("[:=]$", ""); // "a=", 3, "b:", 4 -> "a", 3, "b", 4
@@ -487,45 +528,38 @@ public final class NLog {
         Log.d(LOGTAG, String.format("follow(%s) methodName => %s", context, methodName));
         /* debug end */
         if (methodName == null) {
+            Log.w(LOGTAG, String.format("follow() Not in the right place."));
             return;
         }
        
-        if ("onResume".equals(methodName)) {
+        if ("onResume".equals(methodName)) { // 重新激活
+            
             if (System.currentTimeMillis() - pauseTime > (Integer)fields.get("sessionTimeout") * 1000) { // session超时
                 pauseTime = System.currentTimeMillis();
                 createSession();
             }
-            if (followPath.size() > 0 && followPath.size() < 50) { // 避免打点错误导致列表无限增长
-                Context last = followPath.get(followPath.size() - 1);
-                if (last == context) { // 同一个对象激活了两次
-                    Log.w(LOGTAG, "follow() Does not match the context onPause and onResume.");
-
-                    /* debug start */
-                    Log.i(LOGTAG, String.format("follow() context=%s last=%s", context, last));
-                    /* debug end */
-                }
-            }
-            followPath.add(context);
-        } else if ("onPause".equals(methodName)) {
-            pauseTime = System.currentTimeMillis();
-            if (followPath.size() > 0) {
-                Context last = followPath.get(followPath.size() - 1);
-                if (last != context) {
-                    Log.w(LOGTAG, "follow() Does not match the context onPause and onResume.");
-                    /* debug start */
-                    Log.i(LOGTAG, String.format("follow() context=%s last=%s", context, last));
-                    /* debug end */
-                }
-                followPath.remove(followPath.size() - 1);
+            
+            if (followPath.contains(context)) {
+                Log.w(LOGTAG, String.format("follow('%s') Does not match the context onPause and onResume. context=%s", methodName, context));
             } else {
-                Log.w(LOGTAG, "follow() Does not match the context onPause and onResume.");
-                /* debug start */
-                Log.i(LOGTAG, String.format("follow() context=%s last=null", context));
-                /* debug end */
+                followPath.add(context);
             }
+            
+        } else if ("onPause".equals(methodName)) { 
+            
+            pauseTime = System.currentTimeMillis();
+            if (followPath.contains(context)) {
+                followPath.remove(context);
+            } else {
+                Log.w(LOGTAG, String.format("follow('%s') Does not match the context onPause and onResume. context=%s", methodName, context));
+            }
+            
         }
         
-        fire( methodName);
+        fire("follow", buildMap(
+                "method", methodName,
+                "path=", followPath
+        ));
     }
     
     /**
@@ -607,15 +641,17 @@ public final class NLog {
             JSONObject json = new JSONObject(jsonText);
 
             // 将数值调整到合理范围
-            for (ConfigField item : configFields) {
-                if (json.has(item.name)) {
+            for (String key : configFields.keySet()) {
+                ConfigField configField = (ConfigField)configFields.get(key); 
+                if (json.has(key)) {
                     // 将数值调整到合理范围
-                    fields.put(item.name, Math.min(
-                            Math.max(safeInteger(json.get(item.name), item.defaultValue), item.minValue),
-                            item.maxValue
+                    fields.put(key, Math.min(
+                            Math.max(safeInteger(json.get(key), configField.defaultValue), configField.minValue),
+                            configField.maxValue
                     ));
                 }
             }
+
             if (json.has("sampleRate")) {
                 JSONObject items = json.getJSONObject("sampleRate");
                 @SuppressWarnings("unchecked")

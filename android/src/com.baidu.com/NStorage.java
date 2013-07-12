@@ -1,13 +1,13 @@
 package com.baidu.nlog;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
@@ -21,6 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 import java.util.zip.GZIPOutputStream;
 import java.net.Proxy;
 
@@ -28,7 +29,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -37,17 +37,24 @@ import android.os.Process;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+/* debug start */
+//import android.os.Environment;
+/* debug end */
+
 @SuppressLint({ "HandlerLeak", "DefaultLocale" })
 public class NStorage {
     /**
+     * nlog
+     * @description Native统计框架，负责存储和网络通信
+     * @author 王集鹄(WangJihu,http://weibo.com/zswang),彭正山(PengZhengshan)
+     * @see https://github.com/uxrp/nlog/wiki/design
+     * @version 1.0
+     * @copyright www.baidu.com
+     */
+    /**
      *  日志TAG
      */
-    private static String LOGTAG = (new Object() {
-        public String getClassName() {
-            String clazzName = this.getClass().getName();
-            return clazzName.substring(0, clazzName.lastIndexOf('$'));
-        }
-    }).getClassName();
+    private static String LOGTAG = "NStorage";
 
     /**
      * 设备id
@@ -70,16 +77,16 @@ public class NStorage {
     /**
      * 保存缓存文件的目录
      */
-    private static String rootDir = Environment.getExternalStorageDirectory() + File.separator + "_nlog_cache";
+    private static String rootDir = null; // init中初始化
     /**
      * 规则文件名
      */
-    private static String ruleFilename = rootDir + File.separator + "rule.dat";
+    private static String ruleFilename = null; // init中初始化
     
     /**
      * 缓存文件名模板 _nlog_[version]_[itemname].dat, itemname => [name].[md5(head)]
      */
-    private static final String cacheFileFormat = rootDir + File.separator + "_nlog_%s_%s.dat";
+    private static String cacheFileFormat = null; // ini中初始化
         
     /**
      * 缓存项
@@ -213,15 +220,21 @@ public class NStorage {
      */
     public static void report(String trackerName, Map<String, Object> fields, Map<String, Object> data) {
         /* debug start */
-        Log.d(LOGTAG, String.format("report(%s, %s) postUrl='%s'", fields, data, fields.get("postUrl")));
+        Log.d(LOGTAG, String.format("report('%s', %s, %s) postUrl='%s'", trackerName, fields, data, fields.get("postUrl")));
         /* debug end */
         if (!initCompleted) {
+            /* debug start */
+            Log.w(LOGTAG, String.format("report() uninitialized."));
+            /* debug end */
             reportParamList.add(new ReportParamItem(trackerName, fields, data));
             return;
         }
         String postUrl = (String)fields.get("postUrl");
         if (fields.get("postUrl") == null) {
             // 发送被取消
+            /* debug start */
+            Log.w(LOGTAG, String.format("report() postUrl is null."));
+            /* debug end */
             return;
         }
         Object parameter = fields.get("protocolParameter");
@@ -323,13 +336,20 @@ public class NStorage {
 
     @SuppressLint("DefaultLocale")
     private static Boolean loadRule() {
-        String ruleUrl = (String)NLog.get("ruleUrl");
         Boolean result = false;
+        
+        if (!isNetworkConnected()) {
+            /* debug start */
+            Log.d(LOGTAG, String.format("loadRule() - Without a network connection."));
+            /* debug end */
+            return result;
+        }
+        
+        String ruleUrl = (String)NLog.get("ruleUrl");
         if (ruleUrl == null) {
             return result;
         }
         
-        /* TODO 网络状态 */
         HttpURLConnection conn = null;
         ConnectivityManager conManager = (ConnectivityManager) NLog.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mobile = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -337,17 +357,23 @@ public class NStorage {
         try {
             Proxy proxy = null;
             if (wifi != null && wifi.isAvailable()) {
+                /* debug start */
                 Log.d(LOGTAG, "WIFI is available");
+                /* debug end */
             } else if (mobile != null && mobile.isAvailable()) {
                 String apn = mobile.getExtraInfo().toLowerCase();
+                /* debug start */
                 Log.d(LOGTAG, "apn = " + apn);
+                /* debug end */
                 if (apn.startsWith("cmwap") || apn.startsWith("uniwap") || apn.startsWith("3gwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.172", 80));
                 } else if (apn.startsWith("ctwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.200", 80));
                 }
             } else { //@fixed in TV
+                /* debug start */
                 Log.d(LOGTAG, "getConnection:not wifi and mobile");
+                /* debug end */
             }
             
             URL url;
@@ -366,24 +392,26 @@ public class NStorage {
             conn.setUseCaches(true);
             conn.connect();
             
-            BufferedReader bufr = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String inputString;
-            while ((inputString = bufr.readLine()) != null) {
-                sb.append(inputString);
-            }
-            bufr.close();
-            conn.disconnect();
             
-            int length = conn.getContentLength();
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK && length != 0) {
-                FileOutputStream fos = new FileOutputStream(ruleFilename);
-                fos.write(sb.toString().getBytes());
-                fos.close();
-                NLog.updateRule(sb.toString());
-                result = true;
-                Log.d(LOGTAG, String.format("rule load success!\n===body===\n%s", sb));
+            InputStream is = conn.getInputStream();
+            byte[] buffer = new byte[1024];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Integer len;
+            while ((len = is.read(buffer)) > 0) {
+                baos.write(buffer, 0, len);
             }
+            baos.close();
+            is.close();
+            
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                buffer = baos.toByteArray();
+                FileOutputStream fos = new FileOutputStream(ruleFilename);
+                fos.write(buffer);
+                fos.close();
+                NLog.updateRule(new String(buffer));
+                result = true;
+            }
+            conn.disconnect();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -408,50 +436,83 @@ public class NStorage {
         
         Boolean result = false;
         if (NLog.safeBoolean(NLog.get("onlywifi"), false) && !checkWifiConnected()) {
+            /* debug start */
             Log.d(LOGTAG, String.format("postFile() - Without a wifi connection. onlywifi = true"));
+            /* debug end */
             return result;
         } else if (!isNetworkConnected()) {
+            /* debug start */
             Log.d(LOGTAG, String.format("postFile() - Without a network connection."));
+            /* debug end */
             return result;
         }
         
-
-        String filename = String.format(cacheFileFormat, fileVersion, item.name);
+        String filename = item.locked == null ? String.format(cacheFileFormat, fileVersion, item.name) : item.locked;
         File file = new File(filename);
         if (!file.exists() || file.length() <= 0) {
-            Log.d(LOGTAG, String.format("postFile() - file '%s' not found.", filename));
+            Log.w(LOGTAG, String.format("postFile() - file '%s' not found.", filename));
             return result;
         }
         
         byte[] pass = item.pass;
         int len;
         int size = 1024;
+        int preLength = 0;
         byte[] buf = new byte[size];
         String postUrl = null;
+        byte[] gzipBytes = null;
         try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            GZIPOutputStream gos = new GZIPOutputStream(baos);
             FileInputStream fis;
             fis = new FileInputStream(filename);
-            len = fis.read(buf);
-            for (int i = 0; i < len; i++) {
-                buf[i] = (byte)(buf[i] ^ i % 256 ^ pass[i % pass.length]); 
-                if (buf[i] == '\n') {
-                    postUrl = new String(buf, 0, i);
-                    break;
+            Integer offset = 0;
+            Boolean existsHead = false;
+            Boolean processHead = false;
+            while ((len = fis.read(buf, 0, size)) != -1) {
+                int t = 0;
+                for (int i = 0; i < len; i++) {
+                    buf[i] = (byte)(buf[i] ^ offset % 256 ^ pass[offset % pass.length]); // 解密
+                    offset++;
+                    if (!existsHead) {
+                        if (buf[i] == '\n') {
+                            t = i;
+                            postUrl = new String(buf, 0, i);
+                            existsHead = true;
+                            processHead = true;
+                        }
+                    }
+                }
+                if (processHead) { // 需要处理头信息，即：第一行为postUrl和参数
+                    preLength += len - t - 1;
+                    gos.write(buf, t + 1, len - t - 1);
+                    processHead = false;
+                } else {
+                    preLength += len;
+                    gos.write(buf, 0, len);
                 }
             }
             fis.close();
-
+            fis = null;
+            gos.flush();
+            gos.finish();
+            gos.close();
+            gos = null;
+            
+            /* debug start */
             Log.d(LOGTAG, String.format("postFile() - postUrl = %s.", postUrl));
+            /* debug end */
+            
             if (postUrl == null) {
                 return result;
             }
+            gzipBytes = baos.toByteArray();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        /* TODO 网络状态 */
         HttpURLConnection conn = null;
         ConnectivityManager conManager = (ConnectivityManager) NLog.getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mobile = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
@@ -459,17 +520,23 @@ public class NStorage {
         try {
             Proxy proxy = null;
             if (wifi != null && wifi.isAvailable()) {
+                /* debug start */
                 Log.d(LOGTAG, "WIFI is available");
+                /* debug end */
             } else if (mobile != null && mobile.isAvailable()) {
                 String apn = mobile.getExtraInfo().toLowerCase();
+                /* debug start */
                 Log.d(LOGTAG, "apn = " + apn);
+                /* debug end */
                 if (apn.startsWith("cmwap") || apn.startsWith("uniwap") || apn.startsWith("3gwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.172", 80));
                 } else if (apn.startsWith("ctwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.200", 80));
                 }
             } else { //@fixed in TV
+                /* debug start */
                 Log.d(LOGTAG, "getConnection:not wifi and mobile");
+                /* debug end */
             }
             URL url;
 
@@ -482,68 +549,77 @@ public class NStorage {
             conn.setConnectTimeout(connTimeout);
             conn.setReadTimeout(readTimeout);
             
-            // POST方式
-            conn.setDoOutput(true);
+            conn.setDoOutput(true); // POST方式
             conn.setInstanceFollowRedirects(false);
             conn.setUseCaches(false);
-            conn.setRequestProperty("Content-Type", "gzip");
+
+            /* include connection */
             
+            conn.setRequestProperty("Content-Type", "gzip");
             conn.connect();
-            GZIPOutputStream gos = new GZIPOutputStream(conn.getOutputStream());
+            
             String lockedname = item.locked;
             if (lockedname == null) { // 需要锁定文件
                 lockedname = buildLocked(item.name);
+                /* debug start */
+                Log.d(LOGTAG, String.format("postFile() '%s' locked.", lockedname));
+                /* debug end */
             }
             File locked = new File(lockedname);
-            
-            FileInputStream fis = new FileInputStream(lockedname);
-            int offset = 0;
-            Boolean isHead = false;
-            while ((len = fis.read(buf, 0, size)) != -1) {
-                int t = 0;
-                for (int i = 0; i < len; i++) {
-                    buf[i] = (byte)(buf[i] ^ offset % 256 ^ pass[offset % pass.length]); 
-                    offset++;
-                    if (!isHead) {
-                        if (buf[i] == '\n') {
-                            t = i;
-                            isHead = true;
-                        }
-                    }
-                }
-                gos.write(buf, t + 1, len - t - 1);
+            if (!locked.exists()) {
+                /* debug start */
+                Log.d(LOGTAG, String.format("postFile() '%s' locked not exists.", lockedname));
+                /* debug end */
+                return result;
             }
-            gos.close();
-            gos = null;
-            fis.close();
-            fis = null;
+
+            /* debug start */
+            Log.d(LOGTAG, String.format("postFile() '%s' post start.", lockedname));
+            /* debug end */
+            
+            DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
+            dos.write(gzipBytes);
+            dos.flush();
+            dos.close();
+            
+            /*
+            // 读取返回
+            InputStream is = conn.getInputStream();
+            byte[] buffer = new byte[1024];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            while ((len = is.read(buffer)) > 0) {
+                baos.write(buffer, 0, len);
+            }
+            baos.close();
+            baos = null;
+            is.close();
+            */
+            
+            Integer rc = conn.getResponseCode();
+            
+            /* debug start */
+            Log.d(LOGTAG, String.format("postFile() code = '%s' post end.", rc));
+            /* debug end */
             
             // 在输入流外包装一层BufferReader，提高读入效率 getInputStream返回的是字节流，将其转换成字符流
-            //*
-            StringBuffer sb = new StringBuffer();
-            BufferedReader bufr = new BufferedReader(new InputStreamReader(
-                    conn.getInputStream()));
-            String inputString;
-            while ((inputString = bufr.readLine()) != null) {
-                sb.append(inputString);
-            }
-            bufr.close(); // 流关闭，会释放连接资源
-            bufr = null;
-
-            conn.disconnect();
-
-            int length = conn.getContentLength();
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK && length != 0) {
+            if (rc == HttpURLConnection.HTTP_OK) {
+                // 处理成功
                 result = true;
                 locked.delete();
+                /* debug start */
                 Log.d(LOGTAG, "post success!");
-                // 处理成功
+                /* debug end */
+                if (lastScanExists) { // 上次扫描存在未发送的文件 // 立即开始扫描
+                    sendMessage_scanDir();
+                }
             }
+            conn.disconnect();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
             conn.disconnect();
             conn = null;
         }
@@ -563,7 +639,7 @@ public class NStorage {
         Log.d(LOGTAG, String.format("saveFile() filename : %s", filename));
         /* debug end */
         
-        Integer sendMaxLength = NLog.safeInteger(NLog.get("sendMaxLength"), 200);
+        Integer sendMaxLength = NLog.getInteger("sendMaxLength");
         Boolean result = false;
         synchronized(item) {
             try {
@@ -647,6 +723,64 @@ public class NStorage {
     private static final byte MESSAGE_POSTFILE = 3;
     
     /**
+     * 扫描目录
+     */
+    private static final byte MESSAGE_SCANDIR = 4;
+    /**
+     * 扫描目录
+     */
+    private static Boolean scanDir() {
+        Boolean result = false;
+        lastScanTime = System.currentTimeMillis();
+        lastScanExists = false;
+        try {
+            File file = new File(rootDir + File.separatorChar);
+            for (File subFile : file.listFiles()) {
+                /* debug start */
+                Log.d(LOGTAG, String.format("file : %s(%sbyte).", subFile.getName(), subFile.length()));
+                /* debug end */
+                
+                Matcher matcher = dataFilePattern.matcher(subFile.getName());
+                if (!matcher.find()) { // 不符合nlog文件名
+                    continue;
+                }
+                
+                // 数据过期时间
+                Integer storageExpires = NLog.getInteger("storageExpires");
+                if (System.currentTimeMillis() - subFile.lastModified() >= storageExpires * 24 * 60 * 60 * 1000) {
+                    /* debug start */
+                    Log.d(LOGTAG, String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
+                    /* debug end */
+                    subFile.delete();
+                    continue;
+                }
+                
+                String version = matcher.group(1);
+                String itemname = matcher.group(2); // 项名
+                String extname = matcher.group(4); // 扩展名
+                if (!fileVersion.equals(version)) { // 不兼容的版本
+                    /* debug start */
+                    Log.d(LOGTAG, String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
+                    /* debug end */
+                    subFile.delete();
+                    continue;
+                }
+                
+                // 开始发送文件
+                if (sendMessage_postFile(new PostItem(itemname, "locked".equals(extname) ? subFile.getAbsolutePath() : null))) { // 发送成功
+                    lastScanExists = true;
+                    result = true;
+                    break;
+                }
+            }
+        } catch(Exception e) {
+            /* debug start */
+            e.printStackTrace();
+            /* debug end */
+        }
+        return result;
+    }
+    /**
      * 处理存储的句柄
      */
     private static class StorageHandler extends Handler {
@@ -656,35 +790,50 @@ public class NStorage {
         
         public void handleMessage(Message msg) {
             switch (msg.what) {
+                case MESSAGE_SCANDIR:
+                    synchronized(messages) { // 清空消息
+                        String msgName = String.format("%s", MESSAGE_SCANDIR);
+                        messages.put(msgName, null);
+                    }
+                    scanDir();
+                    break;
                 case MESSAGE_INIT:
                     /* debug start */
                     Log.d(LOGTAG, String.format("case MESSAGE_INIT"));
                     /* debug end */
-                    File file = new File(rootDir + File.separatorChar);
-                    if (!file.exists()) {
-                        file.mkdirs();
-                    }
-                    File ruleFile = new File(ruleFilename);
-                    if (ruleFile.exists() && 
-                            System.currentTimeMillis() - ruleFile.lastModified() >= (Integer)NLog.get("ruleExpires") * 24 * 60 * 60 * 1000) {
-                        // 存在并且没过期
-                        try {
-                            FileInputStream fis = new FileInputStream(ruleFilename);
-                            Integer len = fis.available();
-                            byte[] buffer = new byte[len];
-                            fis.read(buffer);
-                            String ruleText = new String(buffer);
-                            fis.close();
-                            NLog.updateRule(ruleText);
-                            /* debug start */
-                            Log.d(LOGTAG, String.format("read '%s'\n===body====\n%s", ruleFilename, ruleText));
-                            /* debug end */
-                            
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    try {
+                        File file = new File(rootDir + File.separatorChar);
+                        if (!file.exists()) {
+                            file.mkdirs();
                         }
-                    } else {
-                        loadRule();
+                        File ruleFile = new File(ruleFilename);
+                        if (ruleFile.exists() && 
+                                System.currentTimeMillis() - ruleFile.lastModified() >= 
+                                NLog.getInteger("ruleExpires") * 24 * 60 * 60 * 1000) {
+                            // 存在并且没过期
+                            try {
+                                FileInputStream fis = new FileInputStream(ruleFilename);
+                                Integer len = fis.available();
+                                byte[] buffer = new byte[len];
+                                fis.read(buffer);
+                                String ruleText = new String(buffer);
+                                fis.close();
+                                NLog.updateRule(ruleText);
+                                
+                                /* debug start */
+                                Log.d(LOGTAG, String.format("read '%s'\n===body====\n%s", ruleFilename, ruleText));
+                                /* debug end */
+                                
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            loadRule();
+                        }
+                    } catch(Exception e) {
+                        /* debug start */
+                        e.printStackTrace();
+                        /* debug end */
                     }
                     break;
                 case MESSAGE_SAVEFILE: {
@@ -706,11 +855,10 @@ public class NStorage {
                     break;
                 }
                 case MESSAGE_POSTFILE: {
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("case MESSAGE_POSTFILE"));
-                    /* debug end */
-                    
                     PostItem postItem = (PostItem)msg.obj;
+                    /* debug start */
+                    Log.d(LOGTAG, String.format("case MESSAGE_POSTFILE locked: %s", postItem.locked));
+                    /* debug end */
                     synchronized(messages) { // 清空消息
                         String msgName = String.format("%s.%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
                         messages.put(msgName, null);
@@ -728,6 +876,38 @@ public class NStorage {
     private static Timer sendTimer = null;
     
     /**
+     * 等待发送的文件
+     */
+    private static Pattern dataFilePattern = Pattern.compile("\\b_nlog(?:_(\\d+))?_(\\w+\\.[a-f0-9]{32})(?:\\.([a-z0-9]+))?\\.(locked|dat)$");
+    // '_nlog_1_wenku.01234567890123456789012345678901.h0123456.locked'
+    // '_nlog_1_wenku.01234567890123456789012345678901.dat'
+
+    /**
+     * 发送扫描目录的消息
+     * @return 返回是否发送消息
+     */
+    private static Boolean sendMessage_scanDir() {
+        Boolean result = false;
+        synchronized(messages) { // 消息正在发送的途中
+            String msgName = String.format("%s", MESSAGE_SCANDIR);
+            Message m = messages.get(msgName);
+            if (m == null) { // 是否有相同的消息在处理
+                m = storageHandler.obtainMessage(MESSAGE_SCANDIR, 0, 0, null);
+                storageHandler.sendMessageDelayed(m, 5000);
+                messages.put(msgName, m);
+                result = true;
+                /* debug start */
+                Log.d(LOGTAG, String.format("MESSAGE_SCANDIR '%s' message send", msgName));
+                /* debug end */
+            } else {
+                /* debug start */
+                Log.d(LOGTAG, String.format("MESSAGE_SCANDIR message sending..."));
+                /* debug end */
+            }
+        }
+        return result;
+    }
+    /**
      * 发送提交文件的消息
      * @param item 提交项，item{ name, locked }
      * @return 返回是否发送消息
@@ -742,9 +922,13 @@ public class NStorage {
                 storageHandler.sendMessageDelayed(m, 5000);
                 messages.put(msgName, m);
                 result = true;
+                /* debug start */
                 Log.d(LOGTAG, String.format("MESSAGE_POSTFILE '%s' message send", msgName));
+                /* debug end */
             } else {
+                /* debug start */
                 Log.d(LOGTAG, String.format("MESSAGE_POSTFILE message sending..."));
+                /* debug end */
             }
         }
         return result;
@@ -762,12 +946,16 @@ public class NStorage {
             Message m = messages.get(msgName);
             if (m == null) { // 是否有相同的消息在处理
                 m = storageHandler.obtainMessage(MESSAGE_SAVEFILE, 0, 0, item);
-                storageHandler.sendMessageDelayed(m, 1000);
+                storageHandler.sendMessageDelayed(m, 100);
                 messages.put(msgName, m);
                 result = true;
+                /* debug start */
                 Log.d(LOGTAG, String.format("MESSAGE_SAVEFILE '%s' message send", msgName));
+                /* debug end */
             } else {
+                /* debug start */
                 Log.d(LOGTAG, String.format("MESSAGE_SAVEFILE message sending..."));
+                /* debug end */
             }
         }
         return result;
@@ -798,6 +986,15 @@ public class NStorage {
             Log.w(NLog.class.getName(), "init() Can't repeat initialization.");
             return;
         }
+        rootDir = NLog.getContext().getFilesDir() + File.separator + "_nlog_cache";
+        
+        /* debug start */
+        //rootDir = Environment.getExternalStorageDirectory() + File.separator + "_nlog_cache"; // 放到SD卡方便调试
+        /* debug end */
+        
+        ruleFilename = rootDir + File.separator + "rules.dat";
+        cacheFileFormat = rootDir + File.separator + "_nlog_%s_%s.dat";
+
         initCompleted = true;
         
         TelephonyManager tm = (TelephonyManager)NLog.getContext().getSystemService(Context.TELEPHONY_SERVICE);
@@ -818,24 +1015,17 @@ public class NStorage {
         
         sendTimer = new Timer();
         sendTimer.schedule(new TimerTask() {
-            /**
-             * 等待发送的文件
-             */
-            private Pattern dataFilePattern = Pattern.compile("\\b_nlog(?:_(\\d+))?_(\\w+\\.[a-f0-9]{32})(?:\\.([a-z0-9]+))?\\.(locked|dat)$");
-            // '_nlog_1_wenku.01234567890123456789012345678901.h0123456.locked'
-            // '_nlog_1_wenku.01234567890123456789012345678901.dat'
-            
             @Override
             public void run() {
                 Long now = System.currentTimeMillis();
-                Integer sendInterval = NLog.safeInteger(NLog.get("sendInterval"), 120);
-                Integer sendIntervalWifi = NLog.safeInteger(NLog.get("sendIntervalWifi"), 60);
+                Integer sendInterval = NLog.getInteger("sendInterval");
+                Integer sendIntervalWifi = NLog.getInteger("sendIntervalWifi");
                 if (!lastScanExists) { // 上次没扫描到文件，增加延迟
                     sendInterval += (int)(sendInterval * 1.5);
                     sendIntervalWifi += (int)(sendIntervalWifi * 1.5);
                 }
                 Boolean onlywifi = NLog.safeBoolean(NLog.get("onlywifi"), false);
-                if (now - lastScanTime < Math.min(sendInterval, sendIntervalWifi)) {
+                if (now - lastScanTime < Math.min(sendInterval, sendIntervalWifi) * 1000) {
                     return;
                 }
                 
@@ -843,59 +1033,20 @@ public class NStorage {
                 if (!isNetworkConnected()) {
                     return;
                 } else if (checkWifiConnected()) {
-                    if (now - lastScanTime < sendIntervalWifi) { // wifi
+                    if (now - lastScanTime < sendIntervalWifi * 1000) { // wifi
                         return;
                     }
                 } else {
                     if (onlywifi) { // 只在wifi下
                         return;
                     }
-                    if (now - lastScanTime < sendInterval) { //wifi
+                    if (now - lastScanTime < sendInterval * 1000) { //wifi
                         return;
                     }
                 }
-                lastScanTime = now;
-                lastScanExists = false;
-                Integer storageExpires = NLog.safeInteger(NLog.get("storageExpires"), 10);
-
-                File file = new File(rootDir + File.separatorChar);
-                for (File subFile : file.listFiles()) {
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("file : %s(%sbyte).", subFile.getName(), subFile.length()));
-                    /* debug end */
-                    
-                    Matcher matcher = dataFilePattern.matcher(subFile.getName());
-                    if (!matcher.find()) { // 不符合nlog文件名
-                        continue;
-                    }
-                    
-                    // 数据过期时间
-                    if (System.currentTimeMillis() - subFile.lastModified() >= storageExpires * 24 * 60 * 60 * 1000) {
-                        /* debug start */
-                        Log.d(LOGTAG, String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
-                        /* debug end */
-                        subFile.delete();
-                        continue;
-                    }
-                    
-                    String version = matcher.group(1);
-                    String itemname = matcher.group(2); // 项名
-                    String extname = matcher.group(4); // 扩展名
-                    if (!fileVersion.equals(version)) { // 不兼容的版本
-                        /* debug start */
-                        Log.d(LOGTAG, String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
-                        /* debug end */
-                        subFile.delete();
-                        continue;
-                    }
-                    // 开始发送文件
-                    if (sendMessage_postFile(new PostItem(itemname, "locked".equals(extname) ? subFile.getName() : null))) { // 发送成功
-                        lastScanExists = true;
-                        return;
-                    }
-                }
+                sendMessage_scanDir();
             }
-        }, 100, 30000);
+        }, 60000, 60000);
 
     }
 }
