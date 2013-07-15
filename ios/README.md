@@ -1,6 +1,23 @@
 NLog(iOS)统计框架使用指南
 ====
 
+* [概要](#)
+* [集成指南](#-1)
+    * [下载SDK](#sdk)
+    * [加入XCode工程](#xcode)
+    * [发送日志](#-2)
+* [日志API说明](#api)
+    * [send](#send)
+    * [sendView](#sendview)
+    * [sendEvent](#sendevent)
+    * [sendTiming](#sendtiming)
+    * [sendException](#sendexception)
+    * [set](#set)
+* [发送策略说明](#-3)
+* [配置介绍](#-4)
+* [多统计模块](#-5)
+* [日志发送格式](#-6)
+
 ## 概要
 
 NLog是一套管理多个统计模块的Native实现框架，借鉴了[alog](https://github.com/uxrp/alog)的设计思路，将每个统计模块的字段统一管理起来。
@@ -20,7 +37,7 @@ NLog是一套管理多个统计模块的Native实现框架，借鉴了[alog](htt
     `TARGETS-->Build Phases-->Link Binary With Libraries--> + -->libz.dylib`
 * 嵌入代码
     打开`*AppDelegate.m`(*代表你的工程名字），在
-    
+
     ```Objective-C
     - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     ```
