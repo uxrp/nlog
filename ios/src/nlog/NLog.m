@@ -72,6 +72,8 @@ static NLog * _sharedInstance = nil;
         _logConfig = [[NLogConfig sharedInstance] retain];
         
         _sender = [[NSender sharedInstance] retain];
+        
+        [[NTracker getTracker:_appId] set:@"aid" value:_appId];
     }
     return self;
 }
@@ -87,6 +89,8 @@ static NLog * _sharedInstance = nil;
         _logConfig = [[NLogConfig sharedInstanceWith:configs] retain];
         
         _sender = [[NSender sharedInstance] retain];
+        
+        [[NTracker getTracker:_appId] set:@"aid" value:_appId];
     }
     return self;
 }

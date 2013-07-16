@@ -26,17 +26,24 @@ NLog是一套管理多个统计模块的Native实现框架，借鉴了[alog](htt
 
 ### 下载SDK
 
-进入[https://github.com/uxrp/nlog/tree/master/ios/dist](https://github.com/uxrp/nlog/tree/master/ios/dist)，下载`libNLog.a`和`NLog.h`两个文件到本地。
+进入[https://github.com/uxrp/nlog/tree/master/ios/dist](https://github.com/uxrp/nlog/tree/master/ios/dist)，下载`nlog.framework.zip`到本地，解压缩后得到`nlog.framework`文件夹。
 
 ### 加入XCode工程
 
 * 导入SDK
-    * __导入插件__
-    请在你的工程目录结构中，右键选择`Add->Existing Files…`，选择这两个文件。或者将这两个文件拖入XCode工程目录结构中，在弹出的界面中勾选`Copy items into destination group's folder(if needed)`, 并确保`Add To Targets`勾选相应的target。
+    * __导入SDK__
+    打开需要加入SDK的工程，将`nlog.framework`文件夹拖入XCode工程目录结构中，在弹出的界面中勾选`Copy items into destination group's folder(if needed)`, 并确保`Add To Targets`勾选相应的target。
     * __添加依赖__
     `TARGETS-->Build Phases-->Link Binary With Libraries--> + -->libz.dylib`
+    `TARGETS-->Build Phases-->Link Binary With Libraries--> + -->SystemConfiguration.framework`
 * 嵌入代码
-    打开`*AppDelegate.m`(*代表你的工程名字），在
+    打开`*AppDelegate.m`(*代表你的工程名字），先在头部引入SDK：
+
+    ```Objective-C
+    #import <nlog/NLog.h>
+
+    ```
+    然后在
 
     ```Objective-C
     - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

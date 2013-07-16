@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E1DA067A1795161C00C306B3"
-               BuildableName = "nlog.framework"
-               BlueprintName = "nlog"
-               ReferencedContainer = "container:nlog.xcodeproj">
+               BlueprintIdentifier = "E143974E1795576200AB6AC3"
+               BuildableName = "nlogdemo.app"
+               BlueprintName = "nlogdemo"
+               ReferencedContainer = "container:nlogdemo.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,16 +29,34 @@
       buildConfiguration = "Debug">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "E143974E1795576200AB6AC3"
+            BuildableName = "nlogdemo.app"
+            BlueprintName = "nlogdemo"
+            ReferencedContainer = "container:nlogdemo.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "E143974E1795576200AB6AC3"
+            BuildableName = "nlogdemo.app"
+            BlueprintName = "nlogdemo"
+            ReferencedContainer = "container:nlogdemo.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -48,6 +66,15 @@
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
+      <BuildableProductRunnable>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "E143974E1795576200AB6AC3"
+            BuildableName = "nlogdemo.app"
+            BlueprintName = "nlogdemo"
+            ReferencedContainer = "container:nlogdemo.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
