@@ -215,7 +215,96 @@ NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
 
 __本地配置__
 
-本地配置在SDK的`NLog.h`文件中，以宏定义的方式存在，如需修改按照其中的说明自行调整即可；
+可以在统计启动前修改默认的配置项，需要注意的是本地配置项优先级低于云端配置，但不是所有的配置项都是由云端来控制的。
+
+通过以下方法来设置默认配置项：
+
+```Objective-C
+/**
+ * 初始化统计框架
+ * appid    当前APP的标识 
+ * configs  默认配置
+ */
++ (void)startWithAppId:(NSString *) appid configs:(NSDictionary *)configs;
+```
+
+例如：
+
+```Objective-C
+[NLog startWithAppId:@"NlogFrameworkDemoID"
+                 configs:[NSDictionary dictionaryWithObjectsAndKeys:
+                          @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller4", @"receiverUrl"
+                          , nil]];
+```
+
+除此之外其他的配置项如以下类别所示：
+
+<table>
+	<tr>
+		<th>名称</th><th>含义</th><th>默认值</th><th>是否云端可控</th>
+	</tr>
+	<tr>
+		<td>receiverUrl</td>
+		<td>日志服务器地址</td>
+		<td>http://kstj.baidu.com/ctj/88/</td>
+		<td>否</td>
+	</tr>
+
+        <tr>
+                <td>remoteRuleUrl</td>
+                <td>云端策略文件地址</td>
+                <td>待定</td>
+                <td>否</td>
+        </tr>
+	<tr>
+                <td>remoteRuleExpires</td>
+                <td>云端策略文件过期时间</td>
+                <td>1（天）</td>
+                <td>否</td>
+        </tr>
+        <tr>
+                <td>onlyWifi</td>
+                <td>是否只在wifi下发送日志</td>
+                <td>NO</td>
+                <td>是</td>
+        </tr>
+        <tr>
+                <td>sendInterval</td>
+                <td>循环发送周期</td>
+                <td>120（秒）</td>
+                <td>是</td>
+        </tr>
+        <tr>
+		<td>sendIntervalWifi</td>
+                <td>Wifi下循环发送周期</td>
+                <td>60（秒）</td>
+                <td>是</td>
+        </tr>
+        <tr>
+                <td>sessionTimeout</td>
+                <td>session过期时间</td>
+                <td>30（秒）</td>
+                <td>是</td>
+        </tr>
+        <tr>
+                <td>storageExpires</td>
+                <td>本地日志缓存有效期</td>
+                <td>10（天）</td>
+                <td>是</td>
+        </tr>
+        <tr>
+                <td>sendMaxLength</td>
+                <td>日志最大发送大小</td>
+                <td>200（KB）</td>
+                <td>是</td>
+        </tr>
+        <tr>
+                <td>sampleRate</td>
+                <td>采样率</td>
+                <td>1（100%）</td>
+                <td>是</td>
+        </tr>
+</table>
 
 __云端配置__
 
