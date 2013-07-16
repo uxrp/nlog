@@ -28,6 +28,8 @@ NLog是一套管理多个统计模块的Native实现框架，借鉴了[alog](htt
 
 进入[https://github.com/uxrp/nlog/tree/master/ios/dist](https://github.com/uxrp/nlog/tree/master/ios/dist)，下载`nlog.framework.zip`到本地，解压缩后得到`nlog.framework`文件夹。
 
+__注__：nlog实现时使用了[JSONKit](https://github.com/johnezang/JSONKitl)，如果你的项目中也有使用的话下载时请选择`nlog.framework-nojsonkit.zip`。
+
 ### 加入XCode工程
 
 * 导入SDK
