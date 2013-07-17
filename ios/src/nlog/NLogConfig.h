@@ -11,7 +11,7 @@
 
 
 // 服务器日志接收路径
-//#define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
+// #define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
 #define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/?command=nlog-post"
 
 // 版本

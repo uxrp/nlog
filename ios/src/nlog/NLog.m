@@ -10,8 +10,9 @@
 //  +TODO:挂起前发送数据
 //  +TODO:文档
 //  +TODO:lib包（framework)
-//  *TODO:JSONKit外置版本
-//  *TODO:真机测试
+//  +TODO:JSONKit外置版本
+//  +TODO:真机测试
+//  TODO: 旧Log在立即发送接口调用后不发送
 //  *TODO:field protocol
 //  *TODO:多tracker
 //  TODO:加密

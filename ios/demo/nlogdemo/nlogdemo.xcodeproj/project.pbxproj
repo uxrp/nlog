@@ -22,14 +22,12 @@
 		E14397731795576200AB6AC3 /* SecondViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E14397721795576200AB6AC3 /* SecondViewController.m */; };
 		E14397751795576200AB6AC3 /* second.png in Resources */ = {isa = PBXBuildFile; fileRef = E14397741795576200AB6AC3 /* second.png */; };
 		E14397771795576200AB6AC3 /* second@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E14397761795576200AB6AC3 /* second@2x.png */; };
-		E143977A1795576200AB6AC3 /* FirstViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = E14397781795576200AB6AC3 /* FirstViewController_iPhone.xib */; };
 		E143977D1795576200AB6AC3 /* FirstViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = E143977B1795576200AB6AC3 /* FirstViewController_iPad.xib */; };
 		E14397801795576200AB6AC3 /* SecondViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = E143977E1795576200AB6AC3 /* SecondViewController_iPhone.xib */; };
 		E14397831795576200AB6AC3 /* SecondViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = E14397811795576200AB6AC3 /* SecondViewController_iPad.xib */; };
 		E143978C179557C100AB6AC3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E143978B179557C100AB6AC3 /* libz.dylib */; };
 		E143978E179557C700AB6AC3 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E143978D179557C700AB6AC3 /* SystemConfiguration.framework */; };
-		E143979A17956BD600AB6AC3 /* nlog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E143979917956BD600AB6AC3 /* nlog.framework */; };
-		E143979D17956C0700AB6AC3 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = E143979C17956C0700AB6AC3 /* JSONKit.m */; };
+		E14397AF1796476500AB6AC3 /* nlog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397AE1796476500AB6AC3 /* nlog.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,15 +52,12 @@
 		E14397721795576200AB6AC3 /* SecondViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SecondViewController.m; sourceTree = "<group>"; };
 		E14397741795576200AB6AC3 /* second.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = second.png; sourceTree = "<group>"; };
 		E14397761795576200AB6AC3 /* second@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "second@2x.png"; sourceTree = "<group>"; };
-		E14397791795576200AB6AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/FirstViewController_iPhone.xib; sourceTree = "<group>"; };
 		E143977C1795576200AB6AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/FirstViewController_iPad.xib; sourceTree = "<group>"; };
 		E143977F1795576200AB6AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SecondViewController_iPhone.xib; sourceTree = "<group>"; };
 		E14397821795576200AB6AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/SecondViewController_iPad.xib; sourceTree = "<group>"; };
 		E143978B179557C100AB6AC3 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		E143978D179557C700AB6AC3 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		E143979917956BD600AB6AC3 /* nlog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = nlog.framework; sourceTree = "<group>"; };
-		E143979B17956C0700AB6AC3 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
-		E143979C17956C0700AB6AC3 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
+		E14397AE1796476500AB6AC3 /* nlog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = nlog.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +70,7 @@
 				E14397531795576200AB6AC3 /* UIKit.framework in Frameworks */,
 				E14397551795576200AB6AC3 /* Foundation.framework in Frameworks */,
 				E14397571795576200AB6AC3 /* CoreGraphics.framework in Frameworks */,
-				E143979A17956BD600AB6AC3 /* nlog.framework in Frameworks */,
+				E14397AF1796476500AB6AC3 /* nlog.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,7 +85,7 @@
 				E14397581795576200AB6AC3 /* nlogdemo */,
 				E14397511795576200AB6AC3 /* Frameworks */,
 				E14397501795576200AB6AC3 /* Products */,
-				E143979917956BD600AB6AC3 /* nlog.framework */,
+				E14397AE1796476500AB6AC3 /* nlog.framework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -115,8 +110,6 @@
 		E14397581795576200AB6AC3 /* nlogdemo */ = {
 			isa = PBXGroup;
 			children = (
-				E143979B17956C0700AB6AC3 /* JSONKit.h */,
-				E143979C17956C0700AB6AC3 /* JSONKit.m */,
 				E14397611795576200AB6AC3 /* AppDelegate.h */,
 				E14397621795576200AB6AC3 /* AppDelegate.m */,
 				E143976A1795576200AB6AC3 /* FirstViewController.h */,
@@ -127,7 +120,6 @@
 				E14397721795576200AB6AC3 /* SecondViewController.m */,
 				E14397741795576200AB6AC3 /* second.png */,
 				E14397761795576200AB6AC3 /* second@2x.png */,
-				E14397781795576200AB6AC3 /* FirstViewController_iPhone.xib */,
 				E143977B1795576200AB6AC3 /* FirstViewController_iPad.xib */,
 				E143977E1795576200AB6AC3 /* SecondViewController_iPhone.xib */,
 				E14397811795576200AB6AC3 /* SecondViewController_iPad.xib */,
@@ -209,7 +201,6 @@
 				E14397701795576200AB6AC3 /* first@2x.png in Resources */,
 				E14397751795576200AB6AC3 /* second.png in Resources */,
 				E14397771795576200AB6AC3 /* second@2x.png in Resources */,
-				E143977A1795576200AB6AC3 /* FirstViewController_iPhone.xib in Resources */,
 				E143977D1795576200AB6AC3 /* FirstViewController_iPad.xib in Resources */,
 				E14397801795576200AB6AC3 /* SecondViewController_iPhone.xib in Resources */,
 				E14397831795576200AB6AC3 /* SecondViewController_iPad.xib in Resources */,
@@ -227,7 +218,6 @@
 				E14397631795576200AB6AC3 /* AppDelegate.m in Sources */,
 				E143976C1795576200AB6AC3 /* FirstViewController.m in Sources */,
 				E14397731795576200AB6AC3 /* SecondViewController.m in Sources */,
-				E143979D17956C0700AB6AC3 /* JSONKit.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,14 +230,6 @@
 				E143975C1795576200AB6AC3 /* en */,
 			);
 			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		E14397781795576200AB6AC3 /* FirstViewController_iPhone.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				E14397791795576200AB6AC3 /* en */,
-			);
-			name = FirstViewController_iPhone.xib;
 			sourceTree = "<group>";
 		};
 		E143977B1795576200AB6AC3 /* FirstViewController_iPad.xib */ = {
@@ -288,6 +270,7 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Lisa Li (W32P6KQY8A)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -303,6 +286,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE = "36A01172-F849-4627-BD92-6936D23255B9";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -319,6 +304,7 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Lisa Li (W32P6KQY8A)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -327,6 +313,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PROVISIONING_PROFILE = "36A01172-F849-4627-BD92-6936D23255B9";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -336,6 +324,8 @@
 		E14397871795576200AB6AC3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -343,7 +333,10 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "nlogdemo/nlogdemo-Prefix.pch";
 				INFOPLIST_FILE = "nlogdemo/nlogdemo-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -351,6 +344,8 @@
 		E14397881795576200AB6AC3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -358,7 +353,10 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "nlogdemo/nlogdemo-Prefix.pch";
 				INFOPLIST_FILE = "nlogdemo/nlogdemo-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

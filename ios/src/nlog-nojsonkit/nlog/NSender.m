@@ -145,8 +145,8 @@ static NSender* _sharedInstance = nil;
             }
             else if (![logDate isEqualToString:currentDateStr]) {
                 // 日志是否为空
-                NSNumber* logsCount = [[logItem objectForKey:@"logs"] count];
-                NSNumber* lockedLogsCount = [[logItem objectForKey:@"lockedLogs"] count];
+                int logsCount = [[logItem objectForKey:@"logs"] count];
+                int lockedLogsCount = [[logItem objectForKey:@"lockedLogs"] count];
                 
                 // 获取有效期校验数据
                 NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
@@ -159,7 +159,7 @@ static NSender* _sharedInstance = nil;
                 
                 if (
                     // 无效空存储单元
-                    [logsCount intValue] + [lockedLogsCount intValue] == 0
+                    logsCount + lockedLogsCount == 0
                     // 过期数据
                     || todayTimestamp - dateTimestamp > expires
                     ) {

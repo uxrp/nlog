@@ -147,7 +147,7 @@ static NStorage * _sharedInstance = nil;
         NSString *lastItem = [logs lastObject];
     
         // 如果超出限制则新建一个单元
-        if ( lastItem == nil || [lastItem length] + [paramsStr length] > [[NLogConfig get:@"maxSendLength"] integerValue] * 1024 ) {
+        if ( lastItem == nil || [lastItem length] + [paramsStr length] > [[NLogConfig get:@"sendMaxLength"] integerValue] * 1024 ) {
             
 //            NSLog(@"before encrypt length:%d", [paramsStr length]);
             

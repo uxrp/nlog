@@ -7,7 +7,6 @@
 //
 
 #import "NLogConfig.h"
-#import "JSONKit.h"
 
 #define NLOG_POLICY_KEY  @"nlog_policy"
 
