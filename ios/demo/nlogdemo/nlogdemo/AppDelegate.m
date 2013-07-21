@@ -41,12 +41,33 @@
     self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
     
-    [NLog startWithAppId:@"NlogFrameworkDemo"];
+    [NLog startWithAppId:@"wenku"];
+    
+//    [[NLog getTracker:@"wenku"] setSampleRate:0.05];
+    
+    [NLog set:@"protocolParameter"
+          val:[NSDictionary dictionaryWithObjectsAndKeys:
+               @"protocolkey", @"originalkey",
+               @"ea",@"eventAction"
+               , nil]];
+    
+//    [NLog set:@"test" val:1];
     
     [NLog send:@"millertype"
         params:[NSDictionary dictionaryWithObjectsAndKeys:
                 @"miller-framework-value",@"nlogframework",
                 nil]];
+    
+    [NLog send:@"test protocol"
+        params:[NSDictionary dictionaryWithObjectsAndKeys:
+                @"originalval",@"originalkey",
+                nil]];
+    
+    /*
+    id var = 1;
+    
+    NSLog(@"%@", [var class]);
+    */
     
     return YES;
 }

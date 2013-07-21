@@ -19,7 +19,7 @@
 		E1DA06A21795167D00C306B3 /* NSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06921795167D00C306B3 /* NSession.m */; };
 		E1DA06A31795167D00C306B3 /* NStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06931795167D00C306B3 /* NStorage.h */; };
 		E1DA06A41795167D00C306B3 /* NStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06941795167D00C306B3 /* NStorage.m */; };
-		E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06951795167D00C306B3 /* NStringExtension.h */; };
+		E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06951795167D00C306B3 /* NStringExtension.h */; settings = {ATTRIBUTES = (); }; };
 		E1DA06A61795167D00C306B3 /* NStringExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06961795167D00C306B3 /* NStringExtension.m */; };
 		E1DA06A71795167D00C306B3 /* NTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06971795167D00C306B3 /* NTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E1DA06A81795167D00C306B3 /* NTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06981795167D00C306B3 /* NTracker.m */; };
@@ -137,11 +137,11 @@
 				E1DA06991795167D00C306B3 /* NLog.h in Headers */,
 				E1DA06A71795167D00C306B3 /* NTracker.h in Headers */,
 				E1DA06AC179516B400C306B3 /* JSONKit.h in Headers */,
+				E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */,
 				E1DA069D1795167D00C306B3 /* NReachability.h in Headers */,
 				E1DA069F1795167D00C306B3 /* NSender.h in Headers */,
 				E1DA06A11795167D00C306B3 /* NSession.h in Headers */,
 				E1DA06A31795167D00C306B3 /* NStorage.h in Headers */,
-				E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -397,6 +397,7 @@
 				E1DA06881795161C00C306B3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

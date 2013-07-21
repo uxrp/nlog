@@ -3,6 +3,14 @@
 //  BaiduMobStatSample
 //
 //  Created by Miller on 13-7-8.
+//  TODO:异常捕获（入口参数类型检查，尤其是ID类型）
+//  TODO:UnitTest
+//  TODO:输出日志优化（输出开关、内容）
+//  +TODO:加密
+//  +TODO:抽样率
+//  +TODO:field protocol
+//  +TODO:多tracker
+//  +TODO:线上地址POST调通
 //  +TODO:程序调通
 //  +TODO:启动发送时应该将当前启动时收集的数据发送出去
 //  +TODO:CUID [NLog set]
@@ -12,17 +20,10 @@
 //  +TODO:lib包（framework)
 //  +TODO:JSONKit外置版本
 //  +TODO:真机测试
-//  TODO: 旧Log在立即发送接口调用后不发送
-//  *TODO:field protocol
-//  *TODO:多tracker
-//  TODO:加密
-//  TODO:抽样率
+//  +TODO:旧Log在立即发送接口调用后不发送(在存在多个item时出现，不过请求均已发出，有可能是测试后端处理问题)
 //  +TODO:本地存储协议版本
 //  +TODO:网络异常测试
 //  +TODO:数据过期测试
-//  TODO:输出日志优化（输出开关、内容）
-//  TODO:异常捕获
-//  TODO:UnitTest
 //
 
 #import "NLog.h"
@@ -31,6 +32,7 @@
 #import "NStorage.h"
 #import "NLogConfig.h"
 #import "NSender.h"
+#import "NStringExtension.h"
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIApplication.h>
 
@@ -77,6 +79,8 @@ static NLog * _sharedInstance = nil;
         _sender = [[NSender sharedInstance] retain];
         
         [[NTracker getTracker:_appId] set:@"aid" value:_appId];
+        
+        NSLog(@"mac addr:%@", [NStringExtension getMacAddress]);
     }
     return self;
 }

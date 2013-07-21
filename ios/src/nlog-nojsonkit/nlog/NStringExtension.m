@@ -26,23 +26,31 @@
 
 + (NSString *)encrypt:(NSString *)sourceStr
 {
-    NSString * token = [NStringExtension md5:@"5D97EEF8-3127-4859-2222-82E6C8FABD8A"];
-    const char * tokenBytes = [token UTF8String];
-    const char * targetBytes = [sourceStr UTF8String];
-    int targetLength = strlen(targetBytes);
-    unsigned char *resultBuffer = malloc(targetLength);
+    NSString* result;
     
-    for (int i = 0; i < targetLength; i++) {
-        resultBuffer[i] = targetBytes[i] ^ tokenBytes[ i % strlen(tokenBytes)];
+    @try{
+        
+        NSString * token = [NStringExtension md5:@"5D97EEF8-3127-4859-2222-82E6C8FABD8A"];
+        const char * tokenBytes = [token UTF8String];
+        const char * targetBytes = [sourceStr UTF8String];
+        int targetLength = [sourceStr length];
+        unsigned char *resultBuffer = malloc(targetLength);
+        
+        for (int i = 0; i < targetLength; i++) {
+            resultBuffer[i] = targetBytes[i] ^ tokenBytes[ i % strlen(tokenBytes)];
+        }
+        
+        
+        result = [[NSString alloc] initWithBytesNoCopy:resultBuffer length:targetLength encoding:NSUTF8StringEncoding freeWhenDone:NO];
+    }
+    @catch(NSException* ex){
+        result = sourceStr;
+        
+        NSLog(@"At NStringExtension encrypt, reason: %@", [ex reason]);
     }
     
-    //    NSString * resultString = [NSString stringWithCString:resultBuffer encoding:UTF]
+    return result;
     
-    //    NSData * data = [NSData dataWithBytesNoCopy:resultBuffer length:targetLength];
-    //    NSString * result = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    
-    //    return [NSString stringWithUTF8String:(const char *)resultBuffer];
-    return [[NSString alloc] initWithBytesNoCopy:resultBuffer length:targetLength encoding:NSASCIIStringEncoding freeWhenDone:NO];
 }
 
 

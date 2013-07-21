@@ -11,8 +11,11 @@
 @interface NTracker : NSObject{
     NSString* name;
     Boolean running;
-    NSNumber* sampleRate;
+    Boolean isHit;
+    Boolean needCalc;
+    double sampleRate;
     NSMutableDictionary* fields;
+    NSDictionary* fieldsProtocol;
 }
 
 @property (nonatomic,retain) NSString* name;
@@ -28,12 +31,6 @@
  * 停止记录日志
  */
 - (void)stop;
-
-/**
- * 设置字段映射表，发送数据时将会替换。
- * TODO:待实现
- */
-- (void)setDataKeyMap:(NSDictionary *)map;
 
 /**
  * 记录日志
@@ -97,7 +94,7 @@
  * 设置采样率
  * rate 采样率(0 - 1)
  */
-- (void)setSampleRate: (NSNumber *)rate;
+- (void)setSampleRate: (double)rate;
 
 /**
  * 设置公共数据(每个日志请求都将携带该数据)

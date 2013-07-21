@@ -17,6 +17,8 @@ NLog(iOS)统计框架使用指南
 * [配置介绍](#-4)
 * [多统计模块](#-5)
 * [日志发送格式](#-6)
+* [修改数据发送字段](#-7)
+* [设置抽样率](#-8)
 
 ## 概要
 
@@ -89,7 +91,7 @@ NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
    immediately:YES];
 ```
 
-即在`send`方法中再传入`immediately:YES`参数，调用后框架会立即尝试发送，如遇日志发送失败则会在下次发送时机再次尝试。关于发送策略可以参考__发送策略说明__。
+即在`send`方法中再传入`immediately:YES`参数，调用后框架会立即尝试发送，如遇日志发送失败则会在下次发送时机再次尝试。关于发送策略可以参考 __发送策略说明__。
 
 ## 日志API说明
 
@@ -309,7 +311,7 @@ __本地配置__
         </tr>
         <tr>
                 <td>sampleRate</td>
-                <td>采样率</td>
+                <td>抽样率</td>
                 <td>1（100%）</td>
                 <td>是</td>
         </tr>
@@ -420,5 +422,62 @@ id<NTracker> tracker = [NLog getTracker:@"ue-data"];
 
 假如有上述代码，而且服务器地址为`http://www.x.com/log.php`，则发送日志时会向以下地址POST记录的日志数据：
 `http://www.x.com/log.php?uid=ad31ds134&channel=app_fromxxx&&appversion=1.2.1`
+
+## 修改数据发送字段
+
+为了减小发送到服务器的无效数据，NLog支持字段写和发送分离，即记录日志时可以使用易读的字段，发送时可以使用简单的字段，减少不必要的浪费。
+
+使用时可以继续使用`set`接口，只不过字段名应该设为`protocolParameter`，参数为`NSDictionary`类型。
+
+具体例子如下：
+
+```Objective-C
+[NLog set:@"protocolParameter"
+          val:[NSDictionary dictionaryWithObjectsAndKeys:
+               @"ok", @"originalkey",
+               , nil]];
+
+// 在未使用protocolParameter情况下，发送到服务器的数据将是
+// originalkey=originalval，使用后变为ok=originalval
+[NLog send:@"test protocol"
+        params:[NSDictionary dictionaryWithObjectsAndKeys:
+                @"originalval",@"originalkey",
+                nil]];
+```
+## 设置抽样率
+
+NLog的抽样率值为0 - 1，默认抽样率为1，即100%。
+设置抽样率有两种方式，云端和运行时。
+
+__云端设置__
+
+首先我们看下云端策略文件抽样率的格式：
+
+```javascript
+/**
+     * 抽样率
+     */
+    "sampleRate": {
+        /**
+         * 默认抽样率，1为全样本，0为不抽取，范围：0-1
+         */
+        "default": 1,
+        /**
+         * 追踪器名称 tracker name
+         */
+        "wenku": 0.5, // 50%
+        "speed": 1 // 全样本
+    }
+```
+其中的`sampleRate`是一个map结构，key是tracker的name（NLog中默认tracker的name为appid），也可以为所有tracker设置一个默认值；
+
+__运行时设置__
+
+通过以下方法设置即可：
+
+```javascript
+[[NLog getTracker:@"wenku"] setSampleRate:0.5];
+```
+
 
 

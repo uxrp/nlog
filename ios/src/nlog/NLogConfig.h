@@ -11,8 +11,8 @@
 
 
 // 服务器日志接收路径
-// #define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
-#define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/?command=nlog-post"
+#define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
+// #define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/?command=nlog-post"
 
 // 版本
 #define SDK_VERSION @"1.0"
@@ -46,7 +46,7 @@
 
 #define NLOG_CACHE_KEY  @"nlog_cache"
 #define CurrentTimeMillis  (long long)round ([[NSDate date] timeIntervalSince1970] * (double)1000)
-#define IS_DEBUG NO
+#define IS_DEBUG YES
 #define LOG_FORMAT_VERSION 1
 
 #endif

@@ -13,6 +13,7 @@
 #import <UIKit/UIApplication.h>
 #import "NLogConfig.h"
 #import "NReachability.h"
+#import "NStringExtension.h"
 
 
 
@@ -30,7 +31,7 @@ static NSender* _sharedInstance = nil;
 
 - (id) init{
     [super init];
-    
+        
     // 启动立即发送数据
     // [self performSelectorInBackground:@selector(_sendAll) withObject:nil];
     // 为了将启动数据尽快发送出去采取异步处理
@@ -185,9 +186,17 @@ static NSender* _sharedInstance = nil;
                 
                 NSString* head = [logItem objectForKey:@"head"];
                 
+                if (!IS_DEBUG) {
+                    head = [NStringExtension unencrypt:head];
+                }
+                
                 // 发送lockedLogs中的数据
                 for (int i = [mutableLockedLogs count] - 1; i >= 0; i--) {
                     NSString* logData = [mutableLockedLogs objectAtIndex:i];
+                    
+                    if (!IS_DEBUG) {
+                        logData = [NStringExtension unencrypt:logData];
+                    }
                     
                     BOOL successed = [self _send:
                                       [NSDictionary dictionaryWithObjectsAndKeys:
@@ -198,6 +207,10 @@ static NSender* _sharedInstance = nil;
                     // 如果发送成功则从lockedLogs中删除日志
                     if (successed == YES) {
                         [mutableLockedLogs removeObjectAtIndex:i];
+                    }
+                    // 如果发送失败则终止发送，以免在某些极端囤积日志很多的情况下导致网络繁忙
+                    else{
+                        break;
                     }
                 }
                 
@@ -243,6 +256,20 @@ static NSender* _sharedInstance = nil;
     [req setHTTPBody:gziped];
     [req setTimeoutInterval:10];
     [req addValue:@"gzip" forHTTPHeaderField:@"Content-Type"];
+    
+    // 配合日志服务器校验，需要增加额外HTTP Header
+    int rawLength = data.length;
+    int gzipLength = gziped.length;
+    
+    NSString* combineStr = [NSString stringWithFormat:@"%d%%%d", rawLength, gzipLength];
+    NSData* combineStrData = [combineStr dataUsingEncoding:NSUTF8StringEncoding];
+    
+    unsigned long result = crc32(0, combineStrData.bytes, combineStrData.length);
+    
+    [req addValue:[NSString stringWithFormat:@"%d",rawLength] forHTTPHeaderField:@"length"];
+    [req addValue:[NSString stringWithFormat:@"%d",gzipLength] forHTTPHeaderField:@"Content-Length"];
+    [req addValue:[NSString stringWithFormat:@"%lu",result] forHTTPHeaderField:@"md5"];
+    
     [NSURLConnection sendSynchronousRequest:req returningResponse:&response error:nil];
     NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
     

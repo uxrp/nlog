@@ -79,6 +79,10 @@ static NStorage * _sharedInstance = nil;
                       receiverUrl,
                       [NStringExtension urlParametersStringFromDictionary:mutableFields]];
     
+    if (!IS_DEBUG) {
+        head = [NStringExtension encrypt:head];
+    }
+    
     [log setValue:head forKey:@"head"];
     [log setValue:[NSArray array] forKey:@"logs"];
     [log setValue:[NSArray array] forKey:@"lockedLogs"];
@@ -151,9 +155,9 @@ static NStorage * _sharedInstance = nil;
             
 //            NSLog(@"before encrypt length:%d", [paramsStr length]);
             
-//            if (!IS_DEBUG) {
-//                paramsStr = [paramsStr encrypt];
-//            }
+            if (!IS_DEBUG) {
+                paramsStr = [NStringExtension encrypt:paramsStr];
+            }
             
 //            NSLog(@"after encrypt length:%d", [paramsStr length]);
             
@@ -163,17 +167,17 @@ static NStorage * _sharedInstance = nil;
         }
         else {
             
-//            if (!IS_DEBUG) {
-//                lastItem = [lastItem unencrypt];
-//            }
+            if (!IS_DEBUG) {
+                lastItem = [NStringExtension unencrypt:lastItem];
+            }
             
             // NSLog(@"lastItem:%@",lastItem);
             
             lastItem = [NSString stringWithFormat:@"%@\n%@",lastItem,paramsStr];
             
-//            if (!IS_DEBUG) {
-//                lastItem = [lastItem encrypt];
-//            }
+            if (!IS_DEBUG) {
+                lastItem = [NStringExtension encrypt:lastItem];
+            }
             
             [logs
              setObject: lastItem

@@ -100,12 +100,16 @@ static NLogConfig * _sharedInstance = nil;
         policyItem = [policy objectForKey:key];
     }
     
-    if (policyItem == nil) {
-        policyItem = [self getDefault:key];
+    if ([policyItem isKindOfClass:[NSDictionary class]] ) {
+        policyItem = [policyItem objectForKey:subkey];
+        
+        if (!policyItem && [key isEqualToString:@"sampleRate"]) {
+            policyItem = [policyItem objectForKey:@"default"];
+        }
     }
     
-    if ([policyItem isMemberOfClass:[NSDictionary class]] ) {
-        return [policyItem objectForKey:subkey];
+    if (policyItem == nil) {
+        policyItem = [self getDefault:key];
     }
 
     return policyItem;
