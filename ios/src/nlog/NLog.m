@@ -80,7 +80,6 @@ static NLog * _sharedInstance = nil;
         
         [[NTracker getTracker:_appId] set:@"aid" value:_appId];
         
-        NSLog(@"mac addr:%@", [NStringExtension getMacAddress]);
     }
     return self;
 }
