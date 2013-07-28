@@ -79,4 +79,14 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [NLog logDurationStart:@"firstview"];
+}
+
+- (void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    [NLog logDurationEnd:@"firstview"];
+}
+
 @end

@@ -212,6 +212,26 @@ NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
 ```
 用于设置公共字段，每个请求都会携带这些字段。
 
+### logDurationStart
+
+```Objective-C
+/**
+ * 记录时长数据
+ * name 时长数据名称
+ */
++ (void)logDurationStart: (NSString *)name;
+```
+
+### logDurationEnd
+
+```Objective-C
+/**
+ * 记录时长数据
+ * name 时长数据名称
+ */
++ (void)logDurationEnd: (NSString *)name;
+```
+
 ## 发送策略说明
 
 目前日志数据发送的几个时间点：
@@ -273,7 +293,7 @@ NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
 	<tr>
                 <td>remoteRuleExpires</td>
                 <td>云端策略文件过期时间</td>
-                <td>1（天）</td>
+                <td>2（天）</td>
                 <td>否</td>
         </tr>
         <tr>

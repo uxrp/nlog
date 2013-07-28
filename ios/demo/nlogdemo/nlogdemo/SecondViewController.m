@@ -7,6 +7,7 @@
 //
 
 #import "SecondViewController.h"
+#import <nlog/NLog.h>
 
 @interface SecondViewController ()
 
@@ -34,6 +35,16 @@
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [NLog logDurationStart:@"secondview"];
+}
+
+- (void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    [NLog logDurationEnd:@"secondview"];
 }
 
 @end

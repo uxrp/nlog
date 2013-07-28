@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E14397E417A56C1700AB6AC3 /* OpenUDID.h in Headers */ = {isa = PBXBuildFile; fileRef = E14397E217A56C1700AB6AC3 /* OpenUDID.h */; };
+		E14397E517A56C1700AB6AC3 /* OpenUDID.m in Sources */ = {isa = PBXBuildFile; fileRef = E14397E317A56C1700AB6AC3 /* OpenUDID.m */; };
 		E1DA06821795161C00C306B3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E1DA06801795161C00C306B3 /* InfoPlist.strings */; };
 		E1DA06991795167D00C306B3 /* NLog.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06891795167D00C306B3 /* NLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E1DA069A1795167D00C306B3 /* NLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA068A1795167D00C306B3 /* NLog.m */; };
@@ -27,6 +29,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E14397E217A56C1700AB6AC3 /* OpenUDID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDID.h; sourceTree = "<group>"; };
+		E14397E317A56C1700AB6AC3 /* OpenUDID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenUDID.m; sourceTree = "<group>"; };
 		E1DA067B1795161C00C306B3 /* nlog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nlog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1DA067F1795161C00C306B3 /* nlog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "nlog-Info.plist"; sourceTree = "<group>"; };
 		E1DA06811795161C00C306B3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -62,9 +66,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E14397E117A56BF900AB6AC3 /* OpenUDID */ = {
+			isa = PBXGroup;
+			children = (
+				E14397E217A56C1700AB6AC3 /* OpenUDID.h */,
+				E14397E317A56C1700AB6AC3 /* OpenUDID.m */,
+			);
+			name = OpenUDID;
+			sourceTree = "<group>";
+		};
 		E1DA066E1795161C00C306B3 = {
 			isa = PBXGroup;
 			children = (
+				E14397E117A56BF900AB6AC3 /* OpenUDID */,
 				E1DA06891795167D00C306B3 /* NLog.h */,
 				E1DA068A1795167D00C306B3 /* NLog.m */,
 				E1DA068B1795167D00C306B3 /* NLogConfig.h */,
@@ -127,6 +141,7 @@
 				E1DA06A11795167D00C306B3 /* NSession.h in Headers */,
 				E1DA06A31795167D00C306B3 /* NStorage.h in Headers */,
 				E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */,
+				E14397E417A56C1700AB6AC3 /* OpenUDID.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,6 +261,7 @@
 				E1DA06A41795167D00C306B3 /* NStorage.m in Sources */,
 				E1DA06A61795167D00C306B3 /* NStringExtension.m in Sources */,
 				E1DA06A81795167D00C306B3 /* NTracker.m in Sources */,
+				E14397E517A56C1700AB6AC3 /* OpenUDID.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

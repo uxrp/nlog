@@ -15,6 +15,7 @@
     Boolean needCalc;
     double sampleRate;
     NSMutableDictionary* fields;
+    NSMutableDictionary* durations;
     NSDictionary* fieldsProtocol;
 }
 
@@ -75,7 +76,7 @@
  * label    事件标签
  */
 - (void)sendTiming: (NSString *)category
-          interval: (NSTimeInterval *)interval
+          interval: (NSTimeInterval)interval
               name: (NSString *)name
              label: (NSString *)label;
 
@@ -102,5 +103,11 @@
 - (void)set:(NSDictionary *)params;
 
 - (void)set:(NSString *)key value:(id)val;
+
+/**
+ * 记录时长
+ */
+- (void)logDurationStart:(NSString *)label;
+- (void)logDurationEnd:(NSString *)label;
 
 @end

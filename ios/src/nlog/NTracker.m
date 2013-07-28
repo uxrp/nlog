@@ -9,6 +9,7 @@
 #import "NSession.h"
 #import "NLogConfig.h"
 #import "NStringExtension.h"
+#import "OpenUDID.h"
 
 static NSMutableDictionary * trackers = nil;
 
@@ -33,6 +34,28 @@ static NSMutableDictionary * trackers = nil;
         
         // 设置默认服务器路径
         [fields setValue:[NLogConfig get:@"receiverUrl"] forKey:@"receiverUrl"];
+        
+        /*默认GET字段*/
+        
+        // 数据版本
+        [fields setValue:[NSNumber numberWithInt:LOG_FORMAT_VERSION] forKey:@"v"];
+        
+        // 分辨率
+        [fields setValue:@"TODO" forKey:@"s"];
+        
+        // 机器类别
+        [fields setValue:@"TODO" forKey:@"mc"];
+        
+        // 网络类型
+        [fields setValue:@"TODO" forKey:@"l"];
+        
+        // 运营商
+        [fields setValue:@"TODO" forKey:@"op"];
+        
+        // 系统版本
+        [fields setValue:@"TODO" forKey:@"sv"];
+        
+        durations = [[NSMutableDictionary alloc] init];
     }
     
     return self;
@@ -60,11 +83,22 @@ static NSMutableDictionary * trackers = nil;
         
     NSMutableDictionary* mutableParams = [NSMutableDictionary dictionaryWithDictionary:params];
     
-    // 增加保留字段
+    /*增加保留字段*/
+    
+    // session id
     [mutableParams setValue:[NSession getId] forKey:@"sid"];
+    
+    // session序号
     [mutableParams setValue:[NSNumber numberWithInt:[NSession getSeq]] forKey:@"seq"];
-    [mutableParams setValue:[NSNumber numberWithLongLong:CurrentTimeMillis] forKey:@"time"];
+    
+    // 时间戳
+    [mutableParams setValue:[NSNumber numberWithLongLong:CurrentTimeMillis] forKey:@"t"];
+    
+    // 类型
     [mutableParams setValue:hitType forKey:@"ht"];
+    
+    // PASSPORT ID
+    [mutableParams setValue:@"TODO" forKey:@"paid"];
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:@"NLOG_TRACKER_SEND"
@@ -84,12 +118,12 @@ static NSMutableDictionary * trackers = nil;
              value:(NSNumber *)value{
     
     NSString *hitType = @"event";
-    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:
-                            category,   @"eventCategory",
-                            action,     @"eventAction",
-                            label,      @"eventLabel",
-                            value,      @"eventValue",
-                            nil];
+    
+    NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+    [params setValue:category forKey:@"eventCategory"];
+    [params setValue:action forKey:@"eventAction"];
+    [params setValue:label forKey:@"eventLabel"];
+    [params setValue:value forKey:@"eventValue"];
     
     [self send:hitType params:params];
 }
@@ -114,17 +148,17 @@ static NSMutableDictionary * trackers = nil;
 }
 
 - (void) sendTiming:(NSString *)category
-          interval:(NSTimeInterval *)interval
+          interval:(NSTimeInterval)interval
               name:(NSString *)logName
              label:(NSString *)label{
     
     NSString *hitType = @"timing";
-    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:
-                            category,   @"tmCategory",
-                            [NSNumber numberWithInt:(int)interval],   @"tmInterval",
-                            logName,       @"tmName", 
-                            label,      @"tmLabel", 
-                            nil];
+    
+    NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+    [params setValue:category forKey:@"tmCategory"];
+    [params setValue:[NSNumber numberWithInt:(int)interval] forKey:@"tmInterval"];
+    [params setValue:logName forKey:@"tmName"];
+    [params setValue:label forKey:@"tmLabel"];
     
     [self send:hitType params:params];
 }
@@ -163,11 +197,13 @@ static NSMutableDictionary * trackers = nil;
 }
 
 - (void) set:(NSString *)key value:(id)val{
-    if ([key isEqualToString:@"protocolParameter"] && [val isKindOfClass:[NSDictionary class]]) {
-        [self setFieldsProtocol:val];
-        return;
+    @synchronized(self) {
+        if ([key isEqualToString:@"protocolParameter"] && [val isKindOfClass:[NSDictionary class]]) {
+            [self setFieldsProtocol:val];
+            return;
+        }
+        [fields setValue:val forKey:key];
     }
-    [fields setValue:val forKey:key];
 }
 
 - (void) setFieldsProtocol:(NSDictionary *)map{
@@ -203,15 +239,15 @@ static NSMutableDictionary * trackers = nil;
         如果命中率为 0，则无MAC地址会命中
  */
 - (BOOL) isHitRate{
-    
+        
     if (!needCalc) {
         return isHit;
     }
     
     needCalc = NO;
     
-    NSString* macAddr = [NStringExtension getMacAddress];
-    NSString* lastDigital = [[macAddr componentsSeparatedByString:@":"] lastObject];
+    NSString* openuuid = [OpenUDID value];
+    NSString* lastDigital = [openuuid substringFromIndex:[openuuid length] - 2];
     
     unsigned hitTail = 0;
     NSScanner *scanner = [NSScanner scannerWithString:lastDigital];
@@ -230,6 +266,26 @@ static NSMutableDictionary * trackers = nil;
     hitTail++;
     
     return isHit = ( hitTail >= 1 && hitTail <= max );
+}
+
+- (void) logDurationStart:(NSString *)label{
+    if (!label) {
+        return;
+    }
+    [durations setValue:[NSNumber numberWithLongLong:CurrentTimeMillis] forKey:label];
+}
+
+- (void) logDurationEnd:(NSString *)label{
+    long long start;
+    
+    if (!label || !(start = [[durations valueForKey:label] longLongValue])) {
+        return;
+    }
+    
+    long long now = CurrentTimeMillis;
+    double duration = (double)(now - start);
+    
+    [self sendTiming:nil interval:duration name:nil label:label];
 }
 
 + (NTracker *) getTracker:(NSString *)trackerId{
@@ -252,6 +308,7 @@ static NSMutableDictionary * trackers = nil;
 
 - (void) dealloc{
     [fields release];
+    [durations release];
     
     if (fieldsProtocol) {
         [fieldsProtocol release];

@@ -6,6 +6,8 @@
 //  TODO:异常捕获（入口参数类型检查，尤其是ID类型）
 //  TODO:UnitTest
 //  TODO:输出日志优化（输出开关、内容）
+//  +TODO:Tracker加多线程锁
+//  +TODO:iOS7 mac address 换openuuid
 //  +TODO:加密
 //  +TODO:抽样率
 //  +TODO:field protocol
@@ -35,8 +37,6 @@
 #import "NStringExtension.h"
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIApplication.h>
-
-
 
 
 //////////////////////////////////////////////////////
@@ -227,7 +227,7 @@ static NLog * _sharedInstance = nil;
 }
 
 + (void)sendTiming: (NSString *)category
-          interval: (NSTimeInterval *)interval
+          interval: (NSTimeInterval)interval
               name: (NSString *)name
              label: (NSString *)label{
     [[NLog getDefaultTracker] sendTiming:category interval:interval name:name label:label];
@@ -237,6 +237,14 @@ static NLog * _sharedInstance = nil;
               isFatal: (Boolean) isFatal
                params: (NSDictionary *)params{
     [[NLog getDefaultTracker] sendException:description isFatal:isFatal params:params];
+}
+
++ (void)logDurationStart:(NSString *)name{
+    [[NLog getDefaultTracker] logDurationStart:name];
+}
+
++ (void)logDurationEnd:(NSString *)name{
+    [[NLog getDefaultTracker] logDurationEnd:name];
 }
 
 + (void)set:(NSString *)key val:(id)val{

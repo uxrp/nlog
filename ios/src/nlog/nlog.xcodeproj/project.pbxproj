@@ -7,17 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E14397C2179D1B0000AB6AC3 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397C1179D1B0000AB6AC3 /* SenTestingKit.framework */; };
+		E14397C4179D1B0000AB6AC3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397C3179D1B0000AB6AC3 /* UIKit.framework */; };
+		E14397C6179D1B0000AB6AC3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397C5179D1B0000AB6AC3 /* Foundation.framework */; };
+		E14397CC179D1B0000AB6AC3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E14397CA179D1B0000AB6AC3 /* InfoPlist.strings */; };
+		E14397CF179D1B0000AB6AC3 /* NLogLogicTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E14397CE179D1B0000AB6AC3 /* NLogLogicTests.m */; };
+		E14397D5179D21DA00AB6AC3 /* nlog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397D4179D21DA00AB6AC3 /* nlog.framework */; };
+		E14397D7179D267F00AB6AC3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397D6179D267F00AB6AC3 /* libz.dylib */; };
+		E14397D9179D269C00AB6AC3 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397D8179D269C00AB6AC3 /* SystemConfiguration.framework */; };
+		E14397DD17A13FBC00AB6AC3 /* OpenUDID.h in Headers */ = {isa = PBXBuildFile; fileRef = E14397DB17A13FBC00AB6AC3 /* OpenUDID.h */; };
+		E14397DE17A13FBC00AB6AC3 /* OpenUDID.m in Sources */ = {isa = PBXBuildFile; fileRef = E14397DC17A13FBC00AB6AC3 /* OpenUDID.m */; };
 		E1DA06821795161C00C306B3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E1DA06801795161C00C306B3 /* InfoPlist.strings */; };
 		E1DA06991795167D00C306B3 /* NLog.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06891795167D00C306B3 /* NLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E1DA069A1795167D00C306B3 /* NLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA068A1795167D00C306B3 /* NLog.m */; };
 		E1DA069C1795167D00C306B3 /* NLogConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA068C1795167D00C306B3 /* NLogConfig.m */; };
 		E1DA069D1795167D00C306B3 /* NReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA068D1795167D00C306B3 /* NReachability.h */; };
 		E1DA069E1795167D00C306B3 /* NReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA068E1795167D00C306B3 /* NReachability.m */; };
-		E1DA069F1795167D00C306B3 /* NSender.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA068F1795167D00C306B3 /* NSender.h */; };
+		E1DA069F1795167D00C306B3 /* NSender.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA068F1795167D00C306B3 /* NSender.h */; settings = {ATTRIBUTES = (); }; };
 		E1DA06A01795167D00C306B3 /* NSender.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06901795167D00C306B3 /* NSender.m */; };
-		E1DA06A11795167D00C306B3 /* NSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06911795167D00C306B3 /* NSession.h */; };
+		E1DA06A11795167D00C306B3 /* NSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06911795167D00C306B3 /* NSession.h */; settings = {ATTRIBUTES = (); }; };
 		E1DA06A21795167D00C306B3 /* NSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06921795167D00C306B3 /* NSession.m */; };
-		E1DA06A31795167D00C306B3 /* NStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06931795167D00C306B3 /* NStorage.h */; };
+		E1DA06A31795167D00C306B3 /* NStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06931795167D00C306B3 /* NStorage.h */; settings = {ATTRIBUTES = (); }; };
 		E1DA06A41795167D00C306B3 /* NStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06941795167D00C306B3 /* NStorage.m */; };
 		E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06951795167D00C306B3 /* NStringExtension.h */; settings = {ATTRIBUTES = (); }; };
 		E1DA06A61795167D00C306B3 /* NStringExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06961795167D00C306B3 /* NStringExtension.m */; };
@@ -29,6 +39,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E14397BF179D1B0000AB6AC3 /* NLogLogicTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NLogLogicTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E14397C1179D1B0000AB6AC3 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		E14397C3179D1B0000AB6AC3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		E14397C5179D1B0000AB6AC3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		E14397C9179D1B0000AB6AC3 /* NLogLogicTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "NLogLogicTests-Info.plist"; sourceTree = "<group>"; };
+		E14397CB179D1B0000AB6AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E14397CD179D1B0000AB6AC3 /* NLogLogicTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NLogLogicTests.h; sourceTree = "<group>"; };
+		E14397CE179D1B0000AB6AC3 /* NLogLogicTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NLogLogicTests.m; sourceTree = "<group>"; };
+		E14397D0179D1B0000AB6AC3 /* NLogLogicTests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NLogLogicTests-Prefix.pch"; sourceTree = "<group>"; };
+		E14397D4179D21DA00AB6AC3 /* nlog.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = nlog.framework; path = "../../../../../../Library/Developer/Xcode/DerivedData/nlog-bediousojgragmacwxzltffkfggn/Build/Products/Release-iphoneos/nlog.framework"; sourceTree = "<group>"; };
+		E14397D6179D267F00AB6AC3 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		E14397D8179D269C00AB6AC3 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		E14397DB17A13FBC00AB6AC3 /* OpenUDID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDID.h; sourceTree = "<group>"; };
+		E14397DC17A13FBC00AB6AC3 /* OpenUDID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenUDID.m; sourceTree = "<group>"; };
 		E1DA067B1795161C00C306B3 /* nlog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nlog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1DA067F1795161C00C306B3 /* nlog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "nlog-Info.plist"; sourceTree = "<group>"; };
 		E1DA06811795161C00C306B3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -55,6 +79,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E14397BB179D1B0000AB6AC3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E14397D9179D269C00AB6AC3 /* SystemConfiguration.framework in Frameworks */,
+				E14397D7179D267F00AB6AC3 /* libz.dylib in Frameworks */,
+				E14397C2179D1B0000AB6AC3 /* SenTestingKit.framework in Frameworks */,
+				E14397C4179D1B0000AB6AC3 /* UIKit.framework in Frameworks */,
+				E14397C6179D1B0000AB6AC3 /* Foundation.framework in Frameworks */,
+				E14397D5179D21DA00AB6AC3 /* nlog.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E1DA06751795161C00C306B3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -66,9 +103,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E14397C0179D1B0000AB6AC3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E14397C1179D1B0000AB6AC3 /* SenTestingKit.framework */,
+				E14397C3179D1B0000AB6AC3 /* UIKit.framework */,
+				E14397C5179D1B0000AB6AC3 /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E14397C7179D1B0000AB6AC3 /* NLogLogicTests */ = {
+			isa = PBXGroup;
+			children = (
+				E14397CD179D1B0000AB6AC3 /* NLogLogicTests.h */,
+				E14397CE179D1B0000AB6AC3 /* NLogLogicTests.m */,
+				E14397C8179D1B0000AB6AC3 /* Supporting Files */,
+			);
+			path = NLogLogicTests;
+			sourceTree = "<group>";
+		};
+		E14397C8179D1B0000AB6AC3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				E14397C9179D1B0000AB6AC3 /* NLogLogicTests-Info.plist */,
+				E14397CA179D1B0000AB6AC3 /* InfoPlist.strings */,
+				E14397D0179D1B0000AB6AC3 /* NLogLogicTests-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		E14397DA17A13FA300AB6AC3 /* OpenUDID */ = {
+			isa = PBXGroup;
+			children = (
+				E14397DB17A13FBC00AB6AC3 /* OpenUDID.h */,
+				E14397DC17A13FBC00AB6AC3 /* OpenUDID.m */,
+			);
+			name = OpenUDID;
+			sourceTree = "<group>";
+		};
 		E1DA066E1795161C00C306B3 = {
 			isa = PBXGroup;
 			children = (
+				E14397DA17A13FA300AB6AC3 /* OpenUDID */,
+				E14397D8179D269C00AB6AC3 /* SystemConfiguration.framework */,
+				E14397D6179D267F00AB6AC3 /* libz.dylib */,
 				E1DA06891795167D00C306B3 /* NLog.h */,
 				E1DA068A1795167D00C306B3 /* NLog.m */,
 				E1DA068B1795167D00C306B3 /* NLogConfig.h */,
@@ -88,7 +167,10 @@
 				E1DA06AE179517DE00C306B3 /* UIKit.framework */,
 				E1DA06A91795168600C306B3 /* JSONKit */,
 				E1DA067D1795161C00C306B3 /* nlog */,
+				E14397C7179D1B0000AB6AC3 /* NLogLogicTests */,
+				E14397C0179D1B0000AB6AC3 /* Frameworks */,
 				E1DA067C1795161C00C306B3 /* Products */,
+				E14397D4179D21DA00AB6AC3 /* nlog.framework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -96,6 +178,7 @@
 			isa = PBXGroup;
 			children = (
 				E1DA067B1795161C00C306B3 /* nlog.framework */,
+				E14397BF179D1B0000AB6AC3 /* NLogLogicTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -138,16 +221,35 @@
 				E1DA06A71795167D00C306B3 /* NTracker.h in Headers */,
 				E1DA06AC179516B400C306B3 /* JSONKit.h in Headers */,
 				E1DA06A51795167D00C306B3 /* NStringExtension.h in Headers */,
-				E1DA069D1795167D00C306B3 /* NReachability.h in Headers */,
 				E1DA069F1795167D00C306B3 /* NSender.h in Headers */,
 				E1DA06A11795167D00C306B3 /* NSession.h in Headers */,
 				E1DA06A31795167D00C306B3 /* NStorage.h in Headers */,
+				E1DA069D1795167D00C306B3 /* NReachability.h in Headers */,
+				E14397DD17A13FBC00AB6AC3 /* OpenUDID.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		E14397BE179D1B0000AB6AC3 /* NLogLogicTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E14397D1179D1B0000AB6AC3 /* Build configuration list for PBXNativeTarget "NLogLogicTests" */;
+			buildPhases = (
+				E14397BA179D1B0000AB6AC3 /* Sources */,
+				E14397BB179D1B0000AB6AC3 /* Frameworks */,
+				E14397BC179D1B0000AB6AC3 /* Resources */,
+				E14397BD179D1B0000AB6AC3 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NLogLogicTests;
+			productName = NLogLogicTests;
+			productReference = E14397BF179D1B0000AB6AC3 /* NLogLogicTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
 		E1DA067A1795161C00C306B3 /* nlog */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E1DA06861795161C00C306B3 /* Build configuration list for PBXNativeTarget "nlog" */;
@@ -191,11 +293,20 @@
 			projectRoot = "";
 			targets = (
 				E1DA067A1795161C00C306B3 /* nlog */,
+				E14397BE179D1B0000AB6AC3 /* NLogLogicTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E14397BC179D1B0000AB6AC3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E14397CC179D1B0000AB6AC3 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E1DA06771795161C00C306B3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -207,6 +318,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		E14397BD179D1B0000AB6AC3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
 		E1DA06731795161C00C306B3 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -249,6 +373,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E14397BA179D1B0000AB6AC3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E14397CF179D1B0000AB6AC3 /* NLogLogicTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E1DA06741795161C00C306B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -262,12 +394,21 @@
 				E1DA06A61795167D00C306B3 /* NStringExtension.m in Sources */,
 				E1DA06A81795167D00C306B3 /* NTracker.m in Sources */,
 				E1DA06AD179516B400C306B3 /* JSONKit.m in Sources */,
+				E14397DE17A13FBC00AB6AC3 /* OpenUDID.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		E14397CA179D1B0000AB6AC3 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E14397CB179D1B0000AB6AC3 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		E1DA06801795161C00C306B3 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -279,6 +420,38 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		E14397D2179D1B0000AB6AC3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/nlog-bediousojgragmacwxzltffkfggn/Build/Products/Release-iphoneos\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NLogLogicTests/NLogLogicTests-Prefix.pch";
+				INFOPLIST_FILE = "NLogLogicTests/NLogLogicTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		E14397D3179D1B0000AB6AC3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"\"$(SRCROOT)/../../../../../../Library/Developer/Xcode/DerivedData/nlog-bediousojgragmacwxzltffkfggn/Build/Products/Release-iphoneos\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "NLogLogicTests/NLogLogicTests-Prefix.pch";
+				INFOPLIST_FILE = "NLogLogicTests/NLogLogicTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
 		E1DA06841795161C00C306B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -381,6 +554,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E14397D1179D1B0000AB6AC3 /* Build configuration list for PBXNativeTarget "NLogLogicTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E14397D2179D1B0000AB6AC3 /* Debug */,
+				E14397D3179D1B0000AB6AC3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		E1DA06721795161C00C306B3 /* Build configuration list for PBXProject "nlog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

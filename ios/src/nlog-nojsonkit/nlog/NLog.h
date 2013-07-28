@@ -74,7 +74,7 @@
  * label    事件标签
  */
 + (void)sendTiming: (NSString *)category
-          interval: (NSTimeInterval *)interval
+          interval: (NSTimeInterval)interval
               name: (NSString *)name
              label: (NSString *)label;
 
@@ -88,6 +88,13 @@
 + (void)sendException: (NSString *)description
               isFatal: (Boolean) isFatal
                params: (NSDictionary *)params;
+
+/**
+ * 记录时长数据
+ * name 时长数据名称
+ */
++ (void)logDurationStart: (NSString *)name;
++ (void)logDurationEnd: (NSString *)name;
 
 /**
  * 设置公共数据

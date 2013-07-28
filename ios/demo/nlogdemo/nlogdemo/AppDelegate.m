@@ -41,7 +41,7 @@
     self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
     
-    [NLog startWithAppId:@"wenku"];
+    [NLog startWithAppId:@"9"];
     
 //    [[NLog getTracker:@"wenku"] setSampleRate:0.05];
     
@@ -51,7 +51,15 @@
                @"ea",@"eventAction"
                , nil]];
     
-//    [NLog set:@"test" val:1];
+    [NLog set:@"c" val:@"TODO"];
+    
+    [NLog set:@"av" val:@"TODO"];
+    
+    [NLog set:@"i" val:@"TODO"];
+    
+//    [NLog set:@"test" val: [NSNumber numberWithInt:1]];
+    
+//    [NLog set:@"test中文" val: @"中文"];
     
     [NLog send:@"millertype"
         params:[NSDictionary dictionaryWithObjectsAndKeys:
@@ -61,6 +69,7 @@
     [NLog send:@"test protocol"
         params:[NSDictionary dictionaryWithObjectsAndKeys:
                 @"originalval",@"originalkey",
+                @"中文VAL",@"中文KEY",
                 nil]];
     
     /*
