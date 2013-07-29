@@ -13,6 +13,8 @@ NLog(iOS)统计框架使用指南
     * [sendTiming](#sendtiming)
     * [sendException](#sendexception)
     * [set](#set)
+    * [logDurationStart](#logDurationStart)
+    * [logDurationEnd](#logDurationEnd)
 * [发送策略说明](#%E5%8F%91%E9%80%81%E7%AD%96%E7%95%A5%E8%AF%B4%E6%98%8E)
 * [配置介绍](#%E9%85%8D%E7%BD%AE%E4%BB%8B%E7%BB%8D)
     * [本地配置](#%E6%9C%AC%E5%9C%B0%E9%85%8D%E7%BD%AE)
