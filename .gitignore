@@ -5,3 +5,4 @@ ios/src/.DS_Store
 /node_modules
 /examples/music/node_modules
 /docs/api
+bin
