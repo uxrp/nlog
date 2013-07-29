@@ -11,6 +11,8 @@
 #import "NStringExtension.h"
 #import "OpenUDID.h"
 
+enum {NLOG_CATEGORY_APPVIEW=1,NLOG_CATEGORY_EVENT,NLOG_CATEGORY_TIMING,NLOG_CATEGORY_EXCEPTION,NLOG_CATEGORY_DIAGNOSE};
+
 static NSMutableDictionary * trackers = nil;
 
 @implementation NTracker
@@ -54,6 +56,9 @@ static NSMutableDictionary * trackers = nil;
         
         // 系统版本
         [fields setValue:@"TODO" forKey:@"sv"];
+        
+        // 设备类型
+        [fields setValue:@"TODO" forKey:@"fr"];
         
         durations = [[NSMutableDictionary alloc] init];
     }
@@ -117,7 +122,7 @@ static NSMutableDictionary * trackers = nil;
              label:(NSString *)label
              value:(NSNumber *)value{
     
-    NSString *hitType = @"event";
+    NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_EVENT];
     
     NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
     [params setValue:category forKey:@"eventCategory"];
@@ -132,7 +137,7 @@ static NSMutableDictionary * trackers = nil;
                isFatal:(Boolean)isFatal
                 params:(NSDictionary *)params{
     
-    NSString *hitType = @"exception";
+    NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_EXCEPTION];
     
     if (params == nil) {
         params = [[NSMutableDictionary alloc] init];
@@ -152,7 +157,7 @@ static NSMutableDictionary * trackers = nil;
               name:(NSString *)logName
              label:(NSString *)label{
     
-    NSString *hitType = @"timing";
+    NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_TIMING];
     
     NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
     [params setValue:category forKey:@"tmCategory"];
@@ -165,7 +170,7 @@ static NSMutableDictionary * trackers = nil;
 
 - (void) sendView:(NSString *)viewName params:(NSDictionary *)params{
     
-    NSString *hitType = @"appview";
+    NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_TIMING];
     
     if (params == nil) {
         params = [[NSMutableDictionary alloc] init];

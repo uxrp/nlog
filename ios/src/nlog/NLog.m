@@ -6,6 +6,8 @@
 //  TODO:异常捕获（入口参数类型检查，尤其是ID类型）
 //  TODO:UnitTest
 //  TODO:输出日志优化（输出开关、内容）
+//  +TODO:时长统计接口
+//  +TODO:session id 与 adroid版一致性
 //  +TODO:Tracker加多线程锁
 //  +TODO:iOS7 mac address 换openuuid
 //  +TODO:加密

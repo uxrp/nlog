@@ -64,7 +64,7 @@
 
 - (void)button2clicked
 {
-    [NLog send:@"event"
+    [NLog send:@"2"
         params:[NSDictionary dictionaryWithObjectsAndKeys:
                 @"ui", @"category",
                 @"click", @"click",
