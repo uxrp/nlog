@@ -533,6 +533,9 @@ id<NTracker> tracker = [NLog getTracker:@"ue-data"];
                 @"originalval",@"originalkey",
                 nil]];
 ```
+
+__注意__：以上操作需要在第一次调用`send`之前完成，否则会导致set字段无法修改。
+
 ## 设置抽样率
 
 NLog的抽样率值为0 - 1，默认抽样率为1，即100%。
