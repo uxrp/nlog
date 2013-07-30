@@ -266,7 +266,16 @@ NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
  */
 + (void)set: (NSString *)key val:(id) val;
 ```
-用于设置公共字段，每个请求都会携带这些字段。
+用于设置公共字段，它表示后续的所有日志数据都将共用这些数据。如果你的每条日志中都需要包括一些相同的数据，例如应用版本、机型、系统版本等，那么就可以使用上述接口来设置。
+
+需要注意的是，这里的数据并不会融入到每条日志中，而是跟随`每一批`日志发送到服务器。
+
+`set`方法实际上还有第三个参数：`isMutable`，因为在实际使用过程中还有以下一种情形：
+某些字段，绝大多数日志都是一样的，但是也存在不一致的情况。
+
+举个例子：很多APP带登录功能，登录后会增加一个uid，这个uid就符合上述情形描述的字段。在未登录前（或退出登录后）这个数据为空，这期间发送的所有日志都不需要这个字段；而登录后的所有日志又都需要包含这些信息。
+
+为了更加方便的记录日志便增加了`isMutable`参数，如果调用`set`携带了这个参数，并且其值为`YES`，那么每次调用`send`接口记录日志时都会将该参数合入日志数据中。
 
 ### logDurationStart
 
@@ -501,6 +510,7 @@ id<NTracker> tracker = [NLog getTracker:@"ue-data"];
 
 假如有上述代码，而且服务器地址为`http://www.x.com/log.php`，则发送日志时会向以下地址POST记录的日志数据：
 `http://www.x.com/log.php?uid=ad31ds134&channel=app_fromxxx&&appversion=1.2.1`
+而POST BODY则是gzip之后的日志数据，如果包括多条日志数据则以`\n`分隔。
 
 ## 修改数据发送字段
 

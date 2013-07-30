@@ -10,6 +10,11 @@
 #import "NLogConfig.h"
 #import "NStringExtension.h"
 #import "OpenUDID.h"
+#import <UIKit/UIScreen.h>
+#import <UIKit/UIDevice.h>
+#import "NUIDeviceExtension.h"
+#import "NReachability.h"
+//#import "NReachability.h"
 
 enum {NLOG_CATEGORY_APPVIEW=1,NLOG_CATEGORY_EVENT,NLOG_CATEGORY_TIMING,NLOG_CATEGORY_EXCEPTION,NLOG_CATEGORY_DIAGNOSE};
 
@@ -33,6 +38,8 @@ static NSMutableDictionary * trackers = nil;
         sampleRate = [[NLogConfig get:@"sampleRate" subkey:trackerId] doubleValue];
         
         fields = [[[NSMutableDictionary alloc] init] retain];
+        durations = [[NSMutableDictionary alloc] init];
+        mutableFields = [[NSMutableDictionary alloc] init];
         
         // 设置默认服务器路径
         [fields setValue:[NLogConfig get:@"receiverUrl"] forKey:@"receiverUrl"];
@@ -42,25 +49,44 @@ static NSMutableDictionary * trackers = nil;
         // 数据版本
         [fields setValue:[NSNumber numberWithInt:LOG_FORMAT_VERSION] forKey:@"v"];
         
+        // 应用版本
+        NSString* av = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+        [fields setValue:av forKey:@"av"];
+        
         // 分辨率
-        [fields setValue:@"TODO" forKey:@"s"];
+        float scale = [[UIScreen mainScreen] scale];
+        float width = [[UIScreen mainScreen] bounds].size.width * scale;
+        float height = [[UIScreen mainScreen] bounds].size.height * scale;
+        NSString* rslt = [NSString stringWithFormat:@"%d*%d",(int)width,(int)height];
+        
+        [fields setValue:rslt forKey:@"s"];
         
         // 机器类别
-        [fields setValue:@"TODO" forKey:@"mc"];
+        [fields setValue:[NUIDeviceExtension platformString] forKey:@"mc"];
         
+        /*
         // 网络类型
+        NNetworkStatus networkStatus = [NReachability reachabilityForInternetConnection];
+        NSString* networkStr = nil;
+        
+        if (networkStatus == NReachableViaWiFi) {
+            networkStr = @"wifi";
+        }
+        else{
+            networkStr = @"";
+        }
+        
         [fields setValue:@"TODO" forKey:@"l"];
+        */
         
         // 运营商
-        [fields setValue:@"TODO" forKey:@"op"];
+        [fields setValue:[NUIDeviceExtension getNOP] forKey:@"op"];
         
         // 系统版本
-        [fields setValue:@"TODO" forKey:@"sv"];
+        [fields setValue:[[UIDevice currentDevice] systemVersion] forKey:@"sv"];
         
         // 设备类型
-        [fields setValue:@"TODO" forKey:@"fr"];
-        
-        durations = [[NSMutableDictionary alloc] init];
+        [fields setValue:[UIDevice currentDevice].model forKey:@"fr"];
     }
     
     return self;
@@ -102,8 +128,26 @@ static NSMutableDictionary * trackers = nil;
     // 类型
     [mutableParams setValue:hitType forKey:@"ht"];
     
-    // PASSPORT ID
-    [mutableParams setValue:@"TODO" forKey:@"paid"];
+    // 网络类型
+    NReachability* reach = [NReachability reachabilityForInternetConnection];
+    NSString* reachType = @"";
+    
+    if (reach) {
+        NNetworkStatus ns = [reach currentReachabilityStatus];
+        
+        if (ns == NReachableViaWiFi) {
+            reachType = @"wifi";
+        }
+        else{
+            reachType = @"wwan";
+        }
+    }
+    [mutableParams setValue:reachType forKey:@"l"];
+    
+    // 从mutableFields中添加字段
+    for( id key in mutableFields){
+        [mutableParams setValue:[mutableFields objectForKey:key] forKey:key];
+    }
     
     [[NSNotificationCenter defaultCenter]
      postNotificationName:@"NLOG_TRACKER_SEND"
@@ -211,6 +255,17 @@ static NSMutableDictionary * trackers = nil;
     }
 }
 
+- (void) set:(NSString *)key value:(id)val isMutable:(Boolean)isMutable{
+    @synchronized(self) {
+        if (!isMutable) {
+            [self set:key value:val];
+        }
+        else {
+            [mutableFields setValue:val forKey:key];
+        }
+    }
+}
+
 - (void) setFieldsProtocol:(NSDictionary *)map{
     fieldsProtocol = [map retain];
 }
@@ -314,6 +369,7 @@ static NSMutableDictionary * trackers = nil;
 - (void) dealloc{
     [fields release];
     [durations release];
+    [mutableFields release];
     
     if (fieldsProtocol) {
         [fieldsProtocol release];

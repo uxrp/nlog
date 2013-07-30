@@ -51,11 +51,14 @@
                @"ea",@"eventAction"
                , nil]];
     
+    [NLog set:@"paid" val:@"11111111" isMutable:YES];
+    /*
     [NLog set:@"c" val:@"TODO"];
     
     [NLog set:@"av" val:@"TODO"];
     
     [NLog set:@"i" val:@"TODO"];
+    */
     
 //    [NLog set:@"test" val: [NSNumber numberWithInt:1]];
     

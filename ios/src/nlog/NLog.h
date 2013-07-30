@@ -100,5 +100,6 @@
  * 设置公共数据
  */
 + (void)set: (NSString *)key val:(id) val;
++ (void)set:(NSString *)key val:(id)val isMutable: (Boolean)isMutable;
 
 @end

@@ -15,6 +15,7 @@
     Boolean needCalc;
     double sampleRate;
     NSMutableDictionary* fields;
+    NSMutableDictionary* mutableFields;
     NSMutableDictionary* durations;
     NSDictionary* fieldsProtocol;
 }
@@ -103,6 +104,8 @@
 - (void)set:(NSDictionary *)params;
 
 - (void)set:(NSString *)key value:(id)val;
+
+- (void)set:(NSString *)key value:(id)val isMutable:(Boolean)isMutable;
 
 /**
  * 记录时长

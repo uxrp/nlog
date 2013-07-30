@@ -9,6 +9,8 @@
 #import "NLogConfig.h"
 #import "NSession.h"
 
+#define RANDOM_MAX 0×100000000
+
 static NSession * _sharedInstance = nil;
 
 @implementation NSession
@@ -32,16 +34,60 @@ static NSession * _sharedInstance = nil;
     _seq++;
     [_sessionId release],_sessionId = nil;
     _sessionId = [[self generateId] copy];
+//    NSLog(@"sid:%@", _sessionId);
 }
 
 /**
  * 时间+随机数
  */
 - (NSString *)generateId{
-    NSString* date = [NSString stringWithFormat:@"%llx", CurrentTimeMillis];
-    int random = arc4random() % 10;
     
-    return [NSString stringWithFormat:@"%@%d",date,random];
+    double random = (arc4random() % 10000 ) / 10000.0;
+    
+    long suffix = 36 * 36 * 36 * 36 * random;
+    
+//    NSLog(@"random:%f",random);
+    
+    return [NSString stringWithFormat:@"%@%@",
+            [self get36RadixFromLong:CurrentTimeMillis],
+            [self get36RadixFromLong:suffix]];
+}
+
+- (NSString *)get36RadixFromLong:(long long)number{
+    NSMutableString* result = [[NSMutableString alloc] init];
+    
+    long long answer;
+    long long remainder;
+    NSMutableArray* remainders = [[NSMutableArray alloc] init];
+    
+//    NSLog(@"number:%ld", number);
+    
+    while ((answer = floor(number / 36))) {
+//        NSLog(@"answer:%ld", answer);
+        remainder = number % 36;
+        number = answer;
+//        NSLog(@"remainder:%ld", remainder);
+        
+        [remainders addObject:[NSNumber numberWithLongLong:remainder]];
+    }
+    
+    remainder = number % 36;
+    [remainders addObject:[NSNumber numberWithLong:remainder]];
+//    NSLog(@"remainder:%ld", remainder);
+    
+    for (int i = [remainders count] - 1; i >= 0; i--) {
+        long long item = [[remainders objectAtIndex:i] longLongValue];
+                
+        if (item < 10) {
+            [result appendFormat:@"%lld", item];
+        }
+        else if (item < 36){
+            [result appendFormat:@"%c", (char)('a' + item - 10)];
+        }
+        
+    }
+    
+    return result;
 }
 
 

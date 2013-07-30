@@ -6,6 +6,8 @@
 //  TODO:异常捕获（入口参数类型检查，尤其是ID类型）
 //  TODO:UnitTest
 //  TODO:输出日志优化（输出开关、内容）
+//  TODO: 默认日志数据
+//  +TODO: ht字段压缩：用数字代替
 //  +TODO:时长统计接口
 //  +TODO:session id 与 adroid版一致性
 //  +TODO:Tracker加多线程锁
@@ -251,6 +253,10 @@ static NLog * _sharedInstance = nil;
 
 + (void)set:(NSString *)key val:(id)val{
     [[NLog getDefaultTracker] set:key value:val];
+}
+
++ (void)set:(NSString *)key val:(id)val isMutable:(Boolean)isMutable{
+    [[NLog getDefaultTracker] set:key value:val isMutable:isMutable];
 }
 
 @end

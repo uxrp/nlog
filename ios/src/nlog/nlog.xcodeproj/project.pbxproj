@@ -17,6 +17,8 @@
 		E14397D9179D269C00AB6AC3 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14397D8179D269C00AB6AC3 /* SystemConfiguration.framework */; };
 		E14397DD17A13FBC00AB6AC3 /* OpenUDID.h in Headers */ = {isa = PBXBuildFile; fileRef = E14397DB17A13FBC00AB6AC3 /* OpenUDID.h */; };
 		E14397DE17A13FBC00AB6AC3 /* OpenUDID.m in Sources */ = {isa = PBXBuildFile; fileRef = E14397DC17A13FBC00AB6AC3 /* OpenUDID.m */; };
+		E14397E817A670FB00AB6AC3 /* NUIDeviceExtension.h in Headers */ = {isa = PBXBuildFile; fileRef = E14397E617A670FB00AB6AC3 /* NUIDeviceExtension.h */; };
+		E14397E917A670FB00AB6AC3 /* NUIDeviceExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = E14397E717A670FB00AB6AC3 /* NUIDeviceExtension.m */; };
 		E1DA06821795161C00C306B3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E1DA06801795161C00C306B3 /* InfoPlist.strings */; };
 		E1DA06991795167D00C306B3 /* NLog.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06891795167D00C306B3 /* NLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E1DA069A1795167D00C306B3 /* NLog.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA068A1795167D00C306B3 /* NLog.m */; };
@@ -53,6 +55,8 @@
 		E14397D8179D269C00AB6AC3 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		E14397DB17A13FBC00AB6AC3 /* OpenUDID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDID.h; sourceTree = "<group>"; };
 		E14397DC17A13FBC00AB6AC3 /* OpenUDID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OpenUDID.m; sourceTree = "<group>"; };
+		E14397E617A670FB00AB6AC3 /* NUIDeviceExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NUIDeviceExtension.h; sourceTree = "<group>"; };
+		E14397E717A670FB00AB6AC3 /* NUIDeviceExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NUIDeviceExtension.m; sourceTree = "<group>"; };
 		E1DA067B1795161C00C306B3 /* nlog.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nlog.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1DA067F1795161C00C306B3 /* nlog-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "nlog-Info.plist"; sourceTree = "<group>"; };
 		E1DA06811795161C00C306B3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -160,10 +164,12 @@
 				E1DA06921795167D00C306B3 /* NSession.m */,
 				E1DA06931795167D00C306B3 /* NStorage.h */,
 				E1DA06941795167D00C306B3 /* NStorage.m */,
-				E1DA06951795167D00C306B3 /* NStringExtension.h */,
-				E1DA06961795167D00C306B3 /* NStringExtension.m */,
 				E1DA06971795167D00C306B3 /* NTracker.h */,
 				E1DA06981795167D00C306B3 /* NTracker.m */,
+				E1DA06951795167D00C306B3 /* NStringExtension.h */,
+				E1DA06961795167D00C306B3 /* NStringExtension.m */,
+				E14397E617A670FB00AB6AC3 /* NUIDeviceExtension.h */,
+				E14397E717A670FB00AB6AC3 /* NUIDeviceExtension.m */,
 				E1DA06AE179517DE00C306B3 /* UIKit.framework */,
 				E1DA06A91795168600C306B3 /* JSONKit */,
 				E1DA067D1795161C00C306B3 /* nlog */,
@@ -226,6 +232,7 @@
 				E1DA06A31795167D00C306B3 /* NStorage.h in Headers */,
 				E1DA069D1795167D00C306B3 /* NReachability.h in Headers */,
 				E14397DD17A13FBC00AB6AC3 /* OpenUDID.h in Headers */,
+				E14397E817A670FB00AB6AC3 /* NUIDeviceExtension.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +402,7 @@
 				E1DA06A81795167D00C306B3 /* NTracker.m in Sources */,
 				E1DA06AD179516B400C306B3 /* JSONKit.m in Sources */,
 				E14397DE17A13FBC00AB6AC3 /* OpenUDID.m in Sources */,
+				E14397E917A670FB00AB6AC3 /* NUIDeviceExtension.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
