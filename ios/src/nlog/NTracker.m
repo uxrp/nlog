@@ -149,6 +149,10 @@ static NSMutableDictionary * trackers = nil;
         [mutableParams setValue:[mutableFields objectForKey:key] forKey:key];
     }
     
+    if (![mutableParams objectForKey:@"act"]) {
+        [mutableParams setValue:hitType forKey:@"act"];
+    }
+    
     [[NSNotificationCenter defaultCenter]
      postNotificationName:@"NLOG_TRACKER_SEND"
      object:nil
@@ -173,6 +177,7 @@ static NSMutableDictionary * trackers = nil;
     [params setValue:action forKey:@"eventAction"];
     [params setValue:label forKey:@"eventLabel"];
     [params setValue:value forKey:@"eventValue"];
+    [params setValue:action forKey:@"act"];
     
     [self send:hitType params:params];
 }

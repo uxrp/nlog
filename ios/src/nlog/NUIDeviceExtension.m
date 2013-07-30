@@ -173,11 +173,37 @@
 	NSString* mnc = [carrier mobileNetworkCode];
     [netInfo release];
     if (mnc == nil)
-        return @"-1";
+        return @"unknown";
     NSString* code = [[carrier mobileCountryCode] stringByAppendingString:mnc];
     
     if( !code ){
-        code = @"-1";
+        code = @"unknown";
+    }
+    else if ([[code substringWithRange:NSMakeRange(0, 3)] isEqualToString:@"460"]) {
+        NSInteger MNC = [[code substringWithRange:NSMakeRange(3, 2)] intValue];
+        switch (MNC) {
+            case 00:
+            case 02:
+            case 07:
+                return @"mobile";
+                break;
+            case 01:
+            case 06:
+                return @"unicom";
+                break;
+            case 03:
+            case 05:
+                return @"telecom";
+                break;
+            case 20:
+                return @"tietong";
+                break;
+            default:
+                break;
+        }
+    }
+    else{
+        code = @"unknown";
     }
     return code;
 }
