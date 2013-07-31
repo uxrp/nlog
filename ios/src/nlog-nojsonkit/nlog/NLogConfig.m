@@ -184,40 +184,49 @@ static NLogConfig * _sharedInstance = nil;
 - (void) downloadPolicyFile:(id)arg{
     NSAutoreleasePool* autoreleasePool = [[NSAutoreleasePool alloc] init];
     
-    NSString *urlString = [self getDefault:@"remoteRuleUrl"];
-	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] init] autorelease];
-	[request setURL:[NSURL URLWithString:urlString]];
-	[request setHTTPMethod:@"GET"];
-	
-    //set headers
-	NSString *contentType = [NSString stringWithFormat:@"application/json"];
-	[request addValue:contentType forHTTPHeaderField: @"Content-Type"];
-	
-	//get response
-	NSHTTPURLResponse* urlResponse = nil;
-	NSError *error = [[NSError alloc] init];
-	NSData *responseData = [NSURLConnection sendSynchronousRequest:request
-                                                 returningResponse:&urlResponse error:&error];
-    
-	NSString *result = [[NSString alloc] initWithData:responseData
-                                             encoding:NSUTF8StringEncoding];
-    
-//	NSLog(@"Response Code: %d", [urlResponse statusCode]);
-    
-	if ([urlResponse statusCode] >= 200 && [urlResponse statusCode] < 300) {
-		//NSLog(@"Response: %@", result);
+    @try {
+        NPrintLog(@"Downloading policy file...");
+        NSString *urlString = [self getDefault:@"remoteRuleUrl"];
+        NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] init] autorelease];
+        [request setURL:[NSURL URLWithString:urlString]];
+        [request setHTTPMethod:@"GET"];
         
-        NSMutableDictionary *jsonResult = [result mutableObjectFromJSONString];
+        //set headers
+        NSString *contentType = [NSString stringWithFormat:@"application/json"];
+        [request addValue:contentType forHTTPHeaderField: @"Content-Type"];
         
-        [jsonResult setObject: [NSNumber numberWithLongLong:CurrentTimeMillis]
-                                                     forKey:@"lastUpdate"];
+        //get response
+        NSHTTPURLResponse* urlResponse = nil;
+        NSError *error = [[NSError alloc] init];
+        NSData *responseData = [NSURLConnection sendSynchronousRequest:request
+                                                     returningResponse:&urlResponse error:&error];
         
-        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:jsonResult forKey:NLOG_POLICY_KEY];
+        NSString *result = [[NSString alloc] initWithData:responseData
+                                                 encoding:NSUTF8StringEncoding];
         
-        [defaults synchronize];
+        NPrintLog(@"Policy file response code: %d", [urlResponse statusCode]);
         
-	}
+        if ([urlResponse statusCode] >= 200 && [urlResponse statusCode] < 300) {
+            //NSLog(@"Response: %@", result);
+            
+            NSMutableDictionary *jsonResult = [result mutableObjectFromJSONString];
+            
+            [jsonResult setObject: [NSNumber numberWithLongLong:CurrentTimeMillis]
+                           forKey:@"lastUpdate"];
+            
+            NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:jsonResult forKey:NLOG_POLICY_KEY];
+            
+            [defaults synchronize];
+            
+        }
+    }
+    @catch (NSException *exception) {
+        NPrintLog(@"Download policy file exception: %@",[exception reason]);
+    }
+    @finally {
+        
+    }
     
     [autoreleasePool drain];
 }

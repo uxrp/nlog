@@ -34,7 +34,8 @@ static NSession * _sharedInstance = nil;
     _seq++;
     [_sessionId release],_sessionId = nil;
     _sessionId = [[self generateId] copy];
-//    NSLog(@"sid:%@", _sessionId);
+    
+    NPrintLog(@"new session id:%@", _sessionId);
 }
 
 /**

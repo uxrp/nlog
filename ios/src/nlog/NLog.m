@@ -192,11 +192,13 @@ static NLog * _sharedInstance = nil;
 + (void) startWithAppId:(NSString *)appid {
 //    NSLog(@"NLog started with appid: %@", appid);
     [NLog sharedInstanceWithAppId:appid];
+    NPrintLog(@"started with appid:%@",appid);
 }
 
 + (void) startWithAppId:(NSString *)appid configs:(NSDictionary *)configs {
     //    NSLog(@"NLog started with appid: %@", appid);
     [NLog sharedInstanceWithAppId:appid configs:configs];
+    NPrintLog(@"started with appid:%@ and configs:%@",appid,configs);
 }
 
 + (NSString *)getAppId{

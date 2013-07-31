@@ -350,7 +350,10 @@ static NSMutableDictionary * trackers = nil;
     long long now = CurrentTimeMillis;
     double duration = (double)(now - start);
     
-    [self sendTiming:nil interval:duration name:nil label:label];
+    [self send:@"view" params:@{
+                                @"itv":[NSString stringWithFormat:@"%d",(int)duration],
+                                @"n":label
+                            }];
 }
 
 + (NTracker *) getTracker:(NSString *)trackerId{

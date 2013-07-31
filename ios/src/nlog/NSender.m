@@ -74,13 +74,26 @@ static NSender* _sharedInstance = nil;
     
     int interval = [[NLogConfig get:intervalFields] intValue];
     
+    NPrintLog(@"Send timer:%d", interval);
+    
+    if (sendTimer) {
+        [sendTimer release];
+    }
+    
     sendTimer = [NSTimer scheduledTimerWithTimeInterval:interval
                                                  target:self
-                                               selector:@selector(_sendAll)
+                                               selector:@selector(runTimer)
                                                userInfo:nil
-                                                repeats:YES];
+                                                repeats:NO];
     
     [sendTimer retain];
+}
+
+- (void)runTimer{
+    // 每次重新调用可以检测网络状态，调整周期
+    [self startSendTimer];
+    
+    [self _sendAll];
 }
 
 - (void)enteredBackground:(NSNotification *) notification{
@@ -184,19 +197,28 @@ static NSender* _sharedInstance = nil;
                 // 清空logs
                 [mutableLogs removeAllObjects];
                 
+                // 只保留有限数据
+                int lockedLength = [mutableLockedLogs count];
+                
+                if (lockedLength > LOGS_MAX_DEPTH) {
+                    for (int j = 0; j < lockedLength - LOGS_MAX_DEPTH; j++) {
+                        [mutableLockedLogs removeObjectAtIndex:j];
+                    }
+                }
+                
                 NSString* head = [logItem objectForKey:@"head"];
                 
-                if (!IS_DEBUG) {
-                    head = [NStringExtension unencrypt:head];
-                }
+                #ifndef NLOG_DEBUG_MODE
+                head = [NStringExtension unencrypt:head];
+                #endif
                 
                 // 发送lockedLogs中的数据
                 for (int i = [mutableLockedLogs count] - 1; i >= 0; i--) {
                     NSString* logData = [mutableLockedLogs objectAtIndex:i];
                     
-                    if (!IS_DEBUG) {
-                        logData = [NStringExtension unencrypt:logData];
-                    }
+                    #ifndef NLOG_DEBUG_MODE
+                    logData = [NStringExtension unencrypt:logData];
+                    #endif
                     
                     BOOL successed = [self _send:
                                       [NSDictionary dictionaryWithObjectsAndKeys:
@@ -241,11 +263,6 @@ static NSender* _sharedInstance = nil;
     NSString *url = [log objectForKey:@"head"];
     NSString *data = [log objectForKey:@"data"];
     
-    // 正式环境发送前需要对本地日志解密
-//    if (!IS_DEBUG) {
-//        data = [data unencrypt];
-//    }
-    
     NSData *logData = [data dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest* req = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
@@ -272,6 +289,8 @@ static NSender* _sharedInstance = nil;
     
     [NSURLConnection sendSynchronousRequest:req returningResponse:&response error:nil];
     NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+    
+    NPrintLog(@"Log sent status code:%d", [httpResponse statusCode]);
     
     // 发送成功
     if ([httpResponse statusCode] == 200){
@@ -337,9 +356,10 @@ static NSender* _sharedInstance = nil;
     BOOL onlyWifi = [[NLogConfig get:@"onlyWifi"] boolValue];
     
     if ((onlyWifi && ![self isWifi]) || [self disconnected]) {
+        NPrintLog(@"Can't send log now caz of network limited.");
         return NO;
     }
-    
+        
     return YES;
 }
 

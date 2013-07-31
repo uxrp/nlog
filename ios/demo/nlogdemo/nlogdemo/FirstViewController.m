@@ -8,6 +8,7 @@
 
 #import "FirstViewController.h"
 #import <nlog/NLog.h>
+#define CurrentTimeMillis  (long long)round ([[NSDate date] timeIntervalSince1970] * (double)1000)
 
 @interface FirstViewController ()
 
@@ -71,6 +72,45 @@
                 @"button2", @"label"
                 , nil]
    immediately:YES];
+    
+    // 性能测试：NSUserDefaults单次读写时间在 0.6ms左右，批量的读写还是比较耗时间的，可以考虑做缓存
+    /*
+    int i = 500 * 8;
+    double start = CurrentTimeMillis;
+    while (i>0) {
+        NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+        
+        NSString* test = [defaults objectForKey:@"test"];
+        [defaults setObject:[NSString stringWithFormat:@"%@\ntest",test] forKey:@"test"];
+        [defaults synchronize];
+        [NLog sendEvent:@"ui" action:@"click" label:@"button1" value:nil];
+        [NLog sendException:@"hankException" isFatal:YES
+                     params:[NSDictionary dictionaryWithObjectsAndKeys:
+                     @"hank_ex_a",@"aaaa",
+                     @"hank_ex_b",@"bbbb",
+                     @"hank_ex_c",@"cccc",
+                     nil]];
+        
+        [NLog sendException:@"hankException2"
+                    isFatal:NO
+                     params:[NSDictionary dictionaryWithObjectsAndKeys:
+                                            @"hank_ex_2",@"2222",
+                                            nil]];
+        
+        [NLog send:@"2"
+            params:[NSDictionary dictionaryWithObjectsAndKeys:
+                    @"ui", @"category",
+                    @"click", @"click",
+                    @"button2", @"label"
+                    , nil]
+       immediately:NO];
+        i--;
+    }
+    
+    double end = CurrentTimeMillis;
+    
+    NSLog(@"duration:%f", end - start);
+    */
 }
 
 - (void)didReceiveMemoryWarning

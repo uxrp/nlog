@@ -75,13 +75,26 @@ static NStorage * _sharedInstance = nil;
     NSMutableDictionary* mutableFields = [NSMutableDictionary dictionaryWithDictionary:fields];
     [mutableFields removeObjectForKey:@"receiverUrl"];
     
-    NSString *head = [NSString stringWithFormat:@"%@&%@",
+    // 查找?号
+    NSRange idx = [receiverUrl rangeOfString:@"?"];
+    
+    if (idx.location != NSNotFound) {
+        // 存在问号但不以问号结尾(需要加&)
+        if (![receiverUrl hasSuffix:@"?"]) {
+            receiverUrl = [NSString stringWithFormat:@"%@&",receiverUrl];
+        }
+    }
+    else{
+        receiverUrl = [NSString stringWithFormat:@"%@?",receiverUrl];
+    }
+    
+    NSString *head = [NSString stringWithFormat:@"%@%@",
                       receiverUrl,
                       [NStringExtension urlParametersStringFromDictionary:mutableFields]];
     
-    if (!IS_DEBUG) {
-        head = [NStringExtension encrypt:head];
-    }
+    #ifndef NLOG_DEBUG_MODE
+    head = [NStringExtension encrypt:head];
+    #endif
     
     [log setValue:head forKey:@"head"];
     [log setValue:[NSArray array] forKey:@"logs"];
@@ -95,6 +108,8 @@ static NStorage * _sharedInstance = nil;
     NSString *currentDateStr = [dateFormat stringFromDate:[NSDate date]];
     
     [log setValue:currentDateStr forKey:@"date"];
+    
+    NPrintLog(@"Init log cache: %@", head);
     
     return [log autorelease];
 }
@@ -121,15 +136,20 @@ static NStorage * _sharedInstance = nil;
          */
     
 //      NSLog(@"%@", [NSString urlParametersStringFromDictionary:[[notification userInfo] objectForKey:@"params"]]);
-        NSDictionary *fields = [[notification userInfo] objectForKey:@"fields"];
         NSDictionary *params = [[notification userInfo] objectForKey:@"params"];
+        NSString *paramsStr = [NStringExtension urlParametersStringFromDictionary:params];
+        
+        // 如果单条数据体积超过限制将被忽略
+        if ([paramsStr length] > [[NLogConfig get:@"sendMaxLength"] integerValue] * 1024) {
+            NPrintLog(@"Log's too long with length:%d",[paramsStr length]);
+            return;
+        }
+
+        NSDictionary *fields = [[notification userInfo] objectForKey:@"fields"];
         NSString *name = [[notification userInfo] objectForKey:@"name"];
         
         // 是否在存储后立即发送
-        BOOL sendNow = [[[notification userInfo] objectForKey:@"sendNow"] boolValue];
-    
-        NSString *paramsStr = [NStringExtension urlParametersStringFromDictionary:params];
-    
+        BOOL sendNow = [[[notification userInfo] objectForKey:@"sendNow"] boolValue];    
         NSString *key = [self genKeyForTrackerData:name fields:fields];
     
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -155,29 +175,33 @@ static NStorage * _sharedInstance = nil;
             
 //            NSLog(@"before encrypt length:%d", [paramsStr length]);
             
-            if (!IS_DEBUG) {
-                paramsStr = [NStringExtension encrypt:paramsStr];
-            }
+            #ifndef NLOG_DEBUG_MODE
+            paramsStr = [NStringExtension encrypt:paramsStr];
+            #endif 
             
 //            NSLog(@"after encrypt length:%d", [paramsStr length]);
             
 //            NSLog(@"after unencrypt:%@", [paramsStr unencrypt]);
             
             [logs addObject:paramsStr];
+            
+            if ([logs count] > LOGS_MAX_DEPTH) {
+                [logs removeObjectAtIndex:0];
+            }
         }
         else {
             
-            if (!IS_DEBUG) {
-                lastItem = [NStringExtension unencrypt:lastItem];
-            }
+            #ifndef NLOG_DEBUG_MODE
+            lastItem = [NStringExtension unencrypt:lastItem];
+            #endif
             
             // NSLog(@"lastItem:%@",lastItem);
             
             lastItem = [NSString stringWithFormat:@"%@\n%@",lastItem,paramsStr];
             
-            if (!IS_DEBUG) {
-                lastItem = [NStringExtension encrypt:lastItem];
-            }
+            #ifndef NLOG_DEBUG_MODE
+            lastItem = [NStringExtension encrypt:lastItem];
+            #endif
             
             [logs
              setObject: lastItem
@@ -196,7 +220,6 @@ static NStorage * _sharedInstance = nil;
         if (sendNow) {
             [[NSNotificationCenter defaultCenter] postNotificationName:@"NLOG_SEND_NOW" object:nil];
         }
-    
         [autoreleasePool drain];
     }
 }
