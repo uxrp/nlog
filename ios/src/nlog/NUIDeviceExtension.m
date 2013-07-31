@@ -176,35 +176,44 @@
         return @"unknown";
     NSString* code = [[carrier mobileCountryCode] stringByAppendingString:mnc];
     
-    if( !code ){
-        code = @"unknown";
-    }
-    else if ([[code substringWithRange:NSMakeRange(0, 3)] isEqualToString:@"460"]) {
-        NSInteger MNC = [[code substringWithRange:NSMakeRange(3, 2)] intValue];
-        switch (MNC) {
-            case 00:
-            case 02:
-            case 07:
-                return @"mobile";
-                break;
-            case 01:
-            case 06:
-                return @"unicom";
-                break;
-            case 03:
-            case 05:
-                return @"telecom";
-                break;
-            case 20:
-                return @"tietong";
-                break;
-            default:
-                break;
+    @try {
+        if( !code ){
+            code = @"unknown";
+        }
+        else if ([[code substringWithRange:NSMakeRange(0, 3)] isEqualToString:@"460"]) {
+            NSInteger MNC = [[code substringWithRange:NSMakeRange(3, 2)] intValue];
+            switch (MNC) {
+                case 00:
+                case 02:
+                case 07:
+                    return @"mobile";
+                    break;
+                case 01:
+                case 06:
+                    return @"unicom";
+                    break;
+                case 03:
+                case 05:
+                    return @"telecom";
+                    break;
+                case 20:
+                    return @"tietong";
+                    break;
+                default:
+                    break;
+            }
+        }
+        else{
+            code = @"unknown";
         }
     }
-    else{
+    @catch (NSException *exception) {
         code = @"unknown";
     }
+    @finally {
+        
+    }
+    
     return code;
 }
 
