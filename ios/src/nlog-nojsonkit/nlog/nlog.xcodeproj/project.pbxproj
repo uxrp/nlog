@@ -27,7 +27,6 @@
 		E1DA06A61795167D00C306B3 /* NStringExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06961795167D00C306B3 /* NStringExtension.m */; };
 		E1DA06A71795167D00C306B3 /* NTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = E1DA06971795167D00C306B3 /* NTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E1DA06A81795167D00C306B3 /* NTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = E1DA06981795167D00C306B3 /* NTracker.m */; };
-		E1DA06AF179517DE00C306B3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1DA06AE179517DE00C306B3 /* UIKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,7 +54,6 @@
 		E1DA06961795167D00C306B3 /* NStringExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NStringExtension.m; sourceTree = "<group>"; };
 		E1DA06971795167D00C306B3 /* NTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NTracker.h; sourceTree = "<group>"; };
 		E1DA06981795167D00C306B3 /* NTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NTracker.m; sourceTree = "<group>"; };
-		E1DA06AE179517DE00C306B3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,7 +61,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1DA06AF179517DE00C306B3 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -101,7 +98,6 @@
 				E1DA06961795167D00C306B3 /* NStringExtension.m */,
 				E14397EC17A7730200AB6AC3 /* NUIDeviceExtension.h */,
 				E14397ED17A7730200AB6AC3 /* NUIDeviceExtension.m */,
-				E1DA06AE179517DE00C306B3 /* UIKit.framework */,
 				E1DA067D1795161C00C306B3 /* nlog */,
 				E1DA067C1795161C00C306B3 /* Products */,
 			);

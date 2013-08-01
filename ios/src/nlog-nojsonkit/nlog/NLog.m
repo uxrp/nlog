@@ -125,16 +125,24 @@ static NLog * _sharedInstance = nil;
 }
 
 - (void)enteredForeground:(NSNotification *) notification{
+    [_session resume];
+}
+
+- (void)_sendSessionStart{
+    [NLog send:@"session" params:@{@"act": @"start"}];
+    NPrintLog(@"Send session start log.");
+}
+
+- (void)_sendSessionEnd:(NSNotification*)notification{
+    long long duration = [[[notification userInfo] objectForKey:@"duration"] longLongValue];
     
-    NSDictionary* sessionData = [_session dataInDict];
-    
-    long long currentTime = CurrentTimeMillis;
-    long long sessionPausedTime = [[sessionData objectForKey:@"end"] longLongValue];
-    int sessionTimeout = [[NLogConfig get:@"sessionTimeout"] integerValue];
-    
-    if ((currentTime - sessionPausedTime) > (sessionTimeout * 1000 )) {
-        [_session reset];
-    }
+    [NLog send:@"session"
+        params: @{
+                    @"act": @"shutdown",
+                    @"duration":[NSNumber numberWithLongLong:duration]
+                }
+    ];
+    NPrintLog(@"Send session end log.");
 }
 
 + (id)sharedInstanceWithAppId:(NSString *)appId {
@@ -142,20 +150,7 @@ static NLog * _sharedInstance = nil;
     dispatch_once(&onceToken, ^{
         _sharedInstance = [[NLog alloc] initWithAppId:appId];
         
-        NSString *reqSysVer = @"4.0";
-        NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
-        
-        // 监听APP前后台切换事件
-        if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending){
-            [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
-                                                     selector: @selector(enteredBackground:)
-                                                         name: UIApplicationDidEnterBackgroundNotification
-                                                       object: nil];
-            [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
-                                                     selector: @selector(enteredForeground:)
-                                                         name: UIApplicationWillEnterForegroundNotification
-                                                       object: nil];
-        }
+        [NLog bindEvents];
 
     });
     return _sharedInstance;
@@ -166,23 +161,44 @@ static NLog * _sharedInstance = nil;
     dispatch_once(&onceToken, ^{
         _sharedInstance = [[NLog alloc] initWithAppId:appId configs: configs];
         
-        NSString *reqSysVer = @"4.0";
-        NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
-        
-        // 监听APP前后台切换事件
-        if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending){
-            [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
-                                                     selector: @selector(enteredBackground:)
-                                                         name: UIApplicationDidEnterBackgroundNotification
-                                                       object: nil];
-            [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
-                                                     selector: @selector(enteredForeground:)
-                                                         name: UIApplicationWillEnterForegroundNotification
-                                                       object: nil];
-        }
-        
+        [NLog bindEvents];
     });
     return _sharedInstance;
+}
+
++ (void)bindEvents{
+    
+    NSString *reqSysVer = @"4.0";
+    NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+    
+    // 监听APP前后台切换事件
+    if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending){
+        [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
+                                                 selector: @selector(enteredBackground:)
+                                                     name: UIApplicationDidEnterBackgroundNotification
+                                                   object: nil];
+        [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
+                                                 selector: @selector(enteredForeground:)
+                                                     name: UIApplicationWillEnterForegroundNotification
+                                                   object: nil];
+    }
+    
+    // 监听session周期
+    [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
+                                             selector: @selector(_sendSessionStart)
+                                                 name: @"NLOG_SESSION_START"
+                                               object: nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
+                                             selector: @selector(_sendSessionEnd:)
+                                                 name: @"NLOG_SESSION_END"
+                                               object: nil];
+    // 发送session start
+    [NSTimer scheduledTimerWithTimeInterval:1
+                                     target:_sharedInstance
+                                   selector:@selector(_sendSessionStart)
+                                   userInfo:nil
+                                    repeats:NO];
 }
 
 + (id)sharedInstance{

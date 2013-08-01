@@ -86,7 +86,17 @@ static NSMutableDictionary * trackers = nil;
         [fields setValue:[[UIDevice currentDevice] systemVersion] forKey:@"sv"];
         
         // 设备类型
-        [fields setValue:[UIDevice currentDevice].model forKey:@"fr"];
+        NSString* model = [UIDevice currentDevice].model;
+        NSRange range = [model rangeOfString:@"iPad"];
+        
+        if (range.location != NSNotFound) {
+            model = @"ipad";
+        }
+        else{
+            model = @"iphone";
+        }
+        
+        [fields setValue:model forKey:@"fr"];
     }
     
     return self;
@@ -130,7 +140,7 @@ static NSMutableDictionary * trackers = nil;
     
     // 网络类型
     NReachability* reach = [NReachability reachabilityForInternetConnection];
-    NSString* reachType = @"";
+    NSString* reachType = @"off";
     
     if (reach) {
         NNetworkStatus ns = [reach currentReachabilityStatus];
@@ -139,9 +149,10 @@ static NSMutableDictionary * trackers = nil;
             reachType = @"wifi";
         }
         else{
-            reachType = @"wwan";
+            reachType = @"other";
         }
     }
+    
     [mutableParams setValue:reachType forKey:@"l"];
     
     // 从mutableFields中添加字段
@@ -351,8 +362,8 @@ static NSMutableDictionary * trackers = nil;
     double duration = (double)(now - start);
     
     [self send:@"view" params:@{
-                                @"itv":[NSString stringWithFormat:@"%d",(int)duration],
-                                @"n":label
+                                @"duration":[NSString stringWithFormat:@"%d",(int)duration],
+                                @"name":label
                             }];
 }
 

@@ -12,8 +12,8 @@
 #define LOGS_MAX_DEPTH 250
 
 // 服务器日志接收路径
-//#define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
-#define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/"
+#define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
+// #define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/"
 
 // 版本
 #define SDK_VERSION @"1.0"
@@ -35,7 +35,7 @@
 #define TIMER_INTERVAL_WITH_WIFI 60
 
 // Session过期时间（单位：秒）
-#define SESSION_TIMEOUT 30
+#define SESSION_TIMEOUT 5
 
 // 本地缓存日志数据过期时间（单位：天）
 #define STORAGE_EXPIRES 10

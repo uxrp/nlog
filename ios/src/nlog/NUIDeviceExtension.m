@@ -168,14 +168,28 @@
 + (NSString*) getNOP
 {
     // network info
-	CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
-	CTCarrier *carrier = [netInfo subscriberCellularProvider];
-	NSString* mnc = [carrier mobileNetworkCode];
-    [netInfo release];
-    if (mnc == nil)
-        return @"unknown";
-    NSString* code = [[carrier mobileCountryCode] stringByAppendingString:mnc];
+    NSString* code = @"0";
     
+    @try {
+        
+        CTTelephonyNetworkInfo *netInfo = [[CTTelephonyNetworkInfo alloc] init];
+        CTCarrier *carrier = [netInfo subscriberCellularProvider];
+        NSString* mnc = [carrier mobileNetworkCode];
+        [netInfo release];
+        
+        if (mnc != nil){
+            code = [[carrier mobileCountryCode] stringByAppendingString:mnc];
+            
+            if( !code ){
+                code = @"0";
+            }
+        }
+    }
+    @catch (NSException *exception) {
+        NSLog(@"%@",[exception reason]);
+    }
+    
+    /*
     @try {
         if( !code ){
             code = @"unknown";
@@ -213,6 +227,7 @@
     @finally {
         
     }
+    */
     
     return code;
 }

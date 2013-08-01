@@ -10,6 +10,7 @@
 #import "NSession.h"
 
 #define RANDOM_MAX 0×100000000
+#define kNLogSession    @"nlog_session"
 
 static NSession * _sharedInstance = nil;
 
@@ -20,22 +21,111 @@ static NSession * _sharedInstance = nil;
 
 - (id)init{
     _seq = -1;
+    _start = 0;
+    _end = 0;
+    
+    // 尝试从缓存恢复
+    [self recovery];
+    
     [self reset];
+    
     return self;
 }
 
 - (void)pause{
     _end = CurrentTimeMillis;
+    
+    [self backup];
+    
+    NPrintLog(@"session paused at:%lld", _end);
+}
+
+- (void)resume{
+    NPrintLog(@"session resumed.");
+    [self clear];
+    
+    long long currentTime = CurrentTimeMillis;
+    int sessionTimeout = [[NLogConfig get:@"sessionTimeout"] integerValue];
+    long long pauseDuration = currentTime - _end;
+    
+    if (pauseDuration > (sessionTimeout * 1000 )) {        
+        [self reset];
+    }
+    else{
+        // 有效的session在恢复时需要重新调整开始时间，否则停留时间会计算错误
+        _start += pauseDuration;
+    }
 }
 
 - (void)reset{
+    
+    /**
+     * session的结束有两种情形:
+     * 1. 切到后台恢复后超过session冰冻时限；
+     * 2. 进入APP后，缓存中有上一次session记录；
+     * 两种状态都会进入reset。
+     */
+    if (_start && _end) {
+        // 当前session持续时间
+        long long sessionDuration = _end - _start;
+        
+        NPrintLog(@"session end:%@ with duration:%lld", _sessionId, sessionDuration);
+        
+        // 发送session结束消息
+        [NSTimer scheduledTimerWithTimeInterval:1
+                                         target:_sharedInstance
+                                       selector:@selector(_sendSessionEndNote:)
+                                       userInfo:@{@"duration": [NSNumber numberWithLongLong:sessionDuration]}
+                                        repeats:NO];
+        
+        /*
+        [[NSNotificationCenter defaultCenter]
+         postNotificationName:@"NLOG_SESSION_END"
+         object:nil
+         userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                   [NSNumber numberWithLongLong:sessionDuration],@"duration",
+                   nil]];
+        */
+    }
+    
     _start = CurrentTimeMillis;
     _end = -1;
     _seq++;
     [_sessionId release],_sessionId = nil;
     _sessionId = [[self generateId] copy];
     
+    // 发送session开始消息
+    [NSTimer scheduledTimerWithTimeInterval:1
+                                     target:_sharedInstance
+                                   selector:@selector(_sendSessionStartNote:)
+                                    userInfo:nil
+                                    repeats:NO];
+    /*
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"NLOG_SESSION_START"
+                                                        object:nil];
+    */
+    
     NPrintLog(@"new session id:%@", _sessionId);
+}
+
+- (void) _sendSessionStartNote:(NSNotification*)notification{
+    
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:@"NLOG_SESSION_START"
+     object:nil];
+    
+    NPrintLog(@"send session start notification.");
+}
+
+
+- (void) _sendSessionEndNote:(NSNotification*)notification{
+    
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:@"NLOG_SESSION_END"
+     object:nil
+     userInfo:@{@"duration": [[notification userInfo] objectForKey:@"duration"]}];
+    
+    NPrintLog(@"send session end notification.");
 }
 
 /**
@@ -91,6 +181,52 @@ static NSession * _sharedInstance = nil;
     return result;
 }
 
+/**
+ * 将session存入NSUserDefault
+ */
+- (void)backup{
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSDictionary* data = @{
+                           @"sid":_sessionId,
+//                           @"seq":[NSNumber numberWithInt:_seq],
+                           @"start": [NSNumber numberWithLongLong:_start],
+                           @"end": [NSNumber numberWithLongLong:_end]
+                           };
+    
+    [defaults setObject:data forKey:kNLogSession];
+    
+    [defaults synchronize];
+}
+/**
+ * 从NSUserDefault中恢复session
+ */
+- (void)recovery{
+    
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    
+    NSDictionary* data = [defaults objectForKey:kNLogSession];
+        
+    if (data) {
+        _sessionId = [[data objectForKey:@"sid"] copy];
+        _start = [[data objectForKey:@"start"] longLongValue];
+        _end = [[data objectForKey:@"end"] longLongValue];
+    }
+    
+    [self clear];
+}
+
+/**
+ * 清除NSUserDefault中的session
+ */
+- (void)clear{
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    
+    [defaults removeObjectForKey:kNLogSession];
+    
+    [defaults synchronize];
+}
+
 
 
 - (NSDictionary *)dataInDict{
@@ -113,6 +249,10 @@ static NSession * _sharedInstance = nil;
 
 + (void)pause{
     [[NSession sharedInstance] pause];
+}
+
++ (void)resume{
+    [[NSession sharedInstance] resume];
 }
 
 + (void)reset{

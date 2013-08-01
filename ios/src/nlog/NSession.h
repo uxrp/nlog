@@ -27,6 +27,8 @@
 
 - (void)pause;
 
+- (void)resume;
+
 - (void)reset;
 
 - (NSDictionary *)dataInDict;
@@ -38,6 +40,8 @@
 - (NSString *)generateId;
 
 + (void)pause;
+
++ (void)resume;
 
 + (void)reset;
 

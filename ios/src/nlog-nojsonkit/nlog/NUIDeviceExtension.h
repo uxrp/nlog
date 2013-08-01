@@ -41,7 +41,7 @@
 #define APPLETV_4G_NAMESTRING           @"Apple TV 4G"
 #define APPLETV_UNKNOWN_NAMESTRING      @"Unknown Apple TV"
 
-#define IOS_FAMILY_UNKNOWN_DEVICE       @"Unknown iOS device"
+#define IOS_FAMILY_UNKNOWN_DEVICE       @"0"
 
 #define SIMULATOR_NAMESTRING            @"iPhone Simulator"
 #define SIMULATOR_IPHONE_NAMESTRING     @"iPhone Simulator"
