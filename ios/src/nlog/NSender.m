@@ -30,37 +30,40 @@ static NSender* _sharedInstance = nil;
 }
 
 - (id) init{
-    [super init];
+    self = [super init];
+    
+    if (self) {
         
-    // 启动立即发送数据
-    // [self performSelectorInBackground:@selector(_sendAll) withObject:nil];
-    // 为了将启动数据尽快发送出去采取异步处理
-    [NSTimer scheduledTimerWithTimeInterval:1
-                                     target:self
-                                   selector:@selector(_sendAll)
-                                   userInfo:nil
-                                    repeats:NO];
-    
-    // 定期发送数据
-    [self startSendTimer];
-    
-    // 监听消息响应特殊需求
-    [[NSNotificationCenter defaultCenter] addObserver: self
-                                             selector: @selector(_sendAll)
-                                                 name: @"NLOG_SEND_NOW"
-                                               object: nil];
-    
-    // APP进入后台前发送日志（可用时间为5s）
-    NSString *reqSysVer = @"4.0";
-    NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
-    
-    // 监听APP前后台切换事件
-    if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending){
+        
+        // 启动立即发送数据
+        // [self performSelectorInBackground:@selector(_sendAll) withObject:nil];
+        // 为了将启动数据尽快发送出去采取异步处理
+        [NSTimer scheduledTimerWithTimeInterval:1
+                                         target:self
+                                       selector:@selector(_sendAll)
+                                       userInfo:nil
+                                        repeats:NO];
+        
+        // 定期发送数据
+        [self startSendTimer];
+        
+        // 监听消息响应特殊需求
         [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(enteredBackground:)
-                                                     name: UIApplicationDidEnterBackgroundNotification
-                                                   object: nil];    }
-
+                                                 selector: @selector(_sendAll)
+                                                     name: @"NLOG_SEND_NOW"
+                                                   object: nil];
+        
+        // APP进入后台前发送日志（可用时间为5s）
+        NSString *reqSysVer = @"4.0";
+        NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+        
+        // 监听APP前后台切换事件
+        if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending){
+            [[NSNotificationCenter defaultCenter] addObserver: self
+                                                     selector: @selector(enteredBackground:)
+                                                         name: UIApplicationDidEnterBackgroundNotification
+                                                       object: nil];    }
+    }
     
     return self;
 }
@@ -126,6 +129,7 @@ static NSender* _sharedInstance = nil;
         [dateFormat setDateFormat:@"yyyy-MM-dd"];
         NSString *currentDateStr = [dateFormat stringFromDate:[NSDate date]];
         
+        [dateFormat release];
         double todayTimestamp = round ([[NSDate date] timeIntervalSince1970] * (double)1000);
         
         /*
@@ -167,7 +171,7 @@ static NSender* _sharedInstance = nil;
                 [dateFormat setDateFormat:@"yyyy-MM-dd"];
                 NSDate *date = [dateFormat dateFromString: logDate];
                 double dateTimestamp = round ([date timeIntervalSince1970] * (double)1000);
-                
+                [dateFormat release];
                 // 有效期设置（单位：天）
                 double expires = [[NLogConfig get:@"storageExpires"] doubleValue] * 3600 * 24 * 1000 ;
                 
@@ -242,9 +246,9 @@ static NSender* _sharedInstance = nil;
                 [mutableLockedLogs release];
                 
                 [mutableCache setObject:mutableLogItem forKey:key];
-                
-                [mutableLogItem release];
             }
+            
+            [mutableLogItem release];
         }
         
         [defaults setObject:mutableCache forKey:NLOG_CACHE_KEY];

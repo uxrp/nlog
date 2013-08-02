@@ -29,9 +29,11 @@ static NStorage * _sharedInstance = nil;
 }
 
 - (id) init{
-    [super init];
+    self = [super init];
     
-    [self initUserDefaults];
+    if (self) {
+        [self initUserDefaults];
+    }
     
     return self;
 }
@@ -41,7 +43,7 @@ static NStorage * _sharedInstance = nil;
     NSDictionary *cache = [defaults objectForKey:NLOG_CACHE_KEY];
     
     if (cache == nil) {
-        [defaults setValue:[[NSDictionary alloc] init] forKey:NLOG_CACHE_KEY];
+        [defaults setValue:[NSDictionary dictionary] forKey:NLOG_CACHE_KEY];
         [defaults synchronize];
     }
 }
@@ -64,6 +66,7 @@ static NStorage * _sharedInstance = nil;
     NSString *keyStr = [NSString stringWithFormat:@"%@%@%@%d",trackerName,fieldsStr,currentDateStr,LOG_FORMAT_VERSION];
     
 //    NSLog(@"genKeyForTrackerData key str:%@",keyStr);
+    [dateFormat release];
     
     return [NStringExtension md5:keyStr];
 }
@@ -110,6 +113,8 @@ static NStorage * _sharedInstance = nil;
     [log setValue:currentDateStr forKey:@"date"];
     
     NPrintLog(@"Init log cache: %@", head);
+    
+    [dateFormat release];
     
     return [log autorelease];
 }

@@ -127,7 +127,9 @@ static NSMutableDictionary * trackers = nil;
     /*增加保留字段*/
     
     // session id
-    [mutableParams setValue:[NSession getId] forKey:@"sid"];
+    if (![params objectForKey:@"sid"]) {
+        [mutableParams setValue:[NSession getId] forKey:@"sid"];
+    }
     
     // session序号
     [mutableParams setValue:[NSNumber numberWithInt:[NSession getSeq]] forKey:@"seq"];
@@ -183,7 +185,7 @@ static NSMutableDictionary * trackers = nil;
     
     NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_EVENT];
     
-    NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary* params = [NSMutableDictionary dictionary];
     [params setValue:category forKey:@"eventCategory"];
     [params setValue:action forKey:@"eventAction"];
     [params setValue:label forKey:@"eventLabel"];
@@ -200,7 +202,7 @@ static NSMutableDictionary * trackers = nil;
     NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_EXCEPTION];
     
     if (params == nil) {
-        params = [[NSMutableDictionary alloc] init];
+        params = [NSMutableDictionary dictionary];
     }
     else {
         params = [NSMutableDictionary dictionaryWithDictionary:params];
@@ -219,7 +221,7 @@ static NSMutableDictionary * trackers = nil;
     
     NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_TIMING];
     
-    NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary* params = [NSMutableDictionary dictionary];
     [params setValue:category forKey:@"tmCategory"];
     [params setValue:[NSNumber numberWithInt:(int)interval] forKey:@"tmInterval"];
     [params setValue:logName forKey:@"tmName"];
@@ -233,7 +235,7 @@ static NSMutableDictionary * trackers = nil;
     NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_TIMING];
     
     if (params == nil) {
-        params = [[NSMutableDictionary alloc] init];
+        params = [NSMutableDictionary dictionary];
     }
     else {
         params = [NSMutableDictionary dictionaryWithDictionary:params];
@@ -291,7 +293,7 @@ static NSMutableDictionary * trackers = nil;
         return params;
     }
     
-    NSMutableDictionary* result = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary* result = [NSMutableDictionary dictionary];
     
     for( id key in params) {
         NSString* mappedField = [fieldsProtocol objectForKey:key];
@@ -367,11 +369,12 @@ static NSMutableDictionary * trackers = nil;
                             }];
 }
 
+
 + (NTracker *) getTracker:(NSString *)trackerId{
     NTracker* tracker = nil;
     
     if (trackers != nil) {
-        tracker = [trackers objectForKey:trackerId];
+        tracker = [[trackers objectForKey:trackerId] retain];
     }
     else {
         trackers = [[NSMutableDictionary alloc] init];
@@ -382,7 +385,7 @@ static NSMutableDictionary * trackers = nil;
         [trackers setValue:tracker forKey:trackerId];
     }
     
-    return tracker;
+    return [tracker autorelease];
 }
 
 - (void) dealloc{

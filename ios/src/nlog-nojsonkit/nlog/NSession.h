@@ -45,6 +45,8 @@
 
 + (void)reset;
 
++ (void)recovery;
+
 + (NSDictionary *)dataInDict;
 
 + (NSString *)getId;

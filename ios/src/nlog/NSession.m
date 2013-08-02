@@ -25,7 +25,7 @@ static NSession * _sharedInstance = nil;
     _end = 0;
     
     // 尝试从缓存恢复
-    [self recovery];
+    // [self recovery]; // 此时recovery，因其他功能未初始化完成，无法发送日志，改为外部调用
     
     [self reset];
     
@@ -62,30 +62,23 @@ static NSession * _sharedInstance = nil;
     /**
      * session的结束有两种情形:
      * 1. 切到后台恢复后超过session冰冻时限；
-     * 2. 进入APP后，缓存中有上一次session记录；
+     * 2. 进入APP后，缓存中有上一次session记录；（Modified:这种情形已修改，不会在初始化时进入if）
      * 两种状态都会进入reset。
      */
     if (_start && _end) {
         // 当前session持续时间
         long long sessionDuration = _end - _start;
         
-        NPrintLog(@"session end:%@ with duration:%lld", _sessionId, sessionDuration);
+        NPrintLog(@"session end: %@ with duration:%lld", _sessionId, sessionDuration);
         
         // 发送session结束消息
-        [NSTimer scheduledTimerWithTimeInterval:1
-                                         target:_sharedInstance
-                                       selector:@selector(_sendSessionEndNote:)
-                                       userInfo:@{@"duration": [NSNumber numberWithLongLong:sessionDuration]}
-                                        repeats:NO];
-        
-        /*
         [[NSNotificationCenter defaultCenter]
          postNotificationName:@"NLOG_SESSION_END"
          object:nil
          userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
                    [NSNumber numberWithLongLong:sessionDuration],@"duration",
                    nil]];
-        */
+        
     }
     
     _start = CurrentTimeMillis;
@@ -95,37 +88,11 @@ static NSession * _sharedInstance = nil;
     _sessionId = [[self generateId] copy];
     
     // 发送session开始消息
-    [NSTimer scheduledTimerWithTimeInterval:1
-                                     target:_sharedInstance
-                                   selector:@selector(_sendSessionStartNote:)
-                                    userInfo:nil
-                                    repeats:NO];
-    /*
     [[NSNotificationCenter defaultCenter] postNotificationName:@"NLOG_SESSION_START"
                                                         object:nil];
-    */
+    
     
     NPrintLog(@"new session id:%@", _sessionId);
-}
-
-- (void) _sendSessionStartNote:(NSNotification*)notification{
-    
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"NLOG_SESSION_START"
-     object:nil];
-    
-    NPrintLog(@"send session start notification.");
-}
-
-
-- (void) _sendSessionEndNote:(NSNotification*)notification{
-    
-    [[NSNotificationCenter defaultCenter]
-     postNotificationName:@"NLOG_SESSION_END"
-     object:nil
-     userInfo:@{@"duration": [[notification userInfo] objectForKey:@"duration"]}];
-    
-    NPrintLog(@"send session end notification.");
 }
 
 /**
@@ -178,7 +145,9 @@ static NSession * _sharedInstance = nil;
         
     }
     
-    return result;
+    [remainders release];
+    
+    return [result autorelease];
 }
 
 /**
@@ -200,6 +169,7 @@ static NSession * _sharedInstance = nil;
 }
 /**
  * 从NSUserDefault中恢复session
+ * backup和recovery都没有对seq进行操作，主要考虑到seq恢复后不好处理；
  */
 - (void)recovery{
     
@@ -208,9 +178,23 @@ static NSession * _sharedInstance = nil;
     NSDictionary* data = [defaults objectForKey:kNLogSession];
         
     if (data) {
-        _sessionId = [[data objectForKey:@"sid"] copy];
-        _start = [[data objectForKey:@"start"] longLongValue];
-        _end = [[data objectForKey:@"end"] longLongValue];
+        NSString* sid = [data objectForKey:@"sid"];
+        long long start = [[data objectForKey:@"start"] longLongValue];
+        long long end = [[data objectForKey:@"end"] longLongValue];
+        
+        // 当前session持续时间
+        long long sessionDuration = end - start;
+        
+        NPrintLog(@"session end: %@ with duration:%lld", sid, sessionDuration);
+        
+        // 发送session结束消息
+        [[NSNotificationCenter defaultCenter]
+         postNotificationName:@"NLOG_SESSION_END"
+         object:nil
+         userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                   [NSNumber numberWithLongLong:sessionDuration],@"duration",
+                   sid,@"sid",
+                   nil]];
     }
     
     [self clear];
@@ -257,6 +241,10 @@ static NSession * _sharedInstance = nil;
 
 + (void)reset{
     [[NSession sharedInstance] reset];
+}
+
++ (void)recovery{
+    [[NSession sharedInstance] recovery];
 }
 
 + (NSString *)getId{

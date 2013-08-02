@@ -134,14 +134,24 @@ static NLog * _sharedInstance = nil;
 }
 
 - (void)_sendSessionEnd:(NSNotification*)notification{
+    NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+    
     long long duration = [[[notification userInfo] objectForKey:@"duration"] longLongValue];
+    // 通过[NSession recovery]触发的消息会携带旧sid，需要记录
+    NSString* sid = [[notification userInfo] objectForKey:@"sid"];
+    
+    [params setObject:@"shutdown" forKey:@"act"];
+    [params setObject:[NSNumber numberWithLongLong:duration] forKey:@"duration"];
+    
+    if (sid) {
+        [params setObject:sid forKey:@"sid"];
+    }
     
     [NLog send:@"session"
-        params: @{
-                    @"act": @"shutdown",
-                    @"duration":[NSNumber numberWithLongLong:duration]
-                }
-    ];
+        params:params];
+    
+    [params release];
+    
     NPrintLog(@"Send session end log.");
 }
 
@@ -193,7 +203,11 @@ static NLog * _sharedInstance = nil;
                                              selector: @selector(_sendSessionEnd:)
                                                  name: @"NLOG_SESSION_END"
                                                object: nil];
-    // 发送session start
+    
+    // 检查是否有旧Session日志需要发送
+    [NSession recovery];
+    
+    // 发送APP启动时第一次session start
     [NSTimer scheduledTimerWithTimeInterval:1
                                      target:_sharedInstance
                                    selector:@selector(_sendSessionStart)

@@ -15,7 +15,6 @@
 + (NSString *)unencrypt:(NSString *)sourceStr;
 + (NSString*) urlEncoding:(NSString *)sourceStr;
 + (NSString *)urlParametersStringFromDictionary:(NSDictionary *)info;
-+ (NSString *) getMacAddress;
 
 
 

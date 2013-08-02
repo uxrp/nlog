@@ -35,7 +35,7 @@
 #define TIMER_INTERVAL_WITH_WIFI 60
 
 // Session过期时间（单位：秒）
-#define SESSION_TIMEOUT 5
+#define SESSION_TIMEOUT 30
 
 // 本地缓存日志数据过期时间（单位：天）
 #define STORAGE_EXPIRES 10
