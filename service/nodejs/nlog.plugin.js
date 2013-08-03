@@ -23,7 +23,7 @@ void function(){
         switch (query.command) {
             case 'nlog-post':
                 if (!/^post$/i.test(request.method)) return;
-                if (request.headers['content-type'] != 'gzip') return;
+                //if (request.headers['content-type'] != 'gzip') return;
 
                 var me = this;
                 var text = "";
