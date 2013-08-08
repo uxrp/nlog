@@ -80,6 +80,27 @@
     
     NSLog(@"%@", [var class]);
     */
+    NSString* str1 = @"1.7.5";
+    NSString* str2 = @"0.8.1";
+    
+    NSComparisonResult res = [str1 compare:str2];
+    
+    switch (res) {
+        case NSOrderedAscending:
+            // going up
+            NSLog(@"NSOrderedAscending");
+            break;
+        case NSOrderedSame:
+            // even steven
+            NSLog(@"NSOrderedSame");
+            break;
+        case NSOrderedDescending:
+            NSLog(@"NSOrderedDescending");
+            // down i go
+            break;
+        default:
+            break;
+    }
     
     return YES;
 }

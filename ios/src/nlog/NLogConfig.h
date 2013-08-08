@@ -12,8 +12,8 @@
 #define LOGS_MAX_DEPTH 250
 
 // 服务器日志接收路径
-#define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
-// #define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/"
+// #define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
+#define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/"
 
 // 版本
 #define SDK_VERSION @"1.0"

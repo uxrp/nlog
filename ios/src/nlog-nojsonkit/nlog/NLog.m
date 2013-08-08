@@ -42,7 +42,7 @@
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIApplication.h>
 
-
+#define kNLogAppVersion    @"nlog_av"
 //////////////////////////////////////////////////////
 
 static NLog * _sharedInstance = nil;
@@ -213,6 +213,22 @@ static NLog * _sharedInstance = nil;
                                    selector:@selector(_sendSessionStart)
                                    userInfo:nil
                                     repeats:NO];
+    
+    // 检查版本升级
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSString* previousAV = [defaults objectForKey:kNLogAppVersion];
+    NSString* currentAV = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    
+    if (!previousAV || ![currentAV isEqualToString:previousAV]) {
+        if (!previousAV) {
+            previousAV = @"";
+        }
+        [defaults setObject:currentAV forKey:kNLogAppVersion];
+        [NLog send:@"app" params:@{@"act": @"upgrade", @"pav":previousAV}];
+        NPrintLog(@"Send app upgrade log.");
+
+    }
+    
 }
 
 + (id)sharedInstance{
