@@ -34,11 +34,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NLog.m"
-         timestampString = "397117518.198396"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "161"
-         endingLineNumber = "161"
+         startingLineNumber = "158"
+         endingLineNumber = "158"
          landmarkName = "+sharedInstanceWithAppId:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -99,11 +99,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NTracker.m"
-         timestampString = "397110050.569794"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "296"
-         endingLineNumber = "296"
+         startingLineNumber = "299"
+         endingLineNumber = "299"
          landmarkName = "-applyFieldsProtocol:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -112,11 +112,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NTracker.m"
-         timestampString = "397110050.569794"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "297"
-         endingLineNumber = "297"
+         startingLineNumber = "300"
+         endingLineNumber = "300"
          landmarkName = "-applyFieldsProtocol:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -138,11 +138,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NLog.m"
-         timestampString = "397630035.025087"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "255"
-         endingLineNumber = "255"
+         startingLineNumber = "264"
+         endingLineNumber = "264"
          landmarkName = "+getTracker:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -151,11 +151,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NLog.m"
-         timestampString = "397630035.025087"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "259"
-         endingLineNumber = "259"
+         startingLineNumber = "268"
+         endingLineNumber = "268"
          landmarkName = "+getDefaultTracker"
          landmarkType = "5">
       </FileBreakpoint>
@@ -164,11 +164,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NTracker.m"
-         timestampString = "397124024.943315"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "374"
-         endingLineNumber = "374"
+         startingLineNumber = "377"
+         endingLineNumber = "377"
          landmarkName = "+getTracker:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -281,11 +281,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NTracker.m"
-         timestampString = "397110050.569794"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "228"
-         endingLineNumber = "228"
+         startingLineNumber = "231"
+         endingLineNumber = "231"
          landmarkName = "-sendTiming:interval:name:label:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -346,11 +346,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NTracker.m"
-         timestampString = "397110050.569794"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "359"
-         endingLineNumber = "359"
+         startingLineNumber = "362"
+         endingLineNumber = "362"
          landmarkName = "-logDurationEnd:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -359,11 +359,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NTracker.m"
-         timestampString = "397110050.569794"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "363"
-         endingLineNumber = "363"
+         startingLineNumber = "366"
+         endingLineNumber = "366"
          landmarkName = "-logDurationEnd:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -437,11 +437,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "../../src/nlog/NLog.m"
-         timestampString = "397629614.890101"
+         timestampString = "397740226.71144"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "218"
-         endingLineNumber = "218"
+         startingLineNumber = "158"
+         endingLineNumber = "158"
          landmarkName = "+bindEvents"
          landmarkType = "5">
       </FileBreakpoint>

@@ -65,19 +65,19 @@ static NSMutableDictionary * trackers = nil;
         [fields setValue:[NUIDeviceExtension platformString] forKey:@"mc"];
         
         /*
-        // 网络类型
-        NNetworkStatus networkStatus = [NReachability reachabilityForInternetConnection];
-        NSString* networkStr = nil;
-        
-        if (networkStatus == NReachableViaWiFi) {
-            networkStr = @"wifi";
-        }
-        else{
-            networkStr = @"";
-        }
-        
-        [fields setValue:@"TODO" forKey:@"l"];
-        */
+         // 网络类型
+         NNetworkStatus networkStatus = [NReachability reachabilityForInternetConnection];
+         NSString* networkStr = nil;
+         
+         if (networkStatus == NReachableViaWiFi) {
+         networkStr = @"wifi";
+         }
+         else{
+         networkStr = @"";
+         }
+         
+         [fields setValue:@"TODO" forKey:@"l"];
+         */
         
         // 运营商
         [fields setValue:[NUIDeviceExtension getNOP] forKey:@"op"];
@@ -121,7 +121,7 @@ static NSMutableDictionary * trackers = nil;
     }
     
     params = [self applyFieldsProtocol:params];
-        
+    
     NSMutableDictionary* mutableParams = [NSMutableDictionary dictionaryWithDictionary:params];
     
     /*增加保留字段*/
@@ -150,6 +150,9 @@ static NSMutableDictionary * trackers = nil;
         if (ns == NReachableViaWiFi) {
             reachType = @"wifi";
         }
+        else if(ns == NNotReachable) {
+            reachType = @"off";
+        }
         else{
             reachType = @"other";
         }
@@ -170,12 +173,12 @@ static NSMutableDictionary * trackers = nil;
      postNotificationName:@"NLOG_TRACKER_SEND"
      object:nil
      userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-            mutableParams,@"params",
-            [self applyFieldsProtocol:fields],@"fields",
-            name,@"name",
-            [NSNumber numberWithBool:now],@"sendNow",
-                nil]];
-
+               mutableParams,@"params",
+               [self applyFieldsProtocol:fields],@"fields",
+               name,@"name",
+               [NSNumber numberWithBool:now],@"sendNow",
+               nil]];
+    
 }
 
 - (void) sendEvent:(NSString *)category
@@ -210,14 +213,14 @@ static NSMutableDictionary * trackers = nil;
     
     [params setValue:description forKey:@"exDescription"];
     [params setValue:[NSNumber numberWithBool:isFatal] forKey:@"exFatal"];
-
+    
     [self send:hitType params:params];
 }
 
 - (void) sendTiming:(NSString *)category
-          interval:(NSTimeInterval)interval
-              name:(NSString *)logName
-             label:(NSString *)label{
+           interval:(NSTimeInterval)interval
+               name:(NSString *)logName
+              label:(NSString *)label{
     
     NSString *hitType = [NSString stringWithFormat:@"%i", NLOG_CATEGORY_TIMING];
     
@@ -244,7 +247,7 @@ static NSMutableDictionary * trackers = nil;
     [params setValue:viewName forKey:@"appScreen"];
     
     [self send:hitType params:params];
-
+    
 }
 
 - (void) setSampleRate:(double) rate{
@@ -259,7 +262,7 @@ static NSMutableDictionary * trackers = nil;
     
     for(id key in params){
         [self set:key value:[params objectForKey:key]];
-//        [fields setValue:[params objectForKey:key] forKey:key];
+        //        [fields setValue:[params objectForKey:key] forKey:key];
     }
 }
 
@@ -313,11 +316,11 @@ static NSMutableDictionary * trackers = nil;
  * 思路：根据MAC地址获得最后两位16进制数字，转10进制（范围0-255）
  * 根据命中率计算尾数命中范围( 1 <= (x + 1) <= round(命中率 * 256) )
  * 例如：如果命中率为 0.1，则MAC地址最后数字为 0 - 25的会命中
-        如果命中率为 1，则MAC地址最后数字为 0 - 255的会命中
-        如果命中率为 0，则无MAC地址会命中
+ 如果命中率为 1，则MAC地址最后数字为 0 - 255的会命中
+ 如果命中率为 0，则无MAC地址会命中
  */
 - (BOOL) isHitRate{
-        
+    
     if (!needCalc) {
         return isHit;
     }
@@ -335,11 +338,11 @@ static NSMutableDictionary * trackers = nil;
     double max = round(rate * 256) * 1.0;
     
     /*
-    NSLog(@"Mac Address:%@", macAddr);
-    NSLog(@"Hit tail:%u", hitTail);
-    NSLog(@"Rate:%f", rate);
-    NSLog(@"Max:%f", max);
-    */
+     NSLog(@"Mac Address:%@", macAddr);
+     NSLog(@"Hit tail:%u", hitTail);
+     NSLog(@"Rate:%f", rate);
+     NSLog(@"Max:%f", max);
+     */
     
     hitTail++;
     
@@ -364,9 +367,9 @@ static NSMutableDictionary * trackers = nil;
     double duration = (double)(now - start);
     
     [self send:@"view" params:@{
-                                @"duration":[NSString stringWithFormat:@"%d",(int)duration],
-                                @"name":label
-                            }];
+     @"duration":[NSString stringWithFormat:@"%d",(int)duration],
+     @"name":label
+     }];
 }
 
 

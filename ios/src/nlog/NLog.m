@@ -155,13 +155,37 @@ static NLog * _sharedInstance = nil;
     NPrintLog(@"Send session end log.");
 }
 
+// 启动后需要发送的日志，延迟发送（待主线程中的通用数据设置完毕）
+- (void) lazyActionAfterInit{
+    // 检查是否有旧Session日志需要发送
+    [NSession recovery];
+    
+    [self _sendSessionStart];
+    
+    // 检查版本升级
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    NSString* previousAV = [defaults objectForKey:kNLogAppVersion];
+    NSString* currentAV = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+    
+    if (!previousAV || ![currentAV isEqualToString:previousAV]) {
+        if (!previousAV) {
+            previousAV = @"";
+        }
+        [defaults setObject:currentAV forKey:kNLogAppVersion];
+        [NLog send:@"app" params:@{@"act": @"upgrade", @"pav":previousAV}];
+        NPrintLog(@"Send app upgrade log.");
+        
+    }
+    
+}
+
 + (id)sharedInstanceWithAppId:(NSString *)appId {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _sharedInstance = [[NLog alloc] initWithAppId:appId];
         
-        [NLog bindEvents];
-
+        [NLog actionAfterInit];
+        
     });
     return _sharedInstance;
 }
@@ -171,9 +195,21 @@ static NLog * _sharedInstance = nil;
     dispatch_once(&onceToken, ^{
         _sharedInstance = [[NLog alloc] initWithAppId:appId configs: configs];
         
-        [NLog bindEvents];
+        [NLog actionAfterInit];
     });
     return _sharedInstance;
+}
+
++ (void) actionAfterInit{
+    [NLog bindEvents];
+    
+    // 发送APP启动时日志
+    [NSTimer scheduledTimerWithTimeInterval:1
+                                     target:_sharedInstance
+                                   selector:@selector(lazyActionAfterInit)
+                                   userInfo:nil
+                                    repeats:NO];
+    
 }
 
 + (void)bindEvents{
@@ -198,45 +234,18 @@ static NLog * _sharedInstance = nil;
                                              selector: @selector(_sendSessionStart)
                                                  name: @"NLOG_SESSION_START"
                                                object: nil];
-
+    
     [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
                                              selector: @selector(_sendSessionEnd:)
                                                  name: @"NLOG_SESSION_END"
-                                               object: nil];
-    
-    // 检查是否有旧Session日志需要发送
-    [NSession recovery];
-    
-    // 发送APP启动时第一次session start
-    [NSTimer scheduledTimerWithTimeInterval:1
-                                     target:_sharedInstance
-                                   selector:@selector(_sendSessionStart)
-                                   userInfo:nil
-                                    repeats:NO];
-    
-    // 检查版本升级
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    NSString* previousAV = [defaults objectForKey:kNLogAppVersion];
-    NSString* currentAV = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
-    
-    if (!previousAV || ![currentAV isEqualToString:previousAV]) {
-        if (!previousAV) {
-            previousAV = @"";
-        }
-        [defaults setObject:currentAV forKey:kNLogAppVersion];
-        [NLog send:@"app" params:@{@"act": @"upgrade", @"pav":previousAV}];
-        NPrintLog(@"Send app upgrade log.");
-
-    }
-    
-}
+                                               object: nil];}
 
 + (id)sharedInstance{
     return _sharedInstance;
 }
 
 + (void) startWithAppId:(NSString *)appid {
-//    NSLog(@"NLog started with appid: %@", appid);
+    //    NSLog(@"NLog started with appid: %@", appid);
     [NLog sharedInstanceWithAppId:appid];
     NPrintLog(@"started with appid:%@",appid);
 }

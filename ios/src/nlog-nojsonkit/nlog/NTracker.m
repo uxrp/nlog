@@ -150,6 +150,9 @@ static NSMutableDictionary * trackers = nil;
         if (ns == NReachableViaWiFi) {
             reachType = @"wifi";
         }
+        else if(ns == NNotReachable) {
+            reachType = @"off";
+        }
         else{
             reachType = @"other";
         }
