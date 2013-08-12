@@ -38,9 +38,9 @@ static NSender* _sharedInstance = nil;
         // 启动立即发送数据
         // [self performSelectorInBackground:@selector(_sendAll) withObject:nil];
         // 为了将启动数据尽快发送出去采取异步处理
-        [NSTimer scheduledTimerWithTimeInterval:1
+        [NSTimer scheduledTimerWithTimeInterval:2
                                          target:self
-                                       selector:@selector(_sendAll)
+                                       selector:@selector(_sendAllAsync)
                                        userInfo:nil
                                         repeats:NO];
         
@@ -49,7 +49,7 @@ static NSender* _sharedInstance = nil;
         
         // 监听消息响应特殊需求
         [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(_sendAll)
+                                                 selector: @selector(_sendAllAsync)
                                                      name: @"NLOG_SEND_NOW"
                                                    object: nil];
         
@@ -96,10 +96,14 @@ static NSender* _sharedInstance = nil;
     // 每次重新调用可以检测网络状态，调整周期
     [self startSendTimer];
     
-    [self _sendAll];
+    [self _sendAllAsync];
 }
 
 - (void)enteredBackground:(NSNotification *) notification{
+    [self _sendAllAsync];
+}
+
+- (void)_sendAllAsync{
     [self performSelectorInBackground:@selector(_sendAll) withObject:nil];
 }
 
@@ -113,6 +117,8 @@ static NSender* _sharedInstance = nil;
         if (![self canISend]) {
             return;
         }
+        
+        NPrintLog(@"start to send all");
         
         NSAutoreleasePool* autoreleasePool = [[NSAutoreleasePool alloc] init];
         
