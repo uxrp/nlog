@@ -13,8 +13,7 @@
 #include <sys/sysctl.h>
 #include <net/if.h>
 #include <net/if_dl.h>
-
-#define ENCRYPT_TOKEN @"5D97EEF8-3127-4859-2222-82E6C8FABD8A"
+#include "NLogConfig.h"
 
 @implementation NStringExtension
 
@@ -35,9 +34,12 @@
     NSMutableString* hexResult = [[NSMutableString alloc] init];
     
     @try{
+        NSString* token = [NLogConfig get:@"encryptToken"];
         
-        NSString * token = [NStringExtension md5:ENCRYPT_TOKEN];
-        const char * tokenBytes = [token UTF8String];
+        NPrintLog(@"encrypt token:%@",token);
+        
+        NSString * tokenMD5 = [NStringExtension md5:token];
+        const char * tokenBytes = [tokenMD5 UTF8String];
         const char * targetBytes = [sourceStr UTF8String];
         unsigned long targetLength = strlen(targetBytes);
         

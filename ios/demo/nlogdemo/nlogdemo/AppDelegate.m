@@ -41,7 +41,7 @@
     self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
     
-    [NLog startWithAppId:@"9"];
+    [NLog startWithAppId:@"9" configs:@{@"encryptToken": @"5D97EEF8-3127-4859-2222-82E6C8FABD80"}];
     
 //    [[NLog getTracker:@"wenku"] setSampleRate:0.05];
     

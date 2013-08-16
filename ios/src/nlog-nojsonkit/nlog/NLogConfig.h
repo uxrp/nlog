@@ -12,8 +12,8 @@
 #define LOGS_MAX_DEPTH 250
 
 // 服务器日志接收路径
-// #define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
-#define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/"
+#define RECEIVER_URL @"http://hunter.duapp.com/command/?command=nlog-post&channel=miller"
+//#define RECEIVER_URL @"http://kstj.baidu.com/ctj/88/"
 
 // 版本
 #define SDK_VERSION @"1.0"
@@ -46,11 +46,14 @@
 // 默认采样率
 #define SAMPLE_RATE 1
 
+// 加密Token
+#define ENCRYPT_TOKEN @"5D97EEF8-3127-4859-2222-82E6C8FABD8A"
+
 #define NLOG_CACHE_KEY  @"nlog_cache"
 #define CurrentTimeMillis  (long long)round ([[NSDate date] timeIntervalSince1970] * (double)1000)
 #define LOG_FORMAT_VERSION 1
 
-#define NLOG_DEBUG_MODE
+//#define NLOG_DEBUG_MODE
 
 #ifdef NLOG_DEBUG_MODE
 #define NPrintLog( s, ... ) NSLog( @"<%@:(%d)> %@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, [NSString stringWithFormat:(s), ##__VA_ARGS__] )

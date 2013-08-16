@@ -402,6 +402,12 @@ NSDictionary* data = [NSDictionary dictionaryWithObjectsAndKeys:
                 <td>1（100%）</td>
                 <td>是</td>
         </tr>
+        <tr>
+                <td>encryptToken</td>
+                <td>加密Token</td>
+                <td>-</td>
+                <td>是</td>
+        </tr>
 </table>
 
 ### 云端配置

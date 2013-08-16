@@ -55,7 +55,8 @@ static NLogConfig * _sharedInstance = nil;
                           [NSNumber numberWithInt:STORAGE_EXPIRES], @"storageExpires",
                           [NSNumber numberWithInt:MAX_SEND_SIZE], @"sendMaxLength",
                           [NSNumber numberWithInt:SAMPLE_RATE], @"sampleRate",
-                          SDK_VERSION, @"sdkVersion"
+                          SDK_VERSION, @"sdkVersion",
+                          ENCRYPT_TOKEN,@"encryptToken"
                           
                           , nil] retain];
         
