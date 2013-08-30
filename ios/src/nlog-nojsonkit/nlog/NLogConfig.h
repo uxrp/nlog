@@ -53,7 +53,7 @@
 #define CurrentTimeMillis  (long long)round ([[NSDate date] timeIntervalSince1970] * (double)1000)
 #define LOG_FORMAT_VERSION 1
 
-//#define NLOG_DEBUG_MODE
+#define NLOG_DEBUG_MODE
 
 #ifdef NLOG_DEBUG_MODE
 #define NPrintLog( s, ... ) NSLog( @"<%@:(%d)> %@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, [NSString stringWithFormat:(s), ##__VA_ARGS__] )

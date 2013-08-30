@@ -140,8 +140,11 @@ static NLog * _sharedInstance = nil;
     // 通过[NSession recovery]触发的消息会携带旧sid，需要记录
     NSString* sid = [[notification userInfo] objectForKey:@"sid"];
     
+    NSNumber* ts = [[notification userInfo] objectForKey:@"t"];
+    
     [params setObject:@"shutdown" forKey:@"act"];
     [params setObject:[NSNumber numberWithLongLong:duration] forKey:@"duration"];
+    [params setObject:ts forKey:@"t"];
     
     if (sid) {
         [params setObject:sid forKey:@"sid"];
@@ -185,7 +188,7 @@ static NLog * _sharedInstance = nil;
         _sharedInstance = [[NLog alloc] initWithAppId:appId];
         
         [NLog actionAfterInit];
-
+        
     });
     return _sharedInstance;
 }
@@ -234,7 +237,7 @@ static NLog * _sharedInstance = nil;
                                              selector: @selector(_sendSessionStart)
                                                  name: @"NLOG_SESSION_START"
                                                object: nil];
-
+    
     [[NSNotificationCenter defaultCenter] addObserver: _sharedInstance
                                              selector: @selector(_sendSessionEnd:)
                                                  name: @"NLOG_SESSION_END"
@@ -245,7 +248,7 @@ static NLog * _sharedInstance = nil;
 }
 
 + (void) startWithAppId:(NSString *)appid {
-//    NSLog(@"NLog started with appid: %@", appid);
+    //    NSLog(@"NLog started with appid: %@", appid);
     [NLog sharedInstanceWithAppId:appid];
     NPrintLog(@"started with appid:%@",appid);
 }

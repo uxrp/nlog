@@ -77,6 +77,7 @@ static NSession * _sharedInstance = nil;
          object:nil
          userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
                    [NSNumber numberWithLongLong:sessionDuration],@"duration",
+                   [NSNumber numberWithLongLong:_end],@"t",
                    nil]];
         
     }
@@ -194,6 +195,7 @@ static NSession * _sharedInstance = nil;
          userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
                    [NSNumber numberWithLongLong:sessionDuration],@"duration",
                    sid,@"sid",
+                   [NSNumber numberWithLongLong:end],@"t",
                    nil]];
     }
     

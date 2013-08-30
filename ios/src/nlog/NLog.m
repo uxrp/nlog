@@ -140,8 +140,11 @@ static NLog * _sharedInstance = nil;
     // 通过[NSession recovery]触发的消息会携带旧sid，需要记录
     NSString* sid = [[notification userInfo] objectForKey:@"sid"];
     
+    NSNumber* ts = [[notification userInfo] objectForKey:@"t"];
+    
     [params setObject:@"shutdown" forKey:@"act"];
     [params setObject:[NSNumber numberWithLongLong:duration] forKey:@"duration"];
+    [params setObject:ts forKey:@"t"];
     
     if (sid) {
         [params setObject:sid forKey:@"sid"];

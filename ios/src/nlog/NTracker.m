@@ -122,6 +122,12 @@ static NSMutableDictionary * trackers = nil;
     
     params = [self applyFieldsProtocol:params];
     
+    NSNumber* ts = [NSNumber numberWithLongLong:[[params objectForKey:@"t"] longLongValue] ];
+    
+    if ([ts isEqualToNumber:[NSNumber numberWithInt:0]]) {
+        ts = [NSNumber numberWithLongLong:CurrentTimeMillis];
+    }
+    
     NSMutableDictionary* mutableParams = [NSMutableDictionary dictionaryWithDictionary:params];
     
     /*增加保留字段*/
@@ -135,7 +141,7 @@ static NSMutableDictionary * trackers = nil;
     [mutableParams setValue:[NSNumber numberWithInt:[NSession getSeq]] forKey:@"seq"];
     
     // 时间戳
-    [mutableParams setValue:[NSNumber numberWithLongLong:CurrentTimeMillis] forKey:@"t"];
+    [mutableParams setValue:ts forKey:@"t"];
     
     // 类型
     [mutableParams setValue:hitType forKey:@"ht"];
