@@ -4,6 +4,7 @@ import com.baidu.nlog.NLog;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v4.widget.DrawerLayout.LayoutParams;
 import android.util.Log;
 import android.view.Menu;
@@ -34,7 +35,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		NLog.follow(this);
+		NLog.follow(this, "test");
 	}
 
 	@Override
@@ -70,8 +71,7 @@ public class MainActivity extends Activity {
 					NLog.cmd("pv.send", "event",
 							"act=", "click",
 							"target=", self.getId(),
-							"text=", self.getText());
-					
+							"text=", self.getText());					
 				}
 			}; 
 			button.setOnClickListener(buttonClickListener);

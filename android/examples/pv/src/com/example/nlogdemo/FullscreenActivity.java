@@ -94,13 +94,32 @@ public class FullscreenActivity extends Activity {
         
         if (applicationContext == null) { // 初始化 // 注意onCreate可能被调用多次，这个判断是必须的
         	applicationContext = this.getApplicationContext();
+        	NLog.cmd("wenku.send", "event", "a=", 1);
         	NLog.init(this, 
+        			"childPackages=", "com.baidu.wenku",
+        			"debug=", true,
         			"ruleUrl=", "http://hunter.duapp.com/nlog/demo.rule.js", // 策略文件存放地址
         			"ruleExpires=", "5", // 策略文件失效时间
-	    			"onCreateSession", new NLog.EventListener() { // 重新创建session时触发
+	    			"onCreateSession=", new NLog.EventListener() { // 重新创建session时触发
 						@Override
 						public void onHandler(Map<String, Object> map) {
 							NLog.cmd("pv.send", "appview");
+						}
+					},
+					"onDestorySession=", new NLog.EventListener() {
+						
+						@Override
+						public void onHandler(Map<String, Object> map) {
+							// TODO Auto-generated method stub
+							
+						}
+					},
+					"onViewClose=", new NLog.EventListener() {
+						
+						@Override
+						public void onHandler(Map<String, Object> map) {
+							// TODO Auto-generated method stub
+							
 						}
 					}
 			);

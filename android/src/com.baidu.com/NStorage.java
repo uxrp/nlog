@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.GZIPOutputStream;
 import java.net.Proxy;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -37,9 +36,7 @@ import android.os.Process;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-/* debug start */
-//import android.os.Environment;
-/* debug end */
+
 
 @SuppressLint({ "HandlerLeak", "DefaultLocale" })
 public class NStorage {
@@ -54,7 +51,7 @@ public class NStorage {
     /**
      *  日志TAG
      */
-    private static String LOGTAG = "NStorage";
+    private static final String LOG_TAG = "NStorage";
 
     /**
      * 设备id
@@ -82,6 +79,10 @@ public class NStorage {
      * 规则文件名
      */
     private static String ruleFilename = null; // init中初始化
+    /**
+     * 版本文件名
+     */
+    private static String versionFilename = null; // init中初始化
     
     /**
      * 缓存文件名模板 _nlog_[version]_[itemname].dat, itemname => [name].[md5(head)]
@@ -164,6 +165,8 @@ public class NStorage {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
         }
         return result;
     }
@@ -219,24 +222,20 @@ public class NStorage {
      * @param data 上报数据
      */
     public static void report(String trackerName, Map<String, Object> fields, Map<String, Object> data) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("report('%s', %s, %s) postUrl='%s'", trackerName, fields, data, fields.get("postUrl")));
-        /* debug end */
+        
         if (!initCompleted) {
-            /* debug start */
-            Log.w(LOGTAG, String.format("report() uninitialized."));
-            /* debug end */
+            
             reportParamList.add(new ReportParamItem(trackerName, fields, data));
             return;
         }
         String postUrl = (String)fields.get("postUrl");
         if (fields.get("postUrl") == null) {
             // 发送被取消
-            /* debug start */
-            Log.w(LOGTAG, String.format("report() postUrl is null."));
-            /* debug end */
+            
             return;
         }
+        Boolean sync = NLog.safeBoolean(data.get("syncSave"), false);
+        // 同步
         Object parameter = fields.get("protocolParameter");
         // 转义和过滤
         Map<String, Object> headMap = runProtocolParameter(parameter, fields);
@@ -246,7 +245,7 @@ public class NStorage {
         if (postUrl.indexOf("?") < 0) { // 处理url中存在“？”的情况
             separator = "?";
         }
-        appendCache(trackerName, postUrl + separator + NLog.buildPost(headMap), NLog.buildPost(lineMap));
+    	appendCache(trackerName, postUrl + separator + NLog.buildPost(headMap), NLog.buildPost(lineMap), sync);
     }
     
     /**
@@ -259,12 +258,9 @@ public class NStorage {
      * @param trackerName 追踪器名称
      * @param head 首行数据，公用数据
      * @param line 每行数据
+     * @param sync 同步保存，等主进程关闭是调用
      */
-    private static void appendCache(String trackerName, String head, String line) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("appendCache('%s', '%s', '%s')", trackerName, head, line));
-        /* debug end */
-
+    private static void appendCache(String trackerName, String head, String line, Boolean sync) {
         synchronized(cacheItems) {
             String itemname = String.format("%s.%s", trackerName, getMD5(head));
             CacheItem item = cacheItems.get(itemname);
@@ -275,7 +271,12 @@ public class NStorage {
             synchronized(item.sb) {
                 item.sb.append(line + '\n');
             }
-            sendMessage_saveFile(item);
+            if (sync) {
+            	saveFile(item);
+            	sendMessage_postFile(new PostItem(item.name, null));
+            } else {
+            	sendMessage_saveFile(item);
+            }
         }
     }
     /** 
@@ -339,9 +340,7 @@ public class NStorage {
         Boolean result = false;
         
         if (!isNetworkConnected()) {
-            /* debug start */
-            Log.d(LOGTAG, String.format("loadRule() - Without a network connection."));
-            /* debug end */
+            
             return result;
         }
         
@@ -357,23 +356,17 @@ public class NStorage {
         try {
             Proxy proxy = null;
             if (wifi != null && wifi.isAvailable()) {
-                /* debug start */
-                Log.d(LOGTAG, "WIFI is available");
-                /* debug end */
+                
             } else if (mobile != null && mobile.isAvailable()) {
                 String apn = mobile.getExtraInfo().toLowerCase();
-                /* debug start */
-                Log.d(LOGTAG, "apn = " + apn);
-                /* debug end */
+                
                 if (apn.startsWith("cmwap") || apn.startsWith("uniwap") || apn.startsWith("3gwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.172", 80));
                 } else if (apn.startsWith("ctwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.200", 80));
                 }
             } else { //@fixed in TV
-                /* debug start */
-                Log.d(LOGTAG, "getConnection:not wifi and mobile");
-                /* debug end */
+                
             }
             
             URL url;
@@ -419,7 +412,9 @@ public class NStorage {
         } catch (IOException e) {
             conn.disconnect();
             conn = null;
-        }       
+		} catch (Exception e) {
+			e.printStackTrace();
+        }
         return result;
     }
     /**
@@ -430,27 +425,21 @@ public class NStorage {
      */
     @SuppressLint("DefaultLocale")
     private static Boolean postFile(PostItem item) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("postFile('%s', '%s')", item.name, item.locked));
-        /* debug end */
+        
         
         Boolean result = false;
         if (NLog.safeBoolean(NLog.get("onlywifi"), false) && !checkWifiConnected()) {
-            /* debug start */
-            Log.d(LOGTAG, String.format("postFile() - Without a wifi connection. onlywifi = true"));
-            /* debug end */
+            
             return result;
         } else if (!isNetworkConnected()) {
-            /* debug start */
-            Log.d(LOGTAG, String.format("postFile() - Without a network connection."));
-            /* debug end */
+            
             return result;
         }
         
         String filename = item.locked == null ? String.format(cacheFileFormat, fileVersion, item.name) : item.locked;
         File file = new File(filename);
         if (!file.exists() || file.length() <= 0) {
-            Log.w(LOGTAG, String.format("postFile() - file '%s' not found.", filename));
+            Log.w(LOG_TAG, String.format("postFile() - file '%s' not found.", filename));
             return result;
         }
         
@@ -499,11 +488,9 @@ public class NStorage {
             gos.close();
             gos = null;
             
-            /* debug start */
-            Log.d(LOGTAG, String.format("postFile() - postUrl = %s.", postUrl));
-            /* debug end */
             
-            if (postUrl == null) {
+            
+            if (postUrl == null || preLength <= 0) {
                 return result;
             }
             gzipBytes = baos.toByteArray();
@@ -511,6 +498,10 @@ public class NStorage {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (NullPointerException e) {
+        	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
         }
 
         HttpURLConnection conn = null;
@@ -520,23 +511,17 @@ public class NStorage {
         try {
             Proxy proxy = null;
             if (wifi != null && wifi.isAvailable()) {
-                /* debug start */
-                Log.d(LOGTAG, "WIFI is available");
-                /* debug end */
-            } else if (mobile != null && mobile.isAvailable()) {
+                
+            } else if (mobile != null && mobile.isAvailable() && mobile.getExtraInfo() != null) {
                 String apn = mobile.getExtraInfo().toLowerCase();
-                /* debug start */
-                Log.d(LOGTAG, "apn = " + apn);
-                /* debug end */
+                
                 if (apn.startsWith("cmwap") || apn.startsWith("uniwap") || apn.startsWith("3gwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.172", 80));
                 } else if (apn.startsWith("ctwap")) {
                     proxy = new Proxy(java.net.Proxy.Type.HTTP, new InetSocketAddress("10.0.0.200", 80));
                 }
             } else { //@fixed in TV
-                /* debug start */
-                Log.d(LOGTAG, "getConnection:not wifi and mobile");
-                /* debug end */
+                
             }
             URL url;
 
@@ -552,30 +537,29 @@ public class NStorage {
             conn.setDoOutput(true); // POST方式
             conn.setInstanceFollowRedirects(false);
             conn.setUseCaches(false);
-
-            /* include connection */
             
-            conn.setRequestProperty("Content-Type", "gzip");
+            
+            
+            
+            
+            
+            
+            
+            conn.setRequestProperty("Content-Encoding", "gzip");
             conn.connect();
             
             String lockedname = item.locked;
             if (lockedname == null) { // 需要锁定文件
                 lockedname = buildLocked(item.name);
-                /* debug start */
-                Log.d(LOGTAG, String.format("postFile() '%s' locked.", lockedname));
-                /* debug end */
+                
             }
             File locked = new File(lockedname);
             if (!locked.exists()) {
-                /* debug start */
-                Log.d(LOGTAG, String.format("postFile() '%s' locked not exists.", lockedname));
-                /* debug end */
+                
                 return result;
             }
 
-            /* debug start */
-            Log.d(LOGTAG, String.format("postFile() '%s' post start.", lockedname));
-            /* debug end */
+            
             
             DataOutputStream dos = new DataOutputStream(conn.getOutputStream());
             dos.write(gzipBytes);
@@ -597,18 +581,14 @@ public class NStorage {
             
             Integer rc = conn.getResponseCode();
             
-            /* debug start */
-            Log.d(LOGTAG, String.format("postFile() code = '%s' post end.", rc));
-            /* debug end */
+            
             
             // 在输入流外包装一层BufferReader，提高读入效率 getInputStream返回的是字节流，将其转换成字符流
             if (rc == HttpURLConnection.HTTP_OK) {
                 // 处理成功
                 result = true;
                 locked.delete();
-                /* debug start */
-                Log.d(LOGTAG, "post success!");
-                /* debug end */
+                
                 if (lastScanExists) { // 上次扫描存在未发送的文件 // 立即开始扫描
                     sendMessage_scanDir();
                 }
@@ -622,6 +602,10 @@ public class NStorage {
             e.printStackTrace();
             conn.disconnect();
             conn = null;
+        } catch (NullPointerException e) {
+        	e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
         }
         return result;
     }
@@ -635,13 +619,14 @@ public class NStorage {
             return false;
         }
         String filename = String.format(cacheFileFormat, fileVersion, item.name);
-        /* debug start */
-        Log.d(LOGTAG, String.format("saveFile() filename : %s", filename));
-        /* debug end */
         
-        Integer sendMaxLength = NLog.getInteger("sendMaxLength");
+        
         Boolean result = false;
         synchronized(item) {
+        	if (item.sb.length() <= 0) { // 无内容可写
+        		return result;
+        	}
+            Integer sendMaxLength = NLog.getInteger("sendMaxLength");
             try {
                 File file = new File(filename);
                 int offset = 0;
@@ -672,9 +657,10 @@ public class NStorage {
                 item.sb.delete(0, item.sb.length()); // 清空数据
                 result = true;
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
-            } 
+    		} catch (Exception e) {
+    			e.printStackTrace();
+            }
         }
         return result;
     }
@@ -697,6 +683,8 @@ public class NStorage {
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
         }
         return result;
     }
@@ -735,10 +723,12 @@ public class NStorage {
         lastScanExists = false;
         try {
             File file = new File(rootDir + File.separatorChar);
-            for (File subFile : file.listFiles()) {
-                /* debug start */
-                Log.d(LOGTAG, String.format("file : %s(%sbyte).", subFile.getName(), subFile.length()));
-                /* debug end */
+            File[] files = file.listFiles();
+            if (files == null) {
+                return result;
+            }
+            for (File subFile : files) {
+                
                 
                 Matcher matcher = dataFilePattern.matcher(subFile.getName());
                 if (!matcher.find()) { // 不符合nlog文件名
@@ -748,9 +738,7 @@ public class NStorage {
                 // 数据过期时间
                 Integer storageExpires = NLog.getInteger("storageExpires");
                 if (System.currentTimeMillis() - subFile.lastModified() >= storageExpires * 24 * 60 * 60 * 1000) {
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
-                    /* debug end */
+                    
                     subFile.delete();
                     continue;
                 }
@@ -759,9 +747,7 @@ public class NStorage {
                 String itemname = matcher.group(2); // 项名
                 String extname = matcher.group(4); // 扩展名
                 if (!fileVersion.equals(version)) { // 不兼容的版本
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("del file : %s(%sbyte).", subFile.getName(), subFile.length()));
-                    /* debug end */
+                    
                     subFile.delete();
                     continue;
                 }
@@ -774,9 +760,7 @@ public class NStorage {
                 }
             }
         } catch(Exception e) {
-            /* debug start */
-            e.printStackTrace();
-            /* debug end */
+            
         }
         return result;
     }
@@ -798,9 +782,7 @@ public class NStorage {
                     scanDir();
                     break;
                 case MESSAGE_INIT:
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("case MESSAGE_INIT"));
-                    /* debug end */
+                    
                     try {
                         File file = new File(rootDir + File.separatorChar);
                         if (!file.exists()) {
@@ -811,59 +793,75 @@ public class NStorage {
                                 System.currentTimeMillis() - ruleFile.lastModified() >= 
                                 NLog.getInteger("ruleExpires") * 24 * 60 * 60 * 1000) {
                             // 存在并且没过期
-                            try {
-                                FileInputStream fis = new FileInputStream(ruleFilename);
-                                Integer len = fis.available();
-                                byte[] buffer = new byte[len];
-                                fis.read(buffer);
-                                String ruleText = new String(buffer);
-                                fis.close();
-                                NLog.updateRule(ruleText);
-                                
-                                /* debug start */
-                                Log.d(LOGTAG, String.format("read '%s'\n===body====\n%s", ruleFilename, ruleText));
-                                /* debug end */
-                                
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            FileInputStream fis = new FileInputStream(ruleFilename);
+                            Integer len = fis.available();
+                            byte[] buffer = new byte[len];
+                            fis.read(buffer);
+                            String ruleText = new String(buffer);
+                            fis.close();
+                            NLog.updateRule(ruleText);
                         } else {
                             loadRule();
                         }
+                        String applicationVersion = NLog.getString("applicationVersion", "");
+                        if (!"".equals(applicationVersion)) {
+                            String versionText = "";
+                            File versionFile = new File(versionFilename);
+                            if (versionFile.exists()) {
+                                FileInputStream fis = new FileInputStream(versionFilename);
+                                Integer len = fis.available();
+                                byte[] buffer = new byte[len];
+                                fis.read(buffer);
+                                versionText = new String(buffer);
+                                fis.close();
+                            }
+                            if (!applicationVersion.equals(versionText)) {
+                                FileOutputStream fos = new FileOutputStream(versionFilename);
+                                fos.write(applicationVersion.getBytes());
+                                fos.close();
+                                
+                                NLog.updateVersion(applicationVersion, versionText);
+                            }
+                        }
                     } catch(Exception e) {
-                        /* debug start */
-                        e.printStackTrace();
-                        /* debug end */
+                    	e.printStackTrace();
                     }
                     break;
                 case MESSAGE_SAVEFILE: {
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("case MESSAGE_SAVEFILE"));
-                    /* debug end */
+                    
                     
                     if (msg.obj == null) {
                         break;
                     }
                     
-                    CacheItem cacheItem = (CacheItem)msg.obj;
-                    synchronized(messages) { // 清空消息
-                        String msgName = String.format("%s.%s", cacheItem.name, MESSAGE_SAVEFILE);
-                        messages.put(msgName, null);
-                    }
-                    saveFile(cacheItem); // 会清空 item.sb内容
-                    sendMessage_postFile(new PostItem(cacheItem.name, null));
+                	try{
+                		CacheItem cacheItem = (CacheItem)msg.obj;
+	                    synchronized(messages) { // 清空消息
+	                        String msgName = String.format("%s.%s", cacheItem.name, MESSAGE_SAVEFILE);
+	                        messages.put(msgName, null);
+	                    }
+	                    saveFile(cacheItem); // 会清空 item.sb内容
+	                    sendMessage_postFile(new PostItem(cacheItem.name, null));
+                	} catch(Exception e) {
+                		e.printStackTrace();
+                	}
                     break;
                 }
                 case MESSAGE_POSTFILE: {
-                    PostItem postItem = (PostItem)msg.obj;
-                    /* debug start */
-                    Log.d(LOGTAG, String.format("case MESSAGE_POSTFILE locked: %s", postItem.locked));
-                    /* debug end */
-                    synchronized(messages) { // 清空消息
-                        String msgName = String.format("%s.%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
-                        messages.put(msgName, null);
+                    if (msg.obj == null) {
+                        break;
                     }
-                    postFile(postItem);
+                    try {                    
+	                    PostItem postItem = (PostItem)msg.obj;
+	                    
+	                    synchronized(messages) { // 清空消息
+	                        String msgName = String.format("%s.%s.%s", postItem.name, MESSAGE_POSTFILE, postItem.locked != null);
+	                        messages.put(msgName, null);
+	                    }
+	                    postFile(postItem);
+	            	} catch(Exception e) {
+	            		e.printStackTrace();
+	            	}
                     break;
                 }
             }
@@ -892,17 +890,16 @@ public class NStorage {
             String msgName = String.format("%s", MESSAGE_SCANDIR);
             Message m = messages.get(msgName);
             if (m == null) { // 是否有相同的消息在处理
-                m = storageHandler.obtainMessage(MESSAGE_SCANDIR, 0, 0, null);
-                storageHandler.sendMessageDelayed(m, 5000);
-                messages.put(msgName, m);
+                try {
+                    m = storageHandler.obtainMessage(MESSAGE_SCANDIR, 0, 0, null);
+                    storageHandler.sendMessageDelayed(m, 5000);
+                    messages.put(msgName, m);
+                } catch(Exception ex) {
+                }
                 result = true;
-                /* debug start */
-                Log.d(LOGTAG, String.format("MESSAGE_SCANDIR '%s' message send", msgName));
-                /* debug end */
+                
             } else {
-                /* debug start */
-                Log.d(LOGTAG, String.format("MESSAGE_SCANDIR message sending..."));
-                /* debug end */
+                
             }
         }
         return result;
@@ -918,17 +915,13 @@ public class NStorage {
             String msgName = String.format("%s.%s.%s", item.name, MESSAGE_POSTFILE, item.locked != null);
             Message m = messages.get(msgName);
             if (m == null) { // 是否有相同的消息在处理
-                m = storageHandler.obtainMessage(MESSAGE_POSTFILE, 0, 0, item);
-                storageHandler.sendMessageDelayed(m, 5000);
-                messages.put(msgName, m);
+                try {
+                    m = storageHandler.obtainMessage(MESSAGE_POSTFILE, 0, 0, item);
+                    storageHandler.sendMessageDelayed(m, 3000);
+                    messages.put(msgName, m);
+                } catch(Exception ex) {
+                }
                 result = true;
-                /* debug start */
-                Log.d(LOGTAG, String.format("MESSAGE_POSTFILE '%s' message send", msgName));
-                /* debug end */
-            } else {
-                /* debug start */
-                Log.d(LOGTAG, String.format("MESSAGE_POSTFILE message sending..."));
-                /* debug end */
             }
         }
         return result;
@@ -945,17 +938,13 @@ public class NStorage {
             String msgName = String.format("%s.%s", item.name, MESSAGE_SAVEFILE);
             Message m = messages.get(msgName);
             if (m == null) { // 是否有相同的消息在处理
-                m = storageHandler.obtainMessage(MESSAGE_SAVEFILE, 0, 0, item);
-                storageHandler.sendMessageDelayed(m, 100);
-                messages.put(msgName, m);
+                try {
+                	m = storageHandler.obtainMessage(MESSAGE_SAVEFILE, 0, 0, item);
+                	storageHandler.sendMessage(m);
+                    messages.put(msgName, m);
+                } catch(Exception ex) {
+                }
                 result = true;
-                /* debug start */
-                Log.d(LOGTAG, String.format("MESSAGE_SAVEFILE '%s' message send", msgName));
-                /* debug end */
-            } else {
-                /* debug start */
-                Log.d(LOGTAG, String.format("MESSAGE_SAVEFILE message sending..."));
-                /* debug end */
             }
         }
         return result;
@@ -988,11 +977,10 @@ public class NStorage {
         }
         rootDir = NLog.getContext().getFilesDir() + File.separator + "_nlog_cache";
         
-        /* debug start */
-        //rootDir = Environment.getExternalStorageDirectory() + File.separator + "_nlog_cache"; // 放到SD卡方便调试
-        /* debug end */
+        
         
         ruleFilename = rootDir + File.separator + "rules.dat";
+        versionFilename = rootDir + File.separator + "version.dat";
         cacheFileFormat = rootDir + File.separator + "_nlog_%s_%s.dat";
 
         initCompleted = true;
@@ -1003,9 +991,13 @@ public class NStorage {
         HandlerThread handlerThread = new HandlerThread("NSTORAGE_HANDLER",
                 Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
+        
         storageHandler = new StorageHandler(handlerThread.getLooper());    
-        Message msg = storageHandler.obtainMessage(MESSAGE_INIT);
-        storageHandler.sendMessageDelayed(msg, 100);
+        try {
+	        Message msg = storageHandler.obtainMessage(MESSAGE_INIT);
+	        storageHandler.sendMessage(msg);
+        } catch(Exception ex) {
+        }
         
         for (ReportParamItem item : reportParamList) {
             report(item.trackerName, item.fields, item.data);

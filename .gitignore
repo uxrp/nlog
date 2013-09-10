@@ -6,3 +6,4 @@ ios/src/.DS_Store
 /examples/music/node_modules
 /docs/api
 bin
+android/examples/pv/libs/nlog.jar

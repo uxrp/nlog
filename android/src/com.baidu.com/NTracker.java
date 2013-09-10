@@ -2,7 +2,12 @@ package com.baidu.nlog;
 
 import java.util.*;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
+
+//import android.util.Log;
 
 public final class NTracker {
     /**
@@ -16,7 +21,7 @@ public final class NTracker {
     /**
      *  日志TAG
      */
-    private static String LOGTAG = "NTracker";
+    private static final String LOG_TAG = "NTracker";
 
     /**
      * 追踪器集合，以name为下标
@@ -66,9 +71,7 @@ public final class NTracker {
      * @param params 起始参数
      */
     public void start(Object... params) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.start([length:%s])", this, params.length));
-        /* debug end */
+        
         
         start(NLog.buildMap(params));
     }
@@ -83,9 +86,7 @@ public final class NTracker {
         }
         running = true;
         
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.start(%s)", this, map));
-        /* debug end */
+        
 
         set(map);
         // 清理之前的参数
@@ -103,9 +104,7 @@ public final class NTracker {
         if (!running) return;
         running = true;
         
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.stop()", this));
-        /* debug end */
+        
         
         fire("stop");
     }
@@ -123,7 +122,8 @@ public final class NTracker {
      */
     private static Map<String, Object> configFields = NLog.buildMap(
         "postUrl=", null, // 上报路径
-        "protocolParameter=", null // 字段缩写字典
+        "protocolParameter=", null, // 字段缩写字典
+        "syncSave=", null // 是否同步处理
     );
 
     /**
@@ -132,9 +132,7 @@ public final class NTracker {
      */
     @SuppressWarnings("unchecked")
     public void set(Map<String, Object> map) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.set(%s)", this, map));
-        /* debug end */
+        
         
         Iterator<String> iterator = map.keySet().iterator();    
         while (iterator.hasNext()) {    
@@ -157,9 +155,7 @@ public final class NTracker {
      * @param params 参数集合
      */
     public void set(Object... params) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.set(%s)", this, params));
-        /* debug end */
+        
         set(NLog.buildMap(params));
     }
     
@@ -169,9 +165,7 @@ public final class NTracker {
      * @return 返回键值对应的数据
      */
     public Object get(String key) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.get('%s') => %s", this, key, fields.get(key)));
-        /* debug end */
+        
         
         return fields.get(key);
     }
@@ -182,12 +176,15 @@ public final class NTracker {
      * @param nlog NLog对象
      */
     public NTracker(String name) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s::NTracker('%s')", this, name));
-        /* debug end */
+        
 
         this.name = name;
         fields.put("protocolParameter", configFields);
+        fields.put("operator", NLog.getString("networkOperator", "0")); // 网络运营商
+        fields.put("appVer", NLog.getString("applicationVersion", "0")); // 应用版本
+        fields.put("sysVer", NLog.getString("systemVersion", "0")); // 系统版本
+		fields.put("display", NLog.getString("screenResolution", "0")); // 分辨率
+		fields.put("model", NLog.getString("model", "0")); // 机型
     }
     
     /**
@@ -196,9 +193,18 @@ public final class NTracker {
      * @param map 参数集合
      */
     public void send(String hitType, Map<String, Object> map) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.send('%s', %s)", this, hitType, map));
-        /* debug end */
+        String type = "other";        
+    	try {
+	        ConnectivityManager connectivityManager = (ConnectivityManager)NLog.getContext().getSystemService(Context.CONNECTIVITY_SERVICE); 
+	        NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo(); 
+	        if (activeNetInfo == null) {
+	        	type = "off";
+	        } else if (activeNetInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+	            type = "wifi";
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
+        }
         
         @SuppressWarnings("unchecked")
         Map<String, Object> data = NLog.mergeMap(
@@ -207,9 +213,15 @@ public final class NTracker {
                 "seq=", NLog.getSessionSeq(), // 会话顺序
                 "time=", System.currentTimeMillis(), // 事件发生的时间
                 "ts=", Long.toString(NLog.timestamp(), 36), // 36进制的时间戳
-                "ht=", hitType
+                "ht=", hitType, // 数据类型
+                "network=", type // 联网类型
             ), map);
         fire("send", data);
+        
+        if (NLog.getBoolean("debug")) {
+        	Log.v(LOG_TAG, String.format("%s.send() data=%s name=%s fields=%s", this, data, name, fields));
+        }
+        
         NLog.report(name, fields, data);
     }
 
@@ -219,9 +231,7 @@ public final class NTracker {
      * @param map 参数集合
      */
     public void send(String hitType, Object... params) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.send('%s', %s)", this, hitType, params));
-        /* debug end */
+        
         
         send(hitType, NLog.buildMap(params));
     }
@@ -231,9 +241,7 @@ public final class NTracker {
      * @param map 参数集合
      */
     public void sendView(Map<String, Object> map) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendView(%s)", this, map));
-        /* debug end */
+        
         
         send("appview", map);
     }
@@ -243,9 +251,7 @@ public final class NTracker {
      * @param appScreen 屏幕场景名称
      */
     public void sendView(String appScreen) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendView('%s')", this, appScreen));
-        /* debug end */
+        
         
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("appScreen", appScreen);
@@ -257,9 +263,7 @@ public final class NTracker {
      * @param map 参数集合
      */
     public void sendEvent(Map<String, Object> map) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendEvent('%s')", this, map));
-        /* debug end */
+        
         
         send("event", map);
     }
@@ -272,9 +276,7 @@ public final class NTracker {
      * @param value 执行次数
      */
     public void sendEvent(String category, String action, String label, Long value) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendEvent('%s', '%s', '%s', %s)", this, category, action, label, value));
-        /* debug end */
+        
         
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("eventCategory", category);
@@ -289,9 +291,7 @@ public final class NTracker {
      * @param map 参数集合
      */
     public void sendException(Map<String, Object> map) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendException('%s')", this, map));
-        /* debug end */
+        
         
         send("exception", map);
     }
@@ -302,9 +302,7 @@ public final class NTracker {
      * @param fatal 是否导致崩溃
      */
     public void sendException(String description, Boolean fatal) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendException('%s', %s)", this, description, fatal));
-        /* debug end */
+        
         
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("exDescription", description);
@@ -321,9 +319,7 @@ public final class NTracker {
      * @param fatal 是否导致崩溃
      */
     public void sendException(String threadName, String description, Boolean fatal) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendException('%s', '%s', %s)", this, threadName, description, fatal));
-        /* debug end */
+        
         
         send("exception", NLog.buildMap(
             "exThread=", threadName,
@@ -337,9 +333,7 @@ public final class NTracker {
      * @param map 参数集合
      */
     public void sendTiming(Map<String, Object> map) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendTiming('%s')", this, map));
-        /* debug end */
+        
         
         send("timing", map);
     }
@@ -352,9 +346,7 @@ public final class NTracker {
      * @param label 标签
      */
     public void sendTiming(String category, String var, Long value, String label) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.sendTiming('%s')", this, category, var, value, label));
-        /* debug end */
+        
         
         send("timing", NLog.buildMap(
             "timingCategory=", category,
@@ -407,9 +399,7 @@ public final class NTracker {
      * @return 返回命令执行的结果，主要用于get方法
      */
     public Object command(String method, Object... params) {
-        /* debug start */
-        Log.d(LOGTAG, String.format("%s.command('%s', [length:%s])", this, method, params.length));
-        /* debug end */
+        
         
         if (!running && "".equals(method.replaceAll("^(fire|send)$", ""))) {
             argsList.add(new Args(method, params));
