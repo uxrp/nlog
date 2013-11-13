@@ -198,7 +198,7 @@ static NLogConfig * _sharedInstance = nil;
         
         //get response
         NSHTTPURLResponse* urlResponse = nil;
-        NSError *error = [[NSError alloc] init];
+        NSError *error = nil;
         NSData *responseData = [NSURLConnection sendSynchronousRequest:request
                                                      returningResponse:&urlResponse error:&error];
         
@@ -221,6 +221,8 @@ static NLogConfig * _sharedInstance = nil;
             [defaults synchronize];
             
         }
+        
+        [result release];
     }
     @catch (NSException *exception) {
         NPrintLog(@"Download policy file exception: %@",[exception reason]);
