@@ -51,7 +51,9 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static Object get(String key) {
-        
+        if (fields == null) {
+        	return null;
+        }
         
         return fields.get(key);
     }
@@ -61,11 +63,13 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static Integer getInteger(String key) {
-        
         Object configField = configFields.get(key);
         if (configField == null) {
             return null;
-        } 
+        }
+        if (fields == null) {
+        	return ((ConfigField)configField).defaultValue;
+        }
         return safeInteger(fields.get(key), ((ConfigField)configField).defaultValue);
     }
     /**
@@ -74,6 +78,9 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static Boolean getBoolean(String key) {
+    	if (fields == null) {
+    		return false;
+    	}
         return safeBoolean(fields.get(key), false);
     }
     /**
@@ -82,9 +89,15 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static String getString(String key, String defaultValue) {
+    	if (fields == null) {
+    		return defaultValue;
+    	}
         return safeString(fields.get(key), defaultValue);
     }
     public static String getString(String key) {
+    	if (fields == null) {
+    		return "";
+    	}
         return safeString(fields.get(key), "");
     }
     /**
@@ -325,6 +338,9 @@ public final class NLog {
      * 获取设备上下文
      */
     public static Context getContext() {
+    	if (fields == null) {
+    		return null;
+    	}
         return (Context)fields.get("applicationContext");
     }
     
@@ -489,6 +505,10 @@ public final class NLog {
         if (!matcher.find()) {
             
             return null;
+        }
+
+        if (sessionId == null) { // 确保所有发送的数据都有sessionId
+        	createSession();
         }
 
         String trackerName = matcher.group(1);
@@ -686,6 +706,10 @@ public final class NLog {
         if (methodName == null) {
             Log.w(LOG_TAG, String.format("follow() Not in the right place."));
             return;
+        }
+        
+        if(name == null || context == null){
+        	return;
         }
         
         if (NLog.getBoolean("debug")) {
