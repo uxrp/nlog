@@ -656,10 +656,11 @@ public class NStorage {
                 fos.flush();
                 item.sb.delete(0, item.sb.length()); // 清空数据
                 result = true;
+                fos.close();
             } catch (IOException e) {
                 e.printStackTrace();
-    		} catch (Exception e) {
-    			e.printStackTrace();
+            } catch (Exception e) {
+    	        e.printStackTrace();
             }
         }
         return result;
