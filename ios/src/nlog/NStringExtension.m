@@ -31,7 +31,7 @@
  */
 + (NSString *)encrypt:(NSString *)sourceStr
 {
-    NSMutableString* hexResult = [[NSMutableString alloc] init];
+    NSMutableString* hexResult = [[[NSMutableString alloc] init] autorelease];
     
     @try{
         NSString* token = [NLogConfig get:@"encryptToken"];
