@@ -507,10 +507,6 @@ public final class NLog {
             return null;
         }
 
-        if (sessionId == null) { // 确保所有发送的数据都有sessionId
-        	createSession();
-        }
-
         String trackerName = matcher.group(1);
         String method = matcher.group(2);
         if (initCompleted) {
