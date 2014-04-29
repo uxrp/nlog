@@ -1,4 +1,4 @@
-package com.baidu.common.nlog;
+package com.baidu.nlog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -24,6 +24,9 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.GZIPOutputStream;
 import java.net.Proxy;
+
+import com.baidu.yuedu.util.LogUtil;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -95,6 +98,7 @@ public class NStorage {
         public String name;
         public String head;
         public byte[] pass;
+        public Boolean passiveSend = false;
 
         /**
          * 构造
@@ -106,7 +110,6 @@ public class NStorage {
             this.sb = new StringBuffer();
             this.head = head;
             this.name = name;
-
             this.pass = buildPass(name);
         }
     }
@@ -242,7 +245,8 @@ public class NStorage {
 
             return;
         }
-        Boolean sync = NLog.safeBoolean(data.get("syncSave"), false);
+        Boolean syncSave = NLog.safeBoolean(data.get("syncSave"), false);
+        Boolean passiveSend = NLog.safeBoolean(data.get("passiveSend"), false);
         // 同步
         Object parameter = fields.get("protocolParameter");
         // 转义和过滤
@@ -254,7 +258,7 @@ public class NStorage {
             separator = "?";
         }
         appendCache(trackerName, postUrl + separator + NLog.buildPost(headMap),
-                NLog.buildPost(lineMap), sync);
+                NLog.buildPost(lineMap), syncSave, passiveSend);
     }
 
     /**
@@ -267,10 +271,11 @@ public class NStorage {
      * @param trackerName 追踪器名称
      * @param head 首行数据，公用数据
      * @param line 每行数据
-     * @param sync 同步保存，等主进程关闭是调用
+     * @param syncSave 同步保存，等主进程关闭是调用
+     * @param passiveSend 是否被动发送
      */
     private static void appendCache(String trackerName, String head,
-            String line, Boolean sync) {
+            String line, Boolean syncSave, Boolean passiveSend) {
         synchronized (cacheItems) {
             String itemname = String.format("%s.%s", trackerName, getMD5(head));
             CacheItem item = cacheItems.get(itemname);
@@ -278,12 +283,21 @@ public class NStorage {
                 item = new CacheItem(itemname, head);
                 cacheItems.put(itemname, item); // 加入缓存
             }
+            if (passiveSend) { // 被动发送
+                if (item.sb.length() <= 0) { // 空内容的情况，采用被动发送
+                    item.passiveSend = passiveSend;
+                }
+            } else { // 主动发送
+                item.passiveSend = passiveSend;
+            }
             synchronized (item.sb) {
                 item.sb.append(line + '\n');
             }
-            if (sync) {
+            if (syncSave) {
                 saveFile(item);
-                sendMessage_postFile(new PostItem(item.name, null));
+                if (!passiveSend) { // 不主动发送
+                    sendMessage_postFile(new PostItem(item.name, null));
+                }
             } else {
                 sendMessage_saveFile(item);
             }
@@ -435,6 +449,8 @@ public class NStorage {
             conn = null;
         } catch (Exception e) {
             e.printStackTrace();
+        } catch (NoClassDefFoundError e) { //避免某些手机connect 方法出现java.lang.NoClassDefFoundError: libcore/io/GaiException
+            LogUtil.e(LOG_TAG, e.getMessage(), e);
         }
         return result;
     }
@@ -617,10 +633,6 @@ public class NStorage {
                 // 处理成功
                 result = true;
                 locked.delete();
-
-                if (lastScanExists) { // 上次扫描存在未发送的文件 // 立即开始扫描
-                    sendMessage_scanDir();
-                }
             }
             conn.disconnect();
         } catch (FileNotFoundException e) {
@@ -666,6 +678,7 @@ public class NStorage {
                 }
                 if (offset >= sendMaxLength * 1024) { // 文件超过范围，建立新文件
                     buildLocked(item.name); // 将之前的文件锁定
+                    sendMessage_scanDir(true);
                     offset = 0;
                 }
                 if (offset <= 0) { // 文件不存在 // 头必须写
@@ -751,8 +764,9 @@ public class NStorage {
 
     /**
      * 扫描目录
+     * @param onlyLocked 只扫描锁定的文件
      */
-    private static Boolean scanDir() {
+    private static Boolean scanDir(Boolean onlyLocked) {
         Boolean result = false;
         lastScanTime = System.currentTimeMillis();
         lastScanExists = false;
@@ -786,7 +800,9 @@ public class NStorage {
                     subFile.delete();
                     continue;
                 }
-
+                if (onlyLocked && !"locked".equals(extname)) {
+                    continue;
+                }
                 // 开始发送文件
                 if (sendMessage_postFile(new PostItem(itemname,
                         "locked".equals(extname) ? subFile.getAbsolutePath()
@@ -817,7 +833,7 @@ public class NStorage {
                     String msgName = String.format("%s", MESSAGE_SCANDIR);
                     messages.put(msgName, null);
                 }
-                scanDir();
+                scanDir((Boolean) msg.obj);
                 break;
             case MESSAGE_INIT:
 
@@ -887,7 +903,9 @@ public class NStorage {
                         messages.put(msgName, null);
                     }
                     saveFile(cacheItem); // 会清空 item.sb内容
-                    sendMessage_postFile(new PostItem(cacheItem.name, null));
+                    if (!cacheItem.passiveSend) { // 非主动发送时处理
+                        sendMessage_postFile(new PostItem(cacheItem.name, null));
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -933,9 +951,10 @@ public class NStorage {
 
     /**
      * 发送扫描目录的消息
+     * @param onlyLocked 是否只扫描锁定的文件
      * @return 返回是否发送消息
      */
-    private static Boolean sendMessage_scanDir() {
+    private static Boolean sendMessage_scanDir(boolean onlyLocked) {
         Boolean result = false;
         synchronized (messages) { // 消息正在发送的途中
             String msgName = String.format("%s", MESSAGE_SCANDIR);
@@ -943,7 +962,7 @@ public class NStorage {
             if (m == null) { // 是否有相同的消息在处理
                 try {
                     m = storageHandler.obtainMessage(MESSAGE_SCANDIR, 0, 0,
-                            null);
+                            onlyLocked);
                     storageHandler.sendMessageDelayed(m, 5000);
                     messages.put(msgName, m);
                 } catch (Exception ex) {
@@ -1064,41 +1083,46 @@ public class NStorage {
         reportParamList.clear();
         reportParamList = null;
 
-        sendTimer = new Timer();
-        sendTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Long now = System.currentTimeMillis();
-                Integer sendInterval = NLog.getInteger("sendInterval");
-                Integer sendIntervalWifi = NLog.getInteger("sendIntervalWifi");
-                if (!lastScanExists) { // 上次没扫描到文件，增加延迟
-                    sendInterval += (int) (sendInterval * 1.5);
-                    sendIntervalWifi += (int) (sendIntervalWifi * 1.5);
-                }
-                Boolean onlywifi = NLog.safeBoolean(NLog.get("onlywifi"), false);
-                if (now - lastScanTime < Math.min(sendInterval,
-                        sendIntervalWifi) * 1000) {
-                    return;
-                }
+        // 是否自动发送
+        Boolean autoSend = NLog.getBoolean("autoSend");
+        if (autoSend) {
+            sendTimer = new Timer();
+            sendTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Long now = System.currentTimeMillis();
+                    Integer sendInterval = NLog.getInteger("sendInterval");
+                    Integer sendIntervalWifi = NLog
+                            .getInteger("sendIntervalWifi");
+                    if (!lastScanExists) { // 上次没扫描到文件，增加延迟
+                        sendInterval += (int) (sendInterval * 1.5);
+                        sendIntervalWifi += (int) (sendIntervalWifi * 1.5);
+                    }
+                    Boolean onlywifi = NLog.safeBoolean(NLog.get("onlywifi"),
+                            false);
+                    if (now - lastScanTime < Math.min(sendInterval,
+                            sendIntervalWifi) * 1000) {
+                        return;
+                    }
 
-                // 无网络链接
-                if (!isNetworkConnected()) {
-                    return;
-                } else if (checkWifiConnected()) {
-                    if (now - lastScanTime < sendIntervalWifi * 1000) { // wifi
+                    // 无网络链接
+                    if (!isNetworkConnected()) {
                         return;
+                    } else if (checkWifiConnected()) {
+                        if (now - lastScanTime < sendIntervalWifi * 1000) { // wifi
+                            return;
+                        }
+                    } else {
+                        if (onlywifi) { // 只在wifi下
+                            return;
+                        }
+                        if (now - lastScanTime < sendInterval * 1000) { //wifi
+                            return;
+                        }
                     }
-                } else {
-                    if (onlywifi) { // 只在wifi下
-                        return;
-                    }
-                    if (now - lastScanTime < sendInterval * 1000) { //wifi
-                        return;
-                    }
+                    sendMessage_scanDir(false);
                 }
-                sendMessage_scanDir();
-            }
-        }, 60000, 60000);
-
+            }, 60000, 60000);
+        }
     }
 }

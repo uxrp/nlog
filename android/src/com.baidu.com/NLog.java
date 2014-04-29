@@ -35,11 +35,11 @@ public final class NLog {
     /**
      * 当前应用包名
      */
-	private static String currPackageName = "";
-	/**
-	 * activity全部挂起之后，最近一个包名
-	 */
-	private static String pauseAfterPackageName = "";
+    private static String currPackageName = "";
+    /**
+     * activity全部挂起之后，最近一个包名
+     */
+    private static String pauseAfterPackageName = "";
     /**
      * 追踪器集合，以name为下标
      */
@@ -51,9 +51,7 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static Object get(String key) {
-        if (fields == null) {
-        	return null;
-        }
+        
         
         return fields.get(key);
     }
@@ -63,13 +61,11 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static Integer getInteger(String key) {
+        
         Object configField = configFields.get(key);
         if (configField == null) {
             return null;
-        }
-        if (fields == null) {
-        	return ((ConfigField)configField).defaultValue;
-        }
+        } 
         return safeInteger(fields.get(key), ((ConfigField)configField).defaultValue);
     }
     /**
@@ -78,9 +74,6 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static Boolean getBoolean(String key) {
-    	if (fields == null) {
-    		return false;
-    	}
         return safeBoolean(fields.get(key), false);
     }
     /**
@@ -89,15 +82,9 @@ public final class NLog {
      * @return 返回键值对应的数据
      */
     public static String getString(String key, String defaultValue) {
-    	if (fields == null) {
-    		return defaultValue;
-    	}
         return safeString(fields.get(key), defaultValue);
     }
     public static String getString(String key) {
-    	if (fields == null) {
-    		return "";
-    	}
         return safeString(fields.get(key), "");
     }
     /**
@@ -211,6 +198,7 @@ public final class NLog {
     | sendMaxLength   | 单次发送最大的包长度   |KB     | 200   |2-500 |
     | sendInterval    | 重发数据周期          |秒     | 300   |1-600 |
     | sendIntervalWifi| 在wifi环境下的重发周期 |秒     | 150   |1-600 |
+    | autoSend        | 是否自动发送          |Boolean| true|false |
     | sessionTimeout  | 会话超时时间          |秒     | 30    |30-120 |
     | storageExpires  | 离线数据过期时间       |天     | 10    |2-30  |
     | sampleRate      | 各个Tracker的抽样率   |浮点数  |[1...] |0-1    |
@@ -295,38 +283,38 @@ public final class NLog {
         fields.put("model", Build.MODEL);
         // 网络运营商
         try {
-        	TelephonyManager telManager = (TelephonyManager)app.getSystemService(Context.TELEPHONY_SERVICE);
-        	String operator = telManager.getNetworkOperator();
-        	fields.put("networkOperator", operator == null || "".equals(operator) ? "0" : operator); // 获取为空则返回0
-		} catch (Exception e) {
-        	fields.put("networkOperator", "0");
-			e.printStackTrace();
+            TelephonyManager telManager = (TelephonyManager)app.getSystemService(Context.TELEPHONY_SERVICE);
+            String operator = telManager.getNetworkOperator();
+            fields.put("networkOperator", operator == null || "".equals(operator) ? "0" : operator); // 获取为空则返回0
+        } catch (Exception e) {
+            fields.put("networkOperator", "0");
+            e.printStackTrace();
         }
         
         // 应用程序版本
-    	PackageInfo packageInfo = null;
-		try {
-			PackageManager pm = app.getPackageManager();
-			packageInfo = pm.getPackageInfo(app.getPackageName(), 0);
-			fields.put("applicationVersion", packageInfo.versionName);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		// 分辨率
-    	try {
-	    	WindowManager wm = (WindowManager)app.getSystemService(Context.WINDOW_SERVICE);
-	    	if (wm != null) {
-				fields.put("screenResolution", wm.getDefaultDisplay().getWidth() + "*" + wm.getDefaultDisplay().getHeight());
-	    	}
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}
+        PackageInfo packageInfo = null;
+        try {
+            PackageManager pm = app.getPackageManager();
+            packageInfo = pm.getPackageInfo(app.getPackageName(), 0);
+            fields.put("applicationVersion", packageInfo.versionName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // 分辨率
+        try {
+            WindowManager wm = (WindowManager)app.getSystemService(Context.WINDOW_SERVICE);
+            if (wm != null) {
+                fields.put("screenResolution", wm.getDefaultDisplay().getWidth() + "*" + wm.getDefaultDisplay().getHeight());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         NStorage.init();
         
         // 处理未初始化前的命令
         for (CmdParamItem item : cmdParamList) {
-        	NTracker tracker = getTracker(item.trackerName);
+            NTracker tracker = getTracker(item.trackerName);
             tracker.command(item.method, item.params);
         }
         cmdParamList.clear();
@@ -338,9 +326,6 @@ public final class NLog {
      * 获取设备上下文
      */
     public static Context getContext() {
-    	if (fields == null) {
-    		return null;
-    	}
         return (Context)fields.get("applicationContext");
     }
     
@@ -365,14 +350,14 @@ public final class NLog {
      * 启动新会话
      */
     private static void createSession() {
-    	if (sessionId != null) {
+        if (sessionId != null) {
             fire("destorySession", buildMap(
-            		"sessionId=", sessionId,
-            		"duration=", timestamp(pauseTime), // 流量耗时
-            		"time=", pauseTime 
-    		));
-    	}
-    	Long now = System.currentTimeMillis();
+                    "sessionId=", sessionId,
+                    "duration=", timestamp(pauseTime), // 流量耗时
+                    "time=", pauseTime 
+            ));
+        }
+        Long now = System.currentTimeMillis();
         pauseTime = now;
         sessionSeq++;
         sessionId = Long.toString(now, 36) + Long.toString((long)(36 * 36 * 36 * 36 * Math.random()), 36);
@@ -594,14 +579,14 @@ public final class NLog {
      * activity生命周期跟踪
      */
     public static class FollowInfo {
-    	public Long time;
-    	public Object context;
-    	public String name;
-    	FollowInfo(Long time, Object context, String name) {
-    		this.time = time;
-    		this.context = context;
-    		this.name = name;
-    	}
+        public Long time;
+        public Object context;
+        public String name;
+        FollowInfo(Long time, Object context, String name) {
+            this.time = time;
+            this.context = context;
+            this.name = name;
+        }
     }
     /**
      * 用户浏览的顺序
@@ -616,7 +601,7 @@ public final class NLog {
      * Activity生命周期发生改变 需要在每个Activity|Fragment的onResume()和onPause()方法中调用，监听session变化
      */
     public static void follow(Object context) {
-    	follow(context, null);
+        follow(context, null);
     }
     /**
      * 为了实现自定义生命周期
@@ -624,10 +609,10 @@ public final class NLog {
      * @param name
      */
     public static void onResume(Object context, String name) {
-    	follow(context, name, "onResume");
+        follow(context, name, "onResume");
     }
     public static void onResume(Object context) {
-    	follow(context, "", "onResume");
+        follow(context, "", "onResume");
     }
     /**
      * 为了实现自定义生命周期
@@ -635,10 +620,10 @@ public final class NLog {
      * @param name
      */
     public static void onPause(Object context, String name) {
-    	follow(context, name, "onPause");
+        follow(context, name, "onPause");
     }
     public static void onPause(Object context) {
-    	follow(context, "", "onPause");
+        follow(context, "", "onPause");
     }
     /**
      * 计时器，用于判断焦点是否在子应用中
@@ -648,38 +633,38 @@ public final class NLog {
      * 清除计时器
      */
     private static void cancelTimer() {
-    	if (timer != null) {
-    		if (!"".equals(pauseAfterPackageName)) {
-    			onPause(pauseAfterPackageName);
-    			pauseAfterPackageName = "";
-    		}
-    		timer.cancel();
-    		timer = null;
-    	}
+        if (timer != null) {
+            if (!"".equals(pauseAfterPackageName)) {
+                onPause(pauseAfterPackageName);
+                pauseAfterPackageName = "";
+            }
+            timer.cancel();
+            timer = null;
+        }
     }
     /**
      * 启动计时器
      */
     private static void startTimer() {
-    	cancelTimer();
-    	if ("".equals(pauseAfterPackageName)) {
-    		return;
-    	}
-    	onResume(pauseAfterPackageName);
-    	timer = new Timer();
-    	timer.schedule(new TimerTask() {
+        cancelTimer();
+        if ("".equals(pauseAfterPackageName)) {
+            return;
+        }
+        onResume(pauseAfterPackageName);
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
 
-			@Override
-			public void run() {
-				PowerManager pm = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
-				if (pm.isScreenOn() && pauseAfterPackageName.equals(topPackageName())) { // 焦点还是停留子打开的子应用
-					pauseTime = System.currentTimeMillis();
-				} else if (System.currentTimeMillis() - pauseTime > getInteger("sessionTimeout") * 1000) { // session超时
-					cancelTimer();
-				}
-			}
-			
-		}, 5000, 5000);
+            @Override
+            public void run() {
+                PowerManager pm = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
+                if (pm.isScreenOn() && pauseAfterPackageName.equals(topPackageName())) { // 焦点还是停留子打开的子应用
+                    pauseTime = System.currentTimeMillis();
+                } else if (System.currentTimeMillis() - pauseTime > getInteger("sessionTimeout") * 1000) { // session超时
+                    cancelTimer();
+                }
+            }
+            
+        }, 5000, 5000);
     }
     
     public static void follow(Object context, String name) {
@@ -704,12 +689,8 @@ public final class NLog {
             return;
         }
         
-        if(name == null || context == null){
-        	return;
-        }
-        
         if (NLog.getBoolean("debug")) {
-        	Log.d(LOG_TAG, String.format("follow('%s') context=%s name='%s'", methodName, context, name));
+            Log.d(LOG_TAG, String.format("follow('%s') context=%s name='%s'", methodName, context, name));
         }
 
         if ("onResume".equals(methodName)) { // 重新激活
@@ -721,42 +702,42 @@ public final class NLog {
             if (followPath.contains(info)) {
                 Log.w(LOG_TAG, String.format("follow('%s') Does not match the context onPause and onResume. context=%s", methodName, context));
             } else {
-            	info = new FollowInfo(System.currentTimeMillis(), context, name);
-            	followMap.put(context, info);
+                info = new FollowInfo(System.currentTimeMillis(), context, name);
+                followMap.put(context, info);
                 followPath.add(info);
             }
             
         } else if ("onPause".equals(methodName)) { 
-        	if (!(context instanceof String)) { // 非子应用的情况，子应用的pause时间由时间器处理
-        		pauseTime = System.currentTimeMillis();
-        	}
+            if (!(context instanceof String)) { // 非子应用的情况，子应用的pause时间由时间器处理
+                pauseTime = System.currentTimeMillis();
+            }
             FollowInfo info = followMap.get(context);
             if (followPath.contains(info)) {
-            	
-            	fire("viewClose", buildMap(
-            			"target=", context,
-            			"name=", info.name,
-            			"duration=", System.currentTimeMillis() - info.time
-    			));
-            	
+                
+                fire("viewClose", buildMap(
+                        "target=", context,
+                        "name=", info.name,
+                        "duration=", System.currentTimeMillis() - info.time
+                ));
+                
                 followMap.remove(context);
                 followPath.remove(info);
                 
                 if (followPath.size() <= 0 && !(context instanceof String)) { // activity全部挂起//context是String类型为childPackage的情况
-                	String childPackages = NLog.getString("childPackages", "");
-                	if (!"".equals(childPackages)) { // 存在子应用
-                		String packageName = topPackageName();
-                		if (currPackageName.equals(packageName)) { // activity全部挂起时，package没有改变。。。
-                			return;
-                		}
-                		if (("," + childPackages + ",").indexOf("," + packageName + ",") >= 0) { // 开启了子应用
-                			cancelTimer();
-                			pauseAfterPackageName = packageName;
-                			startTimer();
-                		}
-                		
-                	}
-                	
+                    String childPackages = NLog.getString("childPackages", "");
+                    if (!"".equals(childPackages)) { // 存在子应用
+                        String packageName = topPackageName();
+                        if (currPackageName.equals(packageName)) { // activity全部挂起时，package没有改变。。。
+                            return;
+                        }
+                        if (("," + childPackages + ",").indexOf("," + packageName + ",") >= 0) { // 开启了子应用
+                            cancelTimer();
+                            pauseAfterPackageName = packageName;
+                            startTimer();
+                        }
+                        
+                    }
+                    
                 }
             } else {
                 Log.w(LOG_TAG, String.format("follow('%s') Does not match the context onPause and onResume. context=%s", methodName, context));
@@ -777,32 +758,32 @@ public final class NLog {
      * @return
      */
     public static String topPackageName() {
-    	String result = "";
-		try {
-			ActivityManager am = (ActivityManager)getContext().getSystemService(Service.ACTIVITY_SERVICE);
-			ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-			result = cn.getPackageName();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return result;
+        String result = "";
+        try {
+            ActivityManager am = (ActivityManager)getContext().getSystemService(Service.ACTIVITY_SERVICE);
+            ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+            result = cn.getPackageName();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
     /**
      * 进程退出，终止化
      */
     public static void exit() {
-    	if (!initCompleted) { // 未初始化
-    		return;
-    	}
-    	if (sessionId != null) {
-	        fire("destorySession", buildMap(
-	        		"sessionId=", sessionId,
-	        		"duration=", timestamp(pauseTime), // 流量耗时
-	        		"time=", System.currentTimeMillis()
-			));
-    	}
+        if (!initCompleted) { // 未初始化
+            return;
+        }
+        if (sessionId != null) {
+            fire("destorySession", buildMap(
+                    "sessionId=", sessionId,
+                    "duration=", timestamp(pauseTime), // 流量耗时
+                    "time=", System.currentTimeMillis()
+            ));
+        }
         pauseTime = 0L;
-    	initCompleted = false;
+        initCompleted = false;
     }
     
     /**
@@ -870,9 +851,9 @@ public final class NLog {
      */
     /* 暂不开放
     public static Boolean isFocus() {
-		PowerManager pm = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
-		String topPackage = topPackageName();
-		return (currPackageName.equals(topPackage) || pauseAfterPackageName.equals(topPackage)) && pm.isScreenOn();
+        PowerManager pm = (PowerManager)getContext().getSystemService(Context.POWER_SERVICE);
+        String topPackage = topPackageName();
+        return (currPackageName.equals(topPackage) || pauseAfterPackageName.equals(topPackage)) && pm.isScreenOn();
     }
     */
     
@@ -920,10 +901,10 @@ public final class NLog {
      * @param oldVersion 升级后的版本
      */
     public static void updateVersion(String currVersion, String oldVersion) {
-    	fire("upgrade", NLog.buildMap(
-    			"newVersion=", currVersion,
-    			"oldVersion=", oldVersion
-		));
+        fire("upgrade", NLog.buildMap(
+                "newVersion=", currVersion,
+                "oldVersion=", oldVersion
+        ));
     }
     
 }
