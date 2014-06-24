@@ -695,24 +695,24 @@ public class NStorage {
                                 % pass.length]);
                     }
                 }
-				FileOutputStream fos = null;
-				try {
-					fos = new FileOutputStream(filename, true);
-					fos.write(linesBuffer);
-					fos.flush();
-					item.sb.delete(0, item.sb.length()); // 清空数据
-					result = true;
-				} catch (IOException e) {
-					e.printStackTrace();
-				} finally {
-					if (fos != null) {
-						try {
-							fos.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}
+                FileOutputStream fos = null;
+                try {
+                    fos = new FileOutputStream(filename, true);
+                    fos.write(linesBuffer);
+                    fos.flush();
+                    item.sb.delete(0, item.sb.length()); // 清空数据
+                    result = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
