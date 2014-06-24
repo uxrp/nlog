@@ -25,8 +25,6 @@ import java.util.zip.CRC32;
 import java.util.zip.GZIPOutputStream;
 import java.net.Proxy;
 
-import com.baidu.yuedu.util.LogUtil;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -450,7 +448,7 @@ public class NStorage {
         } catch (Exception e) {
             e.printStackTrace();
         } catch (NoClassDefFoundError e) { //避免某些手机connect 方法出现java.lang.NoClassDefFoundError: libcore/io/GaiException
-            LogUtil.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
         }
         return result;
     }
