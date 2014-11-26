@@ -100,7 +100,7 @@ public class NStorage {
 
         /**
          * 构造
-         * @param name 项名 
+         * @param name 项名
          * @param head 首行
          * @param sb 字符缓存
          */
@@ -302,8 +302,8 @@ public class NStorage {
         }
     }
 
-    /** 
-     * 判断Network是否连接成功(包括移动网络和wifi) 
+    /**
+     * 判断Network是否连接成功(包括移动网络和wifi)
      * @return 返回是否连接
      */
     public static boolean isNetworkConnected() {
@@ -590,9 +590,6 @@ public class NStorage {
 
 
 
-
-
-            conn.setRequestProperty("Content-Encoding", "gzip");
             conn.connect();
 
             String lockedname = item.locked;
@@ -1054,7 +1051,7 @@ public class NStorage {
 
     /**
      * 初始化
-     * @throws  
+     * @throws
      */
     public static void init() {
         if (initCompleted) {
