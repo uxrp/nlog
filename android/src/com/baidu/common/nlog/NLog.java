@@ -1,4 +1,4 @@
-package com.baidu.nlog;
+package com.baidu.common.nlog;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;

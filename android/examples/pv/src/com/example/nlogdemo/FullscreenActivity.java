@@ -2,7 +2,7 @@ package com.example.nlogdemo;
 
 import java.util.Map;
 
-import com.baidu.nlog.NLog;
+import com.baidu.common.nlog.NLog;
 import com.example.nlogdemo.util.SystemUiHider;
 
 import android.annotation.TargetApi;
@@ -92,15 +92,15 @@ public class FullscreenActivity extends Activity {
 		TelephonyManager tm = (TelephonyManager)this.getSystemService(Context.TELEPHONY_SERVICE);
         deviceId = tm.getDeviceId();
         
-        if (applicationContext == null) { // ³õÊ¼»¯ // ×¢ÒâonCreate¿ÉÄÜ±»µ÷ÓÃ¶à´Î£¬Õâ¸öÅĞ¶ÏÊÇ±ØĞëµÄ
+        if (applicationContext == null) { // åˆå§‹åŒ– // æ³¨æ„onCreateå¯èƒ½è¢«è°ƒç”¨å¤šæ¬¡ï¼Œè¿™ä¸ªåˆ¤æ–­æ˜¯å¿…é¡»çš„
         	applicationContext = this.getApplicationContext();
         	NLog.cmd("wenku.send", "event", "a=", 1);
         	NLog.init(this, 
         			"childPackages=", "com.baidu.wenku",
         			"debug=", true,
-        			"ruleUrl=", "http://hunter.duapp.com/nlog/demo.rule.js", // ²ßÂÔÎÄ¼ş´æ·ÅµØÖ·
-        			"ruleExpires=", "5", // ²ßÂÔÎÄ¼şÊ§Ğ§Ê±¼ä
-	    			"onCreateSession=", new NLog.EventListener() { // ÖØĞÂ´´½¨sessionÊ±´¥·¢
+        			"ruleUrl=", "http://wangjihu01.duapp.com/nlog/demo.rule.js", // ç­–ç•¥æ–‡ä»¶å­˜æ”¾åœ°å€
+        			"ruleExpires=", "5", // ç­–ç•¥æ–‡ä»¶å¤±æ•ˆæ—¶é—´
+	    			"onCreateSession=", new NLog.EventListener() { // é‡æ–°åˆ›å»ºsessionæ—¶è§¦å‘
 						@Override
 						public void onHandler(Map<String, Object> map) {
 							NLog.cmd("pv.send", "appview");
@@ -123,12 +123,12 @@ public class FullscreenActivity extends Activity {
 						}
 					}
 			);
-        	
+        	// http://wangjihu01.duapp.com/nlog/#demo
 			NLog.cmd("pv.start",
-					"postUrl=", "http://hunter.duapp.com/command/?command=nlog-post&channel=demo",
-	        		"protocolParameter=", NLog.buildMap( // ×Ö¶Î¼òĞ´
-	        				"ht=", null, // ²»´«ËÍhitType
-	        				"time=", "t" // time -> t ¼òĞ´
+					"postUrl=", "http://wangjihu01.duapp.com/command/?command=nlog-post&channel=demo",
+	        		"protocolParameter=", NLog.buildMap( // å­—æ®µç®€å†™
+	        				"ht=", null, // ä¸ä¼ é€hitType
+	        				"time=", "t" // time -> t ç®€å†™
     				),
 					"cuid=", deviceId
 			);

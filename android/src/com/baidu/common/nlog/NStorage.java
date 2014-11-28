@@ -1,4 +1,4 @@
-package com.baidu.nlog;
+package com.baidu.common.nlog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

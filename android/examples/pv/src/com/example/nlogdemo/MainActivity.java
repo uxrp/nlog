@@ -1,10 +1,9 @@
 package com.example.nlogdemo;
 
-import com.baidu.nlog.NLog;
+import com.baidu.common.nlog.NLog;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.content.Intent;
 import android.support.v4.widget.DrawerLayout.LayoutParams;
 import android.util.Log;
 import android.view.Menu;

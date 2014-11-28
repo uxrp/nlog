@@ -1,4 +1,4 @@
-package com.baidu.nlog;
+package com.baidu.common.nlog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
